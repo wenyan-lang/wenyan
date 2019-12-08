@@ -198,6 +198,15 @@ function wy2tokens(txt){
 		}
 		i++;
 	}
+	if (tok.length){
+		if (num){
+			tokens.push(["num",hanzi2num(tok)]);
+		}else if (data){
+			tokens.push(["data",tok]);
+		}else{
+			assert(false);
+		}
+	}
 	return tokens;
 }
 
@@ -212,8 +221,11 @@ function tokenRomanize(tokens){
 		}
 		return true;
 	}
+	function isRoman(x){
+		return x.replace(/[a-zA-Z\.]/g,'').length==0;
+	}
 	for (var i = 0; i < tokens.length; i++){
-		if (tokens[i][0]=="iden"){
+		if (tokens[i][0]=="iden" && !isRoman(tokens[i][1])){
 			var r = iden2pinyin[tokens[i][1]]
 			if (r != undefined){
 				tokens[i][1]=r;
@@ -330,7 +342,7 @@ function tokens2asc(tokens){
 		}else if (tokens[i][0]=="call"){
 			var x = {op:"call",fun:tokens[i+1][1],args:[]};
 			i+=2;
-			while(tokens[i][0]=="operand"&&tokens[i][1]=="r"){
+			while(tokens[i]&&tokens[i][0]=="operand"&&tokens[i][1]=="r"){
 				x.args.push(tokens[i+1]);
 				i+=2;
 			}

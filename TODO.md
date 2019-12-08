@@ -6,3 +6,4 @@
 - logical and / or
 - for loop with iterator
 - while loop
+- ASC edge case near end of program
