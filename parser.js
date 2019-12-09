@@ -229,7 +229,6 @@ function wy2tokens(txt){
 
 var iden2pinyin={}
 function tokenRomanize(tokens){
-	console.log(iden2pinyin);
 	function noDup(x){
 		for (var k in iden2pinyin){
 			if (iden2pinyin[k]==x){
@@ -255,7 +254,6 @@ function tokenRomanize(tokens){
 				tokens[i][1]=r
 			}
 			iden2pinyin[key]=r;
-			console.log("---",r,JSON.stringify(iden2pinyin));
 		}
 	}
 }
@@ -353,8 +351,15 @@ function tokens2asc(tokens){
 			asc.push({op:"else"})
 			i+=1;
 		}else if (tokens[i][0]=="op"){
-			assert(tokens[i+2][0]=="operand"&&tokens[i+2][1]=="l")
-			var x = {op:"op"+tokens[i][1],lhs:tokens[i+1],rhs:tokens[i+3]};
+			assert(tokens[i+2][0]=="operand")
+			var x = {op:"op"+tokens[i][1]};
+			if (tokens[i+2][1]=="l"){
+				x.lhs=tokens[i+1];
+				x.rhs=tokens[i+3];
+			}else{
+				x.lhs=tokens[i+3];
+				x.rhs=tokens[i+1];
+			}
 			asc.push(x)
 			i+=4
 		}else if (tokens[i][0]=="not"){
