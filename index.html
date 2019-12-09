@@ -1,4 +1,20 @@
-吾有一言。曰「「問天地好在。」」。書之。
+<head>
+  <meta charset="UTF-8">
+  <style>
+  [contenteditable="true"]:focus {
+    outline: none;
+   </style>
+
+</head>
+<script src="hanzi2num.js"></script>
+<script src="hanzi2pinyin.js"></script>
+<script src="parser.js"></script>
+<script src="highlight.js"></script>
+<body style="background:#272822;padding:20px;">
+<script>
+	
+
+	var ed = newEditor(`吾有一言。曰「「問天地好在。」」。書之。
 有數三十。名之曰「甲」。
 吾有三言。曰「「甲之數」」。曰「甲」。曰「「也」」。書之。
 
@@ -63,4 +79,7 @@
 	銜「首」以「頷」以「尾」。名之曰「乙」。
 	乃得「乙」。
 
-是謂「快排」之術也。
+是謂「快排」之術也。`)
+	document.body.appendChild(ed);
+</script>
+</body>

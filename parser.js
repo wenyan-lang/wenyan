@@ -1,8 +1,10 @@
+try{
 const fs = require('fs')
 const hanzi2num = require('./hanzi2num')
 const hanzi2pinyin = require('./hanzi2pinyin')
+}catch(e){}
 
-const KEYNUM = "又零一二三四五六七八九十百千万亿兆京分厘毫丝忽微".split("")
+const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千万亿兆京分厘毫丝忽微".split("")
 
 var KEYWORDS = {
 	"吾有":["decl","uninit"],
@@ -87,16 +89,23 @@ const SYNONYMS = {
 function preprocess(txt){
 	txt = txt.replace(/[\n\r\t ]/g,"");
 
-	txt = txt.replace(new RegExp("「「",'g'),"【").replace(new RegExp("」」",'g'),"】");
+	txt = txt.replace(/「「/g,"【").replace(/」」/g,"】");
 	var s = txt.replace(/[「」]/g,"$").split("$");
 	
 	var t = "";
 	for (var i = 0; i < s.length; i++){
 		if (i % 2 == 0){
-			for (var k in SYNONYMS){
-				s[i] = s[i].replace(new RegExp(k,'g'),SYNONYMS[k])
+			var u = s[i].replace(/[【】]/g,"$").split("$");
+			for (var j = 0;j < u.length; j++){
+				if (j % 2 == 0){
+					for (var k in SYNONYMS){
+						u[j] = u[j].replace(new RegExp(k,'g'),SYNONYMS[k])
+					}
+					t += u[j];
+				}else{
+					t += "【"+u[j]+"】"
+				}
 			}
-			t += s[i];
 		}else{
 			t += "「"+s[i]+"」"
 		}
@@ -170,7 +179,7 @@ function wy2tokens(txt){
 				tok += txt[i]
 
 			}else if (num){
-				if (KEYNUM.includes(txt[i])){
+				if (NUMBER_KEYWORDS.includes(txt[i])){
 					tok += txt[i]
 				}else{
 					endnum();
@@ -194,7 +203,7 @@ function wy2tokens(txt){
 					}
 				}
 				if (!ok){
-					if (KEYNUM.includes(txt[i])){
+					if (NUMBER_KEYWORDS.includes(txt[i])){
 						num = true;
 						tok = txt[i];
 					}else{
@@ -621,12 +630,12 @@ function compile(lang,txt,options={}){
 }
 
 try{
-    module.exports = compile;
+    module.exports = {KEYWORDS,NUMBER_KEYWORDS,SYNONYMS,compile};
 }catch(e){}
 
 
 ;;(function test_parser(){
 	var txt = fs.readFileSync("example.txt").toString()
 	compile('js',txt,{romanizeIdentifiers:true})
-})()
+})//()
 
