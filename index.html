@@ -1,104 +1,39 @@
 <head>
-  <meta charset="UTF-8">
-  <style>
-  [contenteditable="true"]:focus {
-    outline: none;
-   }
-    pre{
-    	tab-size: 4;
-    }
-   </style>
-
+<meta charset="UTF-8">
+<style>
+[contenteditable="true"]:focus {outline: none;}
+pre{tab-size: 4;}
+.tbar{background:white;color:black;font-style:italic;font-family:monospace;font-size:14px;opacity:80%;margin-top:20px;}
+</style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
-<link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-
 <script src="hanzi2num.js"></script>
 <script src="hanzi2pinyin.js"></script>
 <script src="parser.js"></script>
 <script src="highlight.js"></script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
-<table><tr><td><button id="run">Run</button></td></tr><tr><td id="in"></td><td><pre id="js"></pre></td></tr><tr><td><pre id="out"></pre></td></tr></table>
-<script>
-	
+<table><tr><td><select id="pick-example"></select><button id="run">Run</button></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+<script>var prgms = {"beer":"吾有一言。曰「「春日宴。」」。書之。\n\n有數九。名之曰「酒數」。\n\n恆為是。若「酒數」等於零者乃止也。\n\n\t吾有三言。曰「「與君」」。曰「酒數」。曰「「杯酒。可以窮歡宴。綠酒一杯歌一遍。」」。書之。\n\n減「酒數」以一。昔之「酒數」者。今其是矣云云。\n\n吾有一言。曰「「綠酒千杯腸已爛。」」。書之。","factorial":"吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n施「階乘」於五。書之。","fibonacci":"吾有一術。名之曰「斐波那契」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於零者乃得零也\n\t若「甲」等於一者乃得一也\n\t減「甲」以一。減「甲」以二。名之曰「乙」。曰「丙」。\n\t施「斐波那契」於「乙」。名之曰「丁」。\n\t施「斐波那契」於「丙」。名之曰「戊」。\n\t加「丁」以「戊」。名之曰「己」。\n\t乃得「己」。\n是謂「斐波那契」之術也。\n\n施「斐波那契」於十二。書之。","mandelbrot":"吾有一術。名之曰「曼德博」。欲行是術。必先得二數。曰「寬」。曰「高」。乃行是術曰。\n\t吾有一言。曰「「丁龘蠹臺龜畫龍淼蔑高五三二」」。名之曰「皴法」。\n\n\t減零以一。名之曰「上」。加零以一。名之曰「下」。\n\t減零以二。名之曰「左」。加零以二。名之曰「右」。\n\n\t減「右」以「左」。除其以「寬」。名之曰「橫步」。\n\t減「下」以「上」。除其以「高」。名之曰「縱步」。\n\n\t有數零。名之曰「戊」。恆為是。若「戊」等於「高」者乃止也。\n\n\t\t乘「縱步」以「戊」。加其以「上」。以名之曰「虛」。\n\n\t\t吾有一言。名之曰「行」。\n\n\t\t有數零。名之曰「戌」。恆為是。若「戌」等於「寬」者乃止也。\n\n\t\t\t乘「橫步」以「戌」。加其以「左」。以名之曰「實」。\n\n\t\t\t有數「虛」。名之曰「虛虛」。\n\t\t\t有數「實」。名之曰「實實」。\n\n\t\t\t有數零。名之曰「己」。恆為是。若「己」等於十二者乃止也。\n\t\t\t\t\n\t\t\t\t乘「實實」以「實實」。乘「虛虛」以「虛虛」。名之曰「甲」。曰「乙」。\n\t\t\t\t加「甲」以「乙」。名之曰「丙」。\n\t\t\t\t若「丙」大於四者乃止也。\n\n\t\t\t\t乘「虛虛」以「實實」。乘其以二。加其以「虛」。昔之「虛虛」者。今其是矣。\n\t\t\t\t減「甲」以「乙」。加其以「實」。昔之「實實」者。今其是矣。\n\n\t\t\t加一以「己」。昔之「己」者。今其是矣云云。\n\n\t\t\t減十三以「己」。名之曰「巳」。\n\t\t\t夫「皴法」之「巳」。名之曰「墨」。\n\t\t\t加「行」以「墨」。昔之「行」者。今其是矣。\n\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t\t\n\t\t吾有一言。曰「行」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n是謂「曼德博」之術也。\n\n施「曼德博」於五十九。於二十四。\n\n","misc":"吾有一言。曰「「問天地好在。」」。書之。\n有數三十。名之曰「甲」。\n吾有三言。曰「「甲之數」」。曰「甲」。曰「「也」」。書之。\n\n批曰。「「文氣淋灕。字句切實」」。\n\n吾有二爻。曰陽。曰陰。名之曰「天」。曰「地」。\n夫「天」「地」中無陰乎。夫「天」「地」中有陽乎。噫。\n變「天」。名之曰「人」。\n\n減「甲」以一。加「甲」以二。名之曰「乙」。曰「丙」。\n\n吾有一列。名之曰「丁」。\n充「丁」以一。以二。以三。以四。\n\n有數一。名之曰「戊」。\n恆為是。\n\t若「戊」等於「甲」者。\n\t\t乃止\n\t也。\n\t吾有一言。曰「戊」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣。\n云云。\n\n吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n吾有一術。名之曰「異或」。欲行是術。必先得二爻。曰「甲」。曰「乙」。乃行是術曰。\n\t若「甲」等於「乙」者。\n\t\t乃得陰。\n\t若非。\n\t\t乃得陽\n\t也。\n是謂「異或」之術也。\n\n吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長弗大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。\n","quicksort":"吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長弗大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。","sieve":"吾有一術。名之曰「埃氏筛」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t吾有一列。名之曰「掩」。為是「甲」遍。充「掩」以陽也。\n\t除「甲」以二。名之曰「甲半」。\n\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「甲半」者乃止也。\n\t\t有數二。名之曰「戌」。恆為是。若「戌」等於「甲半」者乃止也。\n\n\t\t\t乘「戊」以「戌」。名之曰「合」\n\t\t\t若「合」弗大於「甲」者。\n\t\t\t\t昔之「掩」之「合」者。今陰是矣。\n\t\t\t若非乃止也。\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\n\t吾有一列。名之曰「諸素」。\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「掩」之長者乃止也。\n\t\t夫「掩」之「戊」。名之曰「素耶」。\n\t\t若「素耶」者充「諸素」以「戊」也。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\t乃得「諸素」。\n是謂「埃氏筛」之術也。\n\n施「埃氏筛」於一百。書之。"}</script>
+<script>function main(){
+	var ed = newEditor(prgms["mandelbrot"])
 
-	var ed = newEditor(`吾有一言。曰「「問天地好在。」」。書之。
-有數三十。名之曰「甲」。
-吾有三言。曰「「甲之數」」。曰「甲」。曰「「也」」。書之。
+	var sel = document.getElementById("pick-example");
+	for (var k in prgms){
+		var opt = document.createElement("option");
+		opt.value = k;
+		opt.innerHTML = k;
+		sel.appendChild(opt);
+	}
+	sel.value = "mandelbrot";
+	sel.onchange = function(){
+		ed.innerText = prgms[sel.value];
+		run();
+	}
 
-批曰。「「文氣淋灕。字句切實」」。
-
-吾有二爻。曰陽。曰陰。名之曰「天」。曰「地」。
-夫「天」「地」中無陰乎。夫「天」「地」中有陽乎。噫。
-變「天」。名之曰「人」。
-
-減「甲」以一。加「甲」以二。名之曰「乙」。曰「丙」。
-
-吾有一列。名之曰「丁」。
-充「丁」以一。以二。以三。以四。
-
-有數一。名之曰「戊」。
-恆為是。
-	若「戊」等於「甲」者。
-		乃止
-	也。
-	吾有一言。曰「戊」。書之。
-	加一以「戊」。昔之「戊」者。今其是矣。
-云云。
-
-吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。
-	若「甲」等於一者。
-		乃得「甲」。
-	若非。
-		減「甲」以一。名之曰「乙」。
-		施「階乘」於「乙」。名之曰「丙」。
-		乘「丙」以「甲」。名之曰「丁」。
-		乃得「丁」
-	也。
-是謂「階乘」之術也。
-
-吾有一術。名之曰「異或」。欲行是術。必先得二爻。曰「甲」。曰「乙」。乃行是術曰。
-	若「甲」等於「乙」者。
-		乃得陰。
-	若非。
-		乃得陽
-	也。
-是謂「異或」之術也。
-
-吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。
-	若「甲」之長弗大於一者。
-		乃得「甲」
-	也。
-	吾有三列。名之曰「首」。曰「頷」。曰「尾」。
-
-	夫「甲」之一。名之曰「甲一」。
-	充「頷」以「甲一」。
-	夫「甲」之其餘。名之曰「甲餘」。
-
-	凡「甲餘」中之「丁」。
-		若「丁」小於「甲一」者。
-			充「首」以「丁」。
-		若非。
-			充「尾」以「丁」
-		也。
-	云云。
-	施「快排」於「首」。昔之「首」者。今其是矣。
-	施「快排」於「尾」。昔之「尾」者。今其是矣。
-
-	銜「首」以「頷」以「尾」。名之曰「乙」。
-	乃得「乙」。
-
-是謂「快排」之術也。
-
-吾有一列。名之曰「己」。
-充「己」以五。以三。以二十。以八。以三十五。以七百。
-施「快排」於「己」。書之。
-`)
-	document.getElementById("in").append(ed);
-	document.getElementById("run").onclick=function(){
+	function run(){
 		highlight([ed]);
 		document.getElementById("out").innerText="";
 		var code = compile('js',ed.innerText,{romanizeIdentifiers:true});
@@ -107,12 +42,21 @@
 		code = code.replace(/console.log\(/g, `log2div(`);
 		eval(code);
 	}
+
+	
+	document.getElementById("in").append(ed);
+	document.getElementById("run").onclick=run;
 	function log2div(){
 		var outdiv = document.getElementById("out");
 		for (var i = 0; i < arguments.length; i++){
-			outdiv.innerText += arguments[i];
+			if (typeof arguments[i] == 'number'){
+				outdiv.innerText += num2hanzi(arguments[i]);
+			}else{
+				outdiv.innerText += arguments[i];
+			}
 		}
 		outdiv.innerText+="\n";
 	}
-</script>
+	run();
+};main();</script>
 </body>
