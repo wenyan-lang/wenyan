@@ -112,7 +112,7 @@ function newEditor(txt){
   }
   div.innerHTML=txt;
   highlight([div]);
-  setInterval(()=>highlight([div]),4000);
+  setInterval(()=>highlight([div]),20000);
   return div;
 }
 

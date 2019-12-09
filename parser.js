@@ -229,7 +229,7 @@ function wy2tokens(txt){
 
 var iden2pinyin={}
 function tokenRomanize(tokens){
-
+	console.log(iden2pinyin);
 	function noDup(x){
 		for (var k in iden2pinyin){
 			if (iden2pinyin[k]==x){
@@ -244,6 +244,7 @@ function tokenRomanize(tokens){
 	for (var i = 0; i < tokens.length; i++){
 		if (tokens[i][0]=="iden" && !isRoman(tokens[i][1])){
 			var r = iden2pinyin[tokens[i][1]]
+			var key = tokens[i][1];
 			if (r != undefined){
 				tokens[i][1]=r;
 			}else{
@@ -252,8 +253,9 @@ function tokenRomanize(tokens){
 					r+="_";
 				}
 				tokens[i][1]=r
-				
 			}
+			iden2pinyin[key]=r;
+			console.log("---",r,JSON.stringify(iden2pinyin));
 		}
 	}
 }
@@ -268,15 +270,15 @@ function tokens2asc(tokens){
 			assert(tokens[i+2][0] == "type")
 			var x = {op:"var",count:tokens[i+1][1],type:tokens[i+2][1],values:[],names:[]};
 			i+=3;
-			while (tokens[i][0] == "assgn"){
+			while (tokens[i]&&tokens[i][0] == "assgn"){
 				x.values.push(tokens[i+1]);
 				i+=2;
 			}
-			if (tokens[i][0] == "name"){
+			if (tokens[i]&&tokens[i][0] == "name"){
 				x.names.push(tokens[i+1][1]);
 				i+=2;
 			}
-			while (tokens[i][0] == "assgn"){
+			while (tokens[i]&&tokens[i][0] == "assgn"){
 				x.names.push(tokens[i+1][1]);
 				i+=2;
 			}
@@ -534,7 +536,11 @@ function asc2js(asc){
 		}else if (a.op == "else"){
 			js += "}else{"
 		}else if (a.op == "return"){
-			js += `return ${a.value[1]};`;
+			if (a.value){
+				js += `return ${a.value[1]};`;
+			}else{
+				js += `return;`;
+			}
 		}else if (a.op.startsWith("op")){
 			
 			js += `var ${nextTmpVar()}=${a.lhs[1]}${a.op.slice(2)}${a.rhs[1]};`

@@ -3,6 +3,10 @@
   <style>
   [contenteditable="true"]:focus {
     outline: none;
+   }
+    pre{
+    	tab-size: 4;
+    }
    </style>
 
 </head>
@@ -89,6 +93,8 @@
 是謂「快排」之術也。`)
 	document.getElementById("in").append(ed);
 	document.getElementById("run").onclick=function(){
+		highlight([ed]);
+		document.getElementById("out").innerText="";
 		var code = compile('js',ed.innerText,{romanizeIdentifiers:true});
 		document.getElementById("js").innerText=js_beautify(code);
 		hljs.highlightBlock(document.getElementById("js"));
