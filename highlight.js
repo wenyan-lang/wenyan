@@ -18,7 +18,7 @@ const DEFAULT_COLORS = {
   'assgn':'#FFF',
   'discard':'#FFF',
   'endl':'#75715E',
-  'ans':'#FFF',
+  'ans':'#A6E22E',
   'expr':'#FFF',
   'op':'#FFF',
   'not':'#FFF',
