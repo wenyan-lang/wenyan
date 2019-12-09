@@ -637,5 +637,6 @@ try{
 ;;(function test_parser(){
 	var txt = fs.readFileSync("example.txt").toString()
 	compile('js',txt,{romanizeIdentifiers:true})
-})()
+})
+// ()
 

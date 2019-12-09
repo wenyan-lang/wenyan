@@ -6,11 +6,18 @@
    </style>
 
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+
 <script src="hanzi2num.js"></script>
 <script src="hanzi2pinyin.js"></script>
 <script src="parser.js"></script>
 <script src="highlight.js"></script>
-<body style="background:#272822;padding:20px;">
+<body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
+	<h2><i>wenyan-lang</i></h2>
+<table><tr><td><button id="run">Run</button></td></tr><tr><td id="in"></td><td><pre id="js"></pre></td></tr><tr><td><pre id="out"></pre></td></tr></table>
 <script>
 	
 
@@ -80,6 +87,20 @@
 	乃得「乙」。
 
 是謂「快排」之術也。`)
-	document.body.appendChild(ed);
+	document.getElementById("in").append(ed);
+	document.getElementById("run").onclick=function(){
+		var code = compile('js',ed.innerText,{romanizeIdentifiers:true});
+		document.getElementById("js").innerText=js_beautify(code);
+		hljs.highlightBlock(document.getElementById("js"));
+		code = code.replace(/console.log\(/g, `log2div(`);
+		eval(code);
+	}
+	function log2div(){
+		var outdiv = document.getElementById("out");
+		for (var i = 0; i < arguments.length; i++){
+			outdiv.innerText += arguments[i];
+		}
+		outdiv.innerText+="\n";
+	}
 </script>
 </body>

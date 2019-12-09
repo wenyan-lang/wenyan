@@ -23,7 +23,7 @@ const DEFAULT_COLORS = {
   'op':'#FFF',
   'not':'#FFF',
   'operand':'#FFF',
-  'bool':'#FFF',
+  'bool':'#AE81FF',
   'data':'#75715E',
   "iden":"#A6E22E",
   "quot":"#A6E22E",
