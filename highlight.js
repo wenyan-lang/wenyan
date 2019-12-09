@@ -12,7 +12,7 @@ const DEFAULT_COLORS = {
   'print':'#FFF',
   'rassgn':'#FFF',
   'ctnr':'#66D9EF',
-  'comment':'#75715E',
+  'comment':'#FFF',
   'type':'#66D9EF',
   'call':'#FFF',
   'assgn':'#FFF',
