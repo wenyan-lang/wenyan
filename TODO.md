@@ -8,3 +8,4 @@
 - ~~while loop~~
 - ASC edge case near end of program
 - strict parse error checking
+- traditional chinese

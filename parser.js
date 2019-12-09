@@ -7,12 +7,12 @@ const KEYNUM = "又零一二三四五六七八九十百千万亿兆京分厘毫�
 var KEYWORDS = {
 	"吾有":["decl","uninit"],
 	"有":["decl","init"],
-	"数":["type","num"],
+	"數":["type","num"],
 	"列":["type","arr"],
 	"言":["type","str"],
-	"术":["type","fun"],
+	"術":["type","fun"],
 	"爻":["type","bol"],
-	"书之":["print"],
+	"書之":["print"],
 	"名之曰":["name"],
 	"施":["call"],
 	"曰":["assgn"],
@@ -25,16 +25,16 @@ var KEYWORDS = {
 	"其":["ans"],
 	
 	"乃得":["ctrl","ret"],
-	"乃归空无":["ctrl","retvoid"],
-	"是谓":["ctrl","funend0"],
-	"之术也":["ctrl","funend1"],
+	"乃歸空無":["ctrl","retvoid"],
+	"是謂":["ctrl","funend0"],
+	"之術也":["ctrl","funend1"],
 	"必先得":["ctrl","funarg"],
-	"是术曰":["ctrl","funbody"],
-	"欲行是术":["ctrl","funstart"],
+	"是術曰":["ctrl","funbody"],
+	"欲行是術":["ctrl","funstart"],
 	"也":["ctrl","end"],
 	"凡":["ctrl","for"],
 	"中之":["ctrl","forin"],
-	"恒为是":["ctrl","while"],
+	"恆為是":["ctrl","while"],
 	"乃止":["ctrl","break"],
 
 	"若非":["ctrl","else"],
@@ -43,33 +43,35 @@ var KEYWORDS = {
 
 	"夫":["expr"],
 
-	"等于":["cmp","=="],
-	"弗等于":["cmp","!="],
-	"弗大于":["cmp","<="],
-	"弗小于":["cmp",">="],
-	"大于":["cmp",">"],
-	"小于":["cmp","<"],
+	"等於":["cmp","=="],
+	"弗等於":["cmp","!="],
+	"弗大於":["cmp","<="],
+	"弗小於":["cmp",">="],
+	"大於":["cmp",">"],
+	"小於":["cmp","<"],
 
 
 	"加":["op","+"],
-	"减":["op","-"],
+	"減":["op","-"],
 	"乘":["op","*"],
 	"除":["op","/"],
-	"中有阳乎":["lop","||"],
-	"中无阴乎":["lop","&&"],
-	"变":["not"],
+	"中有陽乎":["lop","||"],
+	"中無陰乎":["lop","&&"],
+	"變":["not"],
 
 	"以":["operand","l"],
-	"于":["operand","r"],
+	"於":["operand","r"],
 
-	"之长":["ctnr","len"],
+	"之長":["ctnr","len"],
 	"之":["ctnr","subs"],
 	"充":["ctnr","push"],
-	"衔":["ctnr","cat"],
-	"其余":["ctnr","rest"],
+	"銜":["ctnr","cat"],
+	"其餘":["ctnr","rest"],
 
-	"阴":["bool",false],
-	"阳":["bool",true]
+	"陰":["bool",false],
+	"陽":["bool",true],
+
+	"批曰":["comment"],
 
 }
 var ke = Object.entries(KEYWORDS);
@@ -79,7 +81,7 @@ const SYNONYMS = {
 	"今有":"吾有",
 	"云云":"也",
 	"。":"",
-	"乃行是术曰":"是术曰",
+	"乃行是術曰":"是術曰",
 }
 
 function preprocess(txt){
@@ -409,8 +411,11 @@ function tokens2asc(tokens){
 			i+=6;
 			asc.push(x)
 		}else if (tokens[i][0]=="discard"){
-			asc.push({op:"discard"}),
+			asc.push({op:"discard"});
 			i++;
+		}else if (tokens[i][0]=="comment"){
+			asc.push({op:"comment",value:tokens[i+1]});
+			i+=2;
 		}else{
 			console.log("Unrecognized",tokens[i])
 			i++;
@@ -574,6 +579,8 @@ function asc2js(asc){
 			js += `${a.lhs[1]}=${rhs[1]};`
 		}else if (a.op == "discard"){
 			strayvar = 0;
+		}else if (a.op == "comment"){
+			js += `/*${a.value[1]}*/`
 		}else{
 			console.log(a.op)
 		}
