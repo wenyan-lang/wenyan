@@ -1,7 +1,7 @@
 try{
-const fs = require('fs')
-const hanzi2num = require('./hanzi2num')
-const hanzi2pinyin = require('./hanzi2pinyin')
+var fs = require('fs')
+var hanzi2num = require('./hanzi2num')
+var hanzi2pinyin = require('./hanzi2pinyin')
 }catch(e){}
 
 const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千万亿兆京分厘毫丝忽微".split("")
@@ -637,5 +637,5 @@ try{
 ;;(function test_parser(){
 	var txt = fs.readFileSync("example.txt").toString()
 	compile('js',txt,{romanizeIdentifiers:true})
-})//()
+})()
 
