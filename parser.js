@@ -1,10 +1,10 @@
 try{
 var fs = require('fs')
-var hanzi2num = require('./hanzi2num')
+var {hanzi2num,num2hanzi} = require('./hanzi2num')
 var hanzi2pinyin = require('./hanzi2pinyin')
 }catch(e){}
 
-const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千万亿兆京分厘毫丝忽微".split("")
+const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split("")
 
 var KEYWORDS = {
 	"吾有":["decl","uninit"],
@@ -565,7 +565,16 @@ function asc2js(asc){
 				js += `return;`;
 			}
 		}else if (a.op.startsWith("op")){
-			
+			var lhs = a.lhs
+			var rhs = a.rhs
+			assert(!(a.lhs[0] == "ans" && a.rhs[0] == "ans"));
+			if (a.lhs[0] == "ans"){
+				a.lhs = ["ans",currTmpVar()]
+				strayvar--;
+			}else if (a.rhs[0] == "ans"){
+				a.rhs = ["ans",currTmpVar()]
+				strayvar--;
+			}
 			js += `var ${nextTmpVar()}=${a.lhs[1]}${a.op.slice(2)}${a.rhs[1]};`
 			strayvar ++;
 		}else if (a.op == "name"){

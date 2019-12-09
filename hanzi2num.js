@@ -1,10 +1,11 @@
-function hanzi2num(s){
-    var nums = ["零","一","二","三","四","五","六","七","八","九"]
-    var mults1 = ["十","百","千"];
-    var mults4 = ["万","亿","兆","京","垓","秭","穣","沟","涧","正","载","极","恒河沙","阿僧祇","那由他","不可思议","无量大数"];
-    var fracs1 = ["分","厘","毫","丝","忽","微","纤","沙"];
-    var fracs4 = ["尘","埃","渺","漠","模糊","逡巡","须臾","瞬息","弹指","刹那","六德","虚","空","清","净"];
+var NUMS = ["零","一","二","三","四","五","六","七","八","九"]
+var MULTS1 = ["十","百","千"];
+var MULTS4 = ["萬","億","兆","京","垓","秭","穣","溝","澗","正","載","極","恆河沙","阿僧祇","那由他","不可思議","無量大數"];
+var FRACS1 = ["分","釐","毫","絲","忽","微","纖","沙"];
+var FRACS4 = ["塵","埃","渺","漠","模糊","逡巡","須臾","瞬息","彈指","剎那","六德","虛","空","清","淨"];
 
+
+function hanzi2num(s){
     s = s.replace(/零/g,"")
     s = s.replace(/有/g,"")
 
@@ -33,13 +34,13 @@ function hanzi2num(s){
             for (var j = 0; j < stt.length; j++){
                 if (stt[j].length == 1){
                     if (stt[j][0] != ''){
-                        r += nums.indexOf(stt[j][0])
+                        r += NUMS.indexOf(stt[j][0])
                     }
                 } else{
                     if (stt[j][0] == ''){
                         stt[j][0] = '一'
                     }
-                    r += nums.indexOf(stt[j][0]) * Math.pow(n1,m1.indexOf(stt[j][1])+1)
+                    r += NUMS.indexOf(stt[j][0]) * Math.pow(n1,m1.indexOf(stt[j][1])+1)
                 }
             }
             if (st[i].length == 2){
@@ -51,21 +52,21 @@ function hanzi2num(s){
         return result
     }
     function hanzi2int(s){
-        return _h2n(s,mults1,10,mults4,10000)
+        return _h2n(s,MULTS1,10,MULTS4,10000)
     }
 
     function hanzi2frac(s){
         var l = -1
         for (var i = 0; i < s.length; i++){
-            if (fracs1.includes(s[i])){
+            if (FRACS1.includes(s[i])){
                 l = i;
             }
-            if (fracs4.includes(s[i])){
+            if (FRACS4.includes(s[i])){
                 break
             }
         }
-        var n1 = _h2n(s.slice(0,l+1),[],0,fracs1,0.1) 
-        var n2 = _h2n(s.slice(l+1),mults1,10,fracs4,0.0001) * Math.pow(0.1,fracs1.length)
+        var n1 = _h2n(s.slice(0,l+1),[],0,FRACS1,0.1) 
+        var n2 = _h2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
         return n1 + n2
     }
     
@@ -74,7 +75,7 @@ function hanzi2num(s){
         var s1 = s.split("又")[1]
         return hanzi2int(s0) + hanzi2frac(s1)
     }else{
-        var fracs = fracs1.concat(fracs4)
+        var fracs = FRACS1.concat(FRACS4)
         for (var i = 0; i < fracs.length; i++){
             if (s.includes(fracs[i])){
                 return hanzi2frac(s)
@@ -84,22 +85,122 @@ function hanzi2num(s){
     }
 }
 
+function num2hanzi(n,nfrac=6){
+    function int2hanzi(n){
+        if (n < 10){
+            return NUMS[n];
+        }
+        var s = "";
+        var z = -1;
+        for (var i = MULTS4.length-1; i>=0; i--){
+            var m = Math.pow(10000,i+1);
+            var k = Math.floor(n / m)
+            if (k>0){
+                n = n % m;
+                s+=int2hanzi(k)+MULTS4[i];
+                z = 0;
+            }else if (z == 0){
+                s+="零"
+                z = 1;
+            }
+        }
+        for (var i = MULTS1.length-1; i>=0; i--){
+            var m = Math.pow(10,i+1);
+            var k = Math.floor(n / m)
+            if (k>0){
+                n = n % m;
+                s+=int2hanzi(k)+MULTS1[i];
+                z = 0;
+            }else if (z == 0){
+
+                s+="零"
+                z = 1;
+            }
+            
+        }
+        if (n){
+            s += int2hanzi(n)
+        }
+        if (s[s.length-1]=="零"){
+            s = s.slice(0,s.length-1);
+        }
+        return s;
+    }
+    function frac2hanzi(n){
+        var mfrac = Math.pow(0.1,nfrac);
+        var s = "";
+        var z = -1;
+        for (var i = 0; i < FRACS1.length; i++){
+
+            var m = Math.pow(0.1,i+1);
+            if (m < mfrac){
+                break;
+            }
+            var k = Math.floor(n/m);
+            if (k>0){
+                n -= k*m;
+                s += int2hanzi(k)+FRACS1[i];
+                z = 0;
+            }else if (z == 0){
+                s += "零";
+                z = 1;
+            }
+        }
+        for (var i = 0; i < FRACS4.length; i++){
+            var m = Math.pow(0.0001,i+1)*(1e-8);
+            if (m < mfrac){
+                break;
+            }
+            var k = Math.floor(n/m);
+            if (k>0){
+                n -= k*m;
+                s += int2hanzi(k)+FRACS4[i];
+                z = 0;
+            }else if (z == 0){
+                s += "零";
+                z = 1;
+            }
+        }
+        if (s[s.length-1]=="零"){
+            s = s.slice(0,s.length-1);
+        }
+        return s;
+    }
+
+    if (n < 0){
+        return "負"+int2hanzi(-n);
+    }
+    var intn = Math.floor(n);
+    if (intn==n){
+        return int2hanzi(n);
+    }else{
+        return int2hanzi(intn)+"又"+frac2hanzi(n-intn);
+    }
+}
+
 
 
 function test_hanzi2num(){
-    console.log(hanzi2num("二十一京二千三百四十五兆六千七百八十亿零九百万零二百五十有一"))
-    console.log(hanzi2num("无量大数"))
+    console.log(num2hanzi(0.53212121222))
+    console.log(num2hanzi(0.5))
+    console.log(hanzi2num(num2hanzi(0.532)))
+    console.log(num2hanzi(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")))
+    console.log(num2hanzi(-(10**10+99)))
+    console.log(num2hanzi(0))
+    console.log(hanzi2num("一沙一塵"))
+    console.log(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一"))
+    console.log(hanzi2num("無量大數"))
     console.log(hanzi2num("三十二又一分"))
-    console.log(hanzi2num("二分七厘三毫一丝二忽三微四纤五沙三千万尘一埃"))
-    console.log(hanzi2num("刹那"))
-    console.log(hanzi2num("三千万埃"))
+    console.log(hanzi2num("二分七釐三毫一絲二忽三微四纖五沙三千萬塵一埃"))
+    console.log(hanzi2num("剎那"))
+    console.log(hanzi2num("三千萬埃"))
     console.log(hanzi2num("三十二"))
-    console.log(hanzi2num("不可思议"))
-    console.log(hanzi2num("一万"))
+    console.log(hanzi2num("不可思議"))
+    console.log(hanzi2num("一萬"))
     console.log(hanzi2num("零"))
 }
 
 try{
-    module.exports = hanzi2num;
+    module.exports = {hanzi2num,num2hanzi};
 }catch(e){}
 // test_hanzi2num()

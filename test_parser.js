@@ -17,4 +17,4 @@ function runAll(){
 	}
 }
 
-runExample("sieve")
+runExample("beer")
