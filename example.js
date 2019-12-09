@@ -32,3 +32,4 @@ var _ans1="问天地之好在";console.log(_ans1);var JIA3=30;var _ans2="甲之�
 
 console.log(JIE1CHENG2(5))
 
+var WU4=1;while (true){if (WU4==3){break;};var _ans1=1+WU4;WU4=_ans1;};

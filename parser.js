@@ -16,6 +16,7 @@ var KEYWORDS = {
 	"名之曰":["name"],
 	"施":["call"],
 	"曰":["assgn"],
+	"噫":["discard"],
 	"。":["endl"],
 
 	"昔之":["rassgn",'a'],
@@ -33,6 +34,8 @@ var KEYWORDS = {
 	"也":["ctrl","end"],
 	"凡":["ctrl","for"],
 	"中之":["ctrl","forin"],
+	"恒为是":["ctrl","while"],
+	"乃止":["ctrl","break"],
 
 	"若非":["ctrl","else"],
 	"若":["ctrl","if"],
@@ -52,6 +55,9 @@ var KEYWORDS = {
 	"减":["op","-"],
 	"乘":["op","*"],
 	"除":["op","/"],
+	"中有阳乎":["lop","||"],
+	"中无阴乎":["lop","&&"],
+	"变":["not"],
 
 	"以":["operand","l"],
 	"于":["operand","r"],
@@ -327,6 +333,9 @@ function tokens2asc(tokens){
 		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="retvoid"){
 			asc.push({op:"return"})
 			i+=1;
+		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="break"){
+			asc.push({op:"break"});
+			i+=1;
 		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="else"){
 			asc.push({op:"else"})
 			i+=1;
@@ -335,10 +344,18 @@ function tokens2asc(tokens){
 			var x = {op:"op"+tokens[i][1],lhs:tokens[i+1],rhs:tokens[i+3]};
 			asc.push(x)
 			i+=4
+		}else if (tokens[i][0]=="not"){
+			asc.push({op:"not",value:tokens[i+1]});
+			i+=2;
 		}else if (tokens[i][0]=="name"){
 			assert(tokens[i+1][0]=="iden")
-			asc.push({op:"name",name:tokens[i+1][1]});
+			var x = {op:"name",names:[tokens[i+1][1]]};
 			i+=2;
+			while(tokens[i]&&tokens[i][0]=="assgn"){
+				x.names.push(tokens[i+1][1]);
+				i+=2;
+			}
+			asc.push(x);
 		}else if (tokens[i][0]=="call"){
 			var x = {op:"call",fun:tokens[i+1][1],args:[]};
 			i+=2;
@@ -349,9 +366,14 @@ function tokens2asc(tokens){
 			asc.push(x);
 		}else if (tokens[i][0]=="ctnr"&&tokens[i][1]=="push"){
 			assert(tokens[i+2][0]=="operand"&&tokens[i+2][1]=="l");
-			var x = {op:"push",container:tokens[i+1][1],value:tokens[i+3]};
-			asc.push(x);
+			var x = {op:"push",container:tokens[i+1][1],values:[tokens[i+3]]};
 			i+=4;
+			while (tokens[i]&&tokens[i][0]=="operand"&&tokens[i][1]=="l"){
+				x.values.push(tokens[i+1]);
+				i+=2;
+			}
+			asc.push(x);
+
 		}else if (tokens[i][0]=="expr"&&tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="subs"){
 			assert(tokens[i+1][0]=="iden");
 			var x = {op:"subscript",container:tokens[i+1][1],value:tokens[i+3]};
@@ -360,6 +382,12 @@ function tokens2asc(tokens){
 		}else if (tokens[i][0]=="expr"&&tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="len"){
 			assert(tokens[i][0]=="iden");
 			var x = {op:"length",container:tokens[i+1][1]}
+			asc.push(x);
+			i+=3;
+		}else if (tokens[i][0]=="expr"&&tokens[i+3]&&tokens[i+3][0]=="lop"){
+			var x = {op:"op"+tokens[i+3][1],lhs:tokens[i+1],rhs:tokens[i+2]}
+			asc.push(x);
+			i+=4;
 		}else if (tokens[i][0]=="ctnr"&&tokens[i][1]=="cat"){
 			var x = {op:"cat",containers:[tokens[i+1][1]]}
 			i+=2;
@@ -372,11 +400,17 @@ function tokens2asc(tokens){
 			var x = {op:"for",container:tokens[i+1][1],iterator:tokens[i+3][1]}
 			i+=4;
 			asc.push(x)
+		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="while"){
+			asc.push({op:"while"});
+			i++;
 		}else if (tokens[i][0]=="rassgn"&&tokens[i][1]=="a"){
 			assert(tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="conj");
 			var x = {op:"reassign",lhs:tokens[i+1],rhs:tokens[i+4]}
 			i+=6;
 			asc.push(x)
+		}else if (tokens[i][0]=="discard"){
+			asc.push({op:"discard"}),
+			i++;
 		}else{
 			console.log("Unrecognized",tokens[i])
 			i++;
@@ -492,8 +526,11 @@ function asc2js(asc){
 			js += `var ${nextTmpVar()}=${a.lhs[1]}${a.op.slice(2)}${a.rhs[1]};`
 			strayvar ++;
 		}else if (a.op == "name"){
-			strayvar--;
-			js += `var ${a.name}=${currTmpVar()};`
+			
+			for (var j = 0; j < a.names.length; j++){
+				js += `var ${a.names[j]}=${prevTmpVar(strayvar-j)};`
+			}
+			strayvar-=a.names.length;
 		}else if (a.op == "call"){
 			js += `var ${nextTmpVar()}=${a.fun}(${a.args.map(x=>x[1]).join(",")});`
 			strayvar ++;
@@ -510,7 +547,7 @@ function asc2js(asc){
 			js += `var ${nextTmpVar()}=${a.containers[0]}.concat(`+a.containers.slice(1).join(").concat(")+");"
 			strayvar ++;
 		}else if (a.op == "push"){
-			js += `${a.container}.push(${a.value[1]});`
+			js += `${a.container}.push(${a.values.map(x=>x[1]).join(",")});`
 		}else if (a.op == "for"){
 			if (a.container){
 				js += `${a.container}.forEach(function(${a.iterator}){`
@@ -520,6 +557,14 @@ function asc2js(asc){
 				process.exit();
 			}
 			curlvl++;
+		}else if (a.op == "while"){
+			js += "while (true){";
+			curlvl++;
+		}else if (a.op == "break"){
+			js += "break;";
+		}else if (a.op == "not"){
+			js += `var ${nextTmpVar()}=!${a.value[1]};`
+			strayvar++;
 		}else if (a.op == "reassign"){
 			var rhs = a.rhs;
 			if (rhs[0]=="ans"){
@@ -527,6 +572,8 @@ function asc2js(asc){
 				rhs[1] = currTmpVar();
 			}
 			js += `${a.lhs[1]}=${rhs[1]};`
+		}else if (a.op == "discard"){
+			strayvar = 0;
 		}else{
 			console.log(a.op)
 		}

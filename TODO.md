@@ -1,9 +1,10 @@
-- multiple push to array
+- ~~multiple push to array~~
 - syntax highlighting
 - auto indent / format
 - compile to python
 - compile to c
-- logical and / or
+- ~~logical and / or~~
 - for loop with iterator
-- while loop
+- ~~while loop~~
 - ASC edge case near end of program
+- strict parse error checking
