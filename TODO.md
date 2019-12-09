@@ -1,5 +1,5 @@
 - ~~multiple push to array~~
-- syntax highlighting
+- ~~syntax highlighting~~
 - auto indent / format
 - compile to python
 - compile to c
@@ -8,4 +8,5 @@
 - ~~while loop~~
 - ASC edge case near end of program
 - strict parse error checking
-- traditional chinese
+- ~~traditional chinese~~
+- negative numbers

@@ -36,7 +36,9 @@ var KEYWORDS = {
 	"也":["ctrl","end"],
 	"凡":["ctrl","for"],
 	"中之":["ctrl","forin"],
-	"恆為是":["ctrl","while"],
+	"恆為是":["ctrl","whiletrue"],
+	"為是":["ctrl","whilen0"],
+	"遍":["ctrl","whilen1"],
 	"乃止":["ctrl","break"],
 
 	"若非":["ctrl","else"],
@@ -120,6 +122,11 @@ function assert(b){
 	}
 }
 var tmpVarCnt = 0;
+var randVarCnt = 0;
+function randVar(){
+	randVarCnt++;
+	return "_rand"+randVarCnt;
+}
 function currTmpVar(){
 	return "_ans"+tmpVarCnt;
 }
@@ -418,13 +425,24 @@ function tokens2asc(tokens){
 			var x = {op:"for",container:tokens[i+1][1],iterator:tokens[i+3][1]}
 			i+=4;
 			asc.push(x)
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="while"){
-			asc.push({op:"while"});
+		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="whiletrue"){
+			asc.push({op:"whiletrue"});
 			i++;
+		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="whilen0"){
+			assert(tokens[i+2][1]=="whilen1");
+			asc.push({op:"whilen",value:tokens[i+1]});
+			i+=3;
 		}else if (tokens[i][0]=="rassgn"&&tokens[i][1]=="a"){
-			assert(tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="conj");
-			var x = {op:"reassign",lhs:tokens[i+1],rhs:tokens[i+4]}
-			i+=6;
+			var x = {op:"reassign",lhs:tokens[i+1]}
+			if (tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="subs"){
+				x.rhs = tokens[i+6];
+				x.lhssubs = tokens[i+3];
+				i+=8;
+			}else{
+				assert(tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="conj");
+				x.rhs = tokens[i+4];
+				i+=6;
+			}
 			asc.push(x)
 		}else if (tokens[i][0]=="discard"){
 			asc.push({op:"discard"});
@@ -525,7 +543,7 @@ function asc2js(asc){
 						if (a.test[j+1][1]=="rest"){
 							js += ".slice(1)"
 						}else{
-							js += "["+(a.test[j+1][1]-1)+"]"
+							js += "["+(a.test[j+1][1])+"-1]"
 						}
 						j++;
 					}else if (a.test[j][1]=="len"){
@@ -565,7 +583,7 @@ function asc2js(asc){
 				js += `var ${nextTmpVar()}=${a.container}.slice(1);`
 				strayvar ++;
 			}else{
-				js += `var ${nextTmpVar()}=${a.container}[${idx-1}];`
+				js += `var ${nextTmpVar()}=${a.container}[${idx}-1];`
 				strayvar ++;
 			}
 		}else if (a.op == "cat"){
@@ -582,8 +600,12 @@ function asc2js(asc){
 				process.exit();
 			}
 			curlvl++;
-		}else if (a.op == "while"){
+		}else if (a.op == "whiletrue"){
 			js += "while (true){";
+			curlvl++;
+		}else if (a.op == "whilen"){
+			var v = randVar();
+			js += `for (var ${v}=0;${v}<${a.value[1]};${v}++){`;
 			curlvl++;
 		}else if (a.op == "break"){
 			js += "break;";
@@ -596,7 +618,11 @@ function asc2js(asc){
 				strayvar--;
 				rhs[1] = currTmpVar();
 			}
-			js += `${a.lhs[1]}=${rhs[1]};`
+			var lhs = a.lhs[1];
+			if (a.lhssubs){
+				lhs += `[${a.lhssubs[1]}-1]`
+			}
+			js += `${lhs}=${rhs[1]};`
 		}else if (a.op == "discard"){
 			strayvar = 0;
 		}else if (a.op == "comment"){
@@ -644,10 +670,4 @@ try{
     module.exports = {KEYWORDS,NUMBER_KEYWORDS,SYNONYMS,compile};
 }catch(e){}
 
-
-;;(function test_parser(){
-	var txt = fs.readFileSync("example.txt").toString()
-	compile('js',txt,{romanizeIdentifiers:true})
-})
-// ()
 
