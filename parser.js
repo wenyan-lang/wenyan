@@ -62,6 +62,7 @@ var KEYWORDS = {
 	"中有陽乎":["lop","||"],
 	"中無陰乎":["lop","&&"],
 	"變":["not"],
+	"所餘幾何":["mod"],
 
 	"以":["operand","l"],
 	"於":["operand","r"],
@@ -80,6 +81,7 @@ var KEYWORDS = {
 }
 var ke = Object.entries(KEYWORDS);
 ke.sort((a,b)=>b[0].length-a[0].length);
+if (!Object.fromEntries){Object.fromEntries=(l)=>{var o={};l.map(x=>o[x[0]]=x[1]);return o}}
 KEYWORDS=Object.fromEntries(ke);
 const SYNONYMS = {
 	"今有":"吾有",
@@ -178,7 +180,7 @@ function wy2tokens(txt){
 			idt = true;
 			tok="";
 		}else if (txt[i]=="】"){
-			tokens.push(["lit",tok])
+			tokens.push(["lit",`"${tok}"`])
 			idt = false;
 			tok = "";
 		}else{
@@ -359,7 +361,7 @@ function tokens2asc(tokens){
 			i+=1;
 		}else if (tokens[i][0]=="op"){
 			assert(tokens[i+2][0]=="operand")
-			var x = {op:"op"+tokens[i][1]};
+			var x={};
 			if (tokens[i+2][1]=="l"){
 				x.lhs=tokens[i+1];
 				x.rhs=tokens[i+3];
@@ -367,8 +369,14 @@ function tokens2asc(tokens){
 				x.lhs=tokens[i+3];
 				x.rhs=tokens[i+1];
 			}
+			if (tokens[i][1]=="/" && tokens[i+4][0]=="mod"){
+				x.op="op"+"%";
+				i+=5;
+			}else{
+				x.op="op"+tokens[i][1];
+				i+=4;
+			}
 			asc.push(x)
-			i+=4
 		}else if (tokens[i][0]=="not"){
 			asc.push({op:"not",value:tokens[i+1]});
 			i+=2;
@@ -478,9 +486,6 @@ function asc2js(asc){
 					name = nextTmpVar();
 					strayvar ++;
 				}
-				if (a.values[j][0]=="lit"){
-					value=`"${value}"`
-				}
 				if (value==undefined){
 
 					if (a.type=="arr"){
@@ -518,6 +523,9 @@ function asc2js(asc){
 			}
 			js+=")"
 		}else if (a.op == "funbody"){
+			if (asc[i-1].op != 'fun'){
+				js += prevfun+"=function()"
+			}
 			js += "{"
 			curlvl++;
 		}else if (a.op == "funend"){
@@ -560,7 +568,12 @@ function asc2js(asc){
 			js += "}else{"
 		}else if (a.op == "return"){
 			if (a.value){
-				js += `return ${a.value[1]};`;
+				if (a.value[0] == "ans"){
+					js += `return ${currTmpVar()};`;
+					strayvar=0;
+				}else{
+					js += `return ${a.value[1]};`;
+				}
 			}else{
 				js += `return;`;
 			}
@@ -570,10 +583,10 @@ function asc2js(asc){
 			assert(!(a.lhs[0] == "ans" && a.rhs[0] == "ans"));
 			if (a.lhs[0] == "ans"){
 				a.lhs = ["ans",currTmpVar()]
-				strayvar--;
+				strayvar=0;
 			}else if (a.rhs[0] == "ans"){
 				a.rhs = ["ans",currTmpVar()]
-				strayvar--;
+				strayvar=0;
 			}
 			js += `var ${nextTmpVar()}=${a.lhs[1]}${a.op.slice(2)}${a.rhs[1]};`
 			strayvar ++;
@@ -619,12 +632,18 @@ function asc2js(asc){
 		}else if (a.op == "break"){
 			js += "break;";
 		}else if (a.op == "not"){
-			js += `var ${nextTmpVar()}=!${a.value[1]};`
+			if (a.value[0]=="ans"){
+				var v = currTmpVar()
+				js += `var ${nextTmpVar()}=!${v};`
+				strayvar=0;
+			}else{
+				js += `var ${nextTmpVar()}=!${a.value[1]};`
+			}
 			strayvar++;
 		}else if (a.op == "reassign"){
 			var rhs = a.rhs;
 			if (rhs[0]=="ans"){
-				strayvar--;
+				strayvar=0;
 				rhs[1] = currTmpVar();
 			}
 			var lhs = a.lhs[1];

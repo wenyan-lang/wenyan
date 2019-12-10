@@ -50,7 +50,8 @@ function main(){
 	run();
 }
 
-var html = `<head>
+var html = `<!--GENERATED FILE, DO NOT READ-->
+<head>
 <meta charset="UTF-8">
 <style>
 [contenteditable="true"]:focus {outline: none;}
@@ -61,10 +62,10 @@ pre{tab-size: 4;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-<script src="hanzi2num.js"></script>
-<script src="hanzi2pinyin.js"></script>
-<script src="parser.js"></script>
-<script src="highlight.js"></script>
+<script>${fs.readFileSync("hanzi2num.js").toString()}</script>
+<script>${fs.readFileSync("hanzi2pinyin.js").toString()}</script>
+<script>${fs.readFileSync("parser.js").toString()}</script>
+<script>${fs.readFileSync("highlight.js").toString()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>

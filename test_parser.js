@@ -17,4 +17,4 @@ function runAll(){
 	}
 }
 
-runExample("beer")
+runExample("fizzbuzz")
