@@ -1,6 +1,6 @@
 try{
   const fs = require('fs')
-  const {KEYWORDS,NUMBER_KEYWORDS,SYNONYMS}=require("./parser");
+  const {KEYWORDS,NUMBER_KEYWORDS}=require("./parser");
 }catch(e){}
 
 const DEFAULT_COLORS = {
@@ -67,28 +67,7 @@ var semantic = function(txt){
           if (NUMBER_KEYWORDS.includes(txt[i])){
             out.push("num");
           }else{
-            ok = false;
-            for (var s in SYNONYMS){
-              ok = true;
-              for (var j = 0; j < k.length; j++){
-                if (s[j]!=txt[i+j]){
-                  ok = false;
-                  break;
-                }
-              }
-              if (ok){
-                for (var j = 0; j < s.length; j++){
-                  out.push(KEYWORDS[SYNONYMS[s]][0]);
-                  i++;
-                }
-                i--;
-                break;
-              }
-            }
-            if (!ok){
-              out.push("data")
-            }
-            
+            out.push("data")
           }
         }
       }

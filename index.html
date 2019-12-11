@@ -243,6 +243,7 @@ const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千萬億兆京�
 
 var KEYWORDS = {
 	"吾有":["decl","uninit"],
+	"今有":["decl","uninit"],
 	"有":["decl","init"],
 	"數":["type","num"],
 	"列":["type","arr"],
@@ -254,7 +255,6 @@ var KEYWORDS = {
 	"施":["call"],
 	"曰":["assgn"],
 	"噫":["discard"],
-	"。":["endl"],
 
 	"昔之":["rassgn",'a'],
 	"今":["rassgn",'b'],
@@ -267,8 +267,10 @@ var KEYWORDS = {
 	"之術也":["ctrl","funend1"],
 	"必先得":["ctrl","funarg"],
 	"是術曰":["ctrl","funbody"],
+	"乃行是術曰":["ctrl","funbody"],
 	"欲行是術":["ctrl","funstart"],
 	"也":["ctrl","end"],
+	"云云":["ctrl","end"],
 	"凡":["ctrl","for"],
 	"中之":["ctrl","forin"],
 	"恆為是":["ctrl","whiletrue"],
@@ -299,8 +301,8 @@ var KEYWORDS = {
 	"變":["not"],
 	"所餘幾何":["mod"],
 
-	"以":["operand","l"],
-	"於":["operand","r"],
+	"以":["opord","l"],
+	"於":["opord","r"],
 
 	"之長":["ctnr","len"],
 	"之":["ctnr","subs"],
@@ -318,46 +320,8 @@ var ke = Object.entries(KEYWORDS);
 ke.sort((a,b)=>b[0].length-a[0].length);
 if (!Object.fromEntries){Object.fromEntries=(l)=>{var o={};l.map(x=>o[x[0]]=x[1]);return o}}
 KEYWORDS=Object.fromEntries(ke);
-const SYNONYMS = {
-	"今有":"吾有",
-	"云云":"也",
-	"。":"",
-	"乃行是術曰":"是術曰",
-}
 
-function preprocess(txt){
-	txt = txt.replace(/[\n\r\t ]/g,"");
 
-	txt = txt.replace(/「「/g,"【").replace(/」」/g,"】");
-	var s = txt.replace(/[「」]/g,"$").split("$");
-	
-	var t = "";
-	for (var i = 0; i < s.length; i++){
-		if (i % 2 == 0){
-			var u = s[i].replace(/[【】]/g,"$").split("$");
-			for (var j = 0;j < u.length; j++){
-				if (j % 2 == 0){
-					for (var k in SYNONYMS){
-						u[j] = u[j].replace(new RegExp(k,'g'),SYNONYMS[k])
-					}
-					t += u[j];
-				}else{
-					t += "【"+u[j]+"】"
-				}
-			}
-		}else{
-			t += "「"+s[i]+"」"
-		}
-	}
-	return t;
-}
-
-function assert(b){
-	if (!b){
-		console.log("Parse Error");
-		// process.exit();
-	}
-}
 var tmpVarCnt = 0;
 var randVarCnt = 0;
 function randVar(){
@@ -382,40 +346,47 @@ function wy2tokens(txt){
 	var idt = false;
 	var num = false;
 	var data = false;
+
 	var i = 0;
 
 	function enddata(){
 		if (data){
-			tokens.push(["data",tok]);
+			tokens.push(["data",tok,i]);
 			data = false;
 			tok = "";
 		}
 	}
 	function endnum(){
 		if (num){
-			tokens.push(["num",hanzi2num(tok)])
+			tokens.push(["num",hanzi2num(tok),i])
 			tok = ""
 			num = false;
 		}
 	}
 
 	while (i < txt.length){
-		if (txt[i] == "「"){
+		if (txt[i]=="。"||txt[i]=="\n"||txt[i]=="\r"||txt[i]=="\t"||txt[i]==" "){
+			if (idt||data){
+				tok += txt[i];
+			}
+		}else if (txt[i]=="「"&&txt[i+1]=="「"){
+			enddata();
+			endnum();
+			idt = true;
+			tok="";
+			i++;
+		}else if (txt[i]=="」"&&txt[i+1]=="」"){
+			tokens.push(["lit",`"${tok}"`,i])
+			idt = false;
+			tok = "";
+			i++;
+		}else if (txt[i] == "「"){
 			enddata();
 			endnum();
 			idt = true;
 			tok="";
 		}else if (txt[i] == "」"){
-			tokens.push(["iden",tok])
-			idt = false;
-			tok = "";
-		}else if (txt[i]=="【"){
-			enddata();
-			endnum();
-			idt = true;
-			tok="";
-		}else if (txt[i]=="】"){
-			tokens.push(["lit",`"${tok}"`])
+			tokens.push(["iden",tok,i])
 			idt = false;
 			tok = "";
 		}else{
@@ -441,8 +412,12 @@ function wy2tokens(txt){
 					}
 					if (ok){
 						enddata();
-						tokens.push(KEYWORDS[k])
+						var kinfo = KEYWORDS[k];
+						while (kinfo.length<2){
+							kinfo.push(undefined);
+						}
 						i += k.length-1;
+						tokens.push(kinfo.concat([i]))
 						break;
 					}
 				}
@@ -465,7 +440,7 @@ function wy2tokens(txt){
 		}else if (data){
 			tokens.push(["data",tok]);
 		}else{
-			assert(false);
+			console.log("[Tokenizer Error] Unterminated identifier.")
 		}
 	}
 	return tokens;
@@ -502,59 +477,76 @@ function tokenRomanize(tokens){
 	}
 }
 
-function tokens2asc(tokens){
+function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}`)){
 
 	var asc = []
 	var i = 0;
 	while (i < tokens.length){
-		if (tokens[i][0]=="decl" && tokens[i][1] == "uninit"){
-			assert(tokens[i+1][0]=="num")
-			assert(tokens[i+2][0] == "type")
-			var x = {op:"var",count:tokens[i+1][1],type:tokens[i+2][1],values:[],names:[]};
+		var pos = gettok(i,2);
+		var cmd = gettok(i,0);
+
+		function gettok(idx,jdx){
+			if (tokens[idx]==undefined){
+				assert(`Unexpected EOF`,pos,false);
+			}
+			return tokens[idx][jdx];
+		}
+
+		function typeassert(idx,good,reason){
+			var typ=gettok(idx,0);
+			assert(`<${cmd}> Expecting ${good.join("/")}${reason?(" for "+reason):""}, found ${typ}`,pos,good.includes(typ))
+		}
+
+		if (gettok(i,0)=="decl" && gettok(i,1) == "uninit"){
+
+			typeassert(i+1,["num","iden"],"variable count")
+			typeassert(i+2,["type"],"variable type")
+
+			var x = {op:"var",count:gettok(i+1,1),type:gettok(i+2,1),values:[],names:[],pos};
 			i+=3;
-			while (tokens[i]&&tokens[i][0] == "assgn"){
+			while (tokens[i]&&gettok(i,0) == "assgn"){
 				x.values.push(tokens[i+1]);
 				i+=2;
 			}
-			if (tokens[i]&&tokens[i][0] == "name"){
-				x.names.push(tokens[i+1][1]);
+			if (tokens[i]&&gettok(i,0) == "name"){
+				x.names.push(gettok(i+1,1));
 				i+=2;
 			}
-			while (tokens[i]&&tokens[i][0] == "assgn"){
-				x.names.push(tokens[i+1][1]);
+			while (tokens[i]&&gettok(i,0) == "assgn"){
+				x.names.push(gettok(i+1,1));
 				i+=2;
 			}
 			asc.push(x);
 
-		}else if (tokens[i][0]=="decl" && tokens[i][1] == "init"){
-			assert(tokens[i+1][0]=="type");
-			assert((tokens[i+2][0] == "data" || tokens[i+2][0] == "num"));
-
-			var x = {op:"var",count:1,type:tokens[i+1][1],values:[tokens[i+2]]};
+		}else if (gettok(i,0)=="decl" && gettok(i,1) == "init"){
+			typeassert(i+1,["type"],"variable type");
+			typeassert(i+2,["data","num","lit","iden","bool"],"variable initialization");
+			
+			var x = {op:"var",count:1,type:gettok(i+1,1),values:[tokens[i+2]],pos};
 			i+=3;
-			if (tokens[i][0] == "name"){
-				x.names = [tokens[i+1][1]];
+			if (gettok(i,0) == "name"){
+				x.names = [gettok(i+1,1)];
 				i+=2;
 			}
 			asc.push(x);
-		}else if (tokens[i][0]=="print"){
-			asc.push({op:"print"});
+		}else if (gettok(i,0)=="print"){
+			asc.push({op:"print",pos});
 			i++;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="funstart"){
-			var x = {op:"fun",arity:0,args:[]};
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funstart"){
+			var x = {op:"fun",arity:0,args:[],pos};
 			i++;
-			if (tokens[i][0]=="ctrl"&&tokens[i][1]=="funarg"){
+			if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funarg"){
 				i++;
-				while (!(tokens[i][0]=="ctrl"&&tokens[i][1]=="funbody")){
-					if (tokens[i][0]=="num"){
-						assert(tokens[i+1][0]=="type")
-						var typ = tokens[i+1][1];
-						var cnt = tokens[i][1];
+				while (!(gettok(i,0)=="ctrl"&&gettok(i,1)=="funbody")){
+					if (gettok(i,0)=="num"){
+						typeassert(i+1,["type"],"argument type")
+						var typ = gettok(i+1,1);
+						var cnt = gettok(i,1);
 						x.arity+=cnt
 						i+=2;
 						for (var j = 0; j < cnt; j++){
-							assert(tokens[i+j*2][0]=="assgn");
-							assert(tokens[i+j*2+1][0]=="iden");
+							typeassert(i+j*2,["assgn"],"another argument")
+							typeassert(i+j*2+1,["iden"],"argument")
 							x.args.push({name:tokens[i+j*2+1][1],type:typ});
 						}
 						i+=cnt*2;
@@ -563,135 +555,139 @@ function tokens2asc(tokens){
 				
 			}
 			asc.push(x)
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="funbody"){
-			asc.push({op:"funbody"});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funbody"){
+			asc.push({op:"funbody",pos});
 			i++;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="funend0"){
-			assert(tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="funend1"&&tokens[i+1][0]=="iden")
-			asc.push({op:"funend"});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funend0"){
+			assert(`<${cmd}> Incorrect function end`,
+				pos,gettok(i+2,0)=="ctrl"&&gettok(i+2,1)=="funend1"&&gettok(i+1,0)=="iden")
+			asc.push({op:"funend",pos});
 			i+=3;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="if"){
-			var x = {op:"if",test:[]};
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="if"){
+			var x = {op:"if",test:[],pos};
 			i++;
-			while(!(tokens[i][0]=="ctrl"&&tokens[i][1]=="conj")){
+			while(!(gettok(i,0)=="ctrl"&&gettok(i,1)=="conj")){
 				x.test.push(tokens[i])
 				i++;
 			}
 			i++;
 			asc.push(x)
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="end"){
-			asc.push({op:"end"})
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="end"){
+			asc.push({op:"end",pos})
 			i++;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="ret"){
-			asc.push({op:"return",value:tokens[i+1]})
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="ret"){
+			asc.push({op:"return",value:tokens[i+1],pos})
 			i+=2;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="retvoid"){
-			asc.push({op:"return"})
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="retvoid"){
+			asc.push({op:"return",pos})
 			i+=1;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="break"){
-			asc.push({op:"break"});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="break"){
+			asc.push({op:"break",pos});
 			i+=1;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="else"){
-			asc.push({op:"else"})
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="else"){
+			asc.push({op:"else",pos})
 			i+=1;
-		}else if (tokens[i][0]=="op"){
-			assert(tokens[i+2][0]=="operand")
+		}else if (gettok(i,0)=="op"){
+			typeassert(i+2,["opord"])
 			var x={};
-			if (tokens[i+2][1]=="l"){
+			if (gettok(i+2,1)=="l"){
 				x.lhs=tokens[i+1];
 				x.rhs=tokens[i+3];
 			}else{
 				x.lhs=tokens[i+3];
 				x.rhs=tokens[i+1];
 			}
-			if (tokens[i][1]=="/" && tokens[i+4][0]=="mod"){
+			if (gettok(i,1)=="/" && gettok(i+4,0)=="mod"){
 				x.op="op"+"%";
 				i+=5;
 			}else{
-				x.op="op"+tokens[i][1];
+				x.op="op"+gettok(i,1);
 				i+=4;
 			}
 			asc.push(x)
-		}else if (tokens[i][0]=="not"){
-			asc.push({op:"not",value:tokens[i+1]});
+		}else if (gettok(i,0)=="not"){
+			asc.push({op:"not",value:tokens[i+1],pos});
 			i+=2;
-		}else if (tokens[i][0]=="name"){
-			assert(tokens[i+1][0]=="iden")
-			var x = {op:"name",names:[tokens[i+1][1]]};
+		}else if (gettok(i,0)=="name"){
+			typeassert(i+1,["iden"])
+			var x = {op:"name",names:[gettok(i+1,1)],pos};
 			i+=2;
-			while(tokens[i]&&tokens[i][0]=="assgn"){
-				x.names.push(tokens[i+1][1]);
+			while(tokens[i]&&gettok(i,0)=="assgn"){
+				x.names.push(gettok(i+1,1));
 				i+=2;
 			}
 			asc.push(x);
-		}else if (tokens[i][0]=="call"){
-			var x = {op:"call",fun:tokens[i+1][1],args:[]};
+		}else if (gettok(i,0)=="call"){
+			
+			var x = {op:"call",fun:gettok(i+1,1),args:[],pos};
 			i+=2;
-			while(tokens[i]&&tokens[i][0]=="operand"&&tokens[i][1]=="r"){
+			while(tokens[i]&&gettok(i,0)=="opord"&&gettok(i,1)=="r"){
+				typeassert(i+1,["data","num","lit","iden","bool"])
 				x.args.push(tokens[i+1]);
 				i+=2;
 			}
 			asc.push(x);
-		}else if (tokens[i][0]=="ctnr"&&tokens[i][1]=="push"){
-			assert(tokens[i+2][0]=="operand"&&tokens[i+2][1]=="l");
-			var x = {op:"push",container:tokens[i+1][1],values:[tokens[i+3]]};
+		}else if (gettok(i,0)=="ctnr"&&gettok(i,1)=="push"){
+			typeassert(i+2,["opord"])
+			assert(`<${cmd}> Only opord l allowed`,pos,gettok(i+2,1)=="l");
+			var x = {op:"push",container:gettok(i+1,1),values:[tokens[i+3]],pos};
 			i+=4;
-			while (tokens[i]&&tokens[i][0]=="operand"&&tokens[i][1]=="l"){
+			while (tokens[i]&&gettok(i,0)=="opord"&&gettok(i,1)=="l"){
 				x.values.push(tokens[i+1]);
 				i+=2;
 			}
 			asc.push(x);
 
-		}else if (tokens[i][0]=="expr"&&tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="subs"){
-			assert(tokens[i+1][0]=="iden");
-			var x = {op:"subscript",container:tokens[i+1][1],value:tokens[i+3]};
+		}else if (gettok(i,0)=="expr"&&gettok(i+2,0)=="ctnr"&&gettok(i+2,1)=="subs"){
+			typeassert(i+1,["iden","lit"]);
+			var x = {op:"subscript",container:gettok(i+1,1),value:tokens[i+3],pos};
 			asc.push(x);
 			i+=4;
-		}else if (tokens[i][0]=="expr"&&tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="len"){
-			assert(tokens[i][0]=="iden");
-			var x = {op:"length",container:tokens[i+1][1]}
+		}else if (gettok(i,0)=="expr"&&gettok(i+2,0)=="ctnr"&&gettok(i+2,1)=="len"){
+			typeassert(i+1,["iden","lit"]);
+			var x = {op:"length",container:gettok(i+1,1),pos}
 			asc.push(x);
 			i+=3;
-		}else if (tokens[i][0]=="expr"&&tokens[i+3]&&tokens[i+3][0]=="lop"){
-			var x = {op:"op"+tokens[i+3][1],lhs:tokens[i+1],rhs:tokens[i+2]}
+		}else if (gettok(i,0)=="expr"&&tokens[i+3]&&gettok(i+3,0)=="lop"){
+			var x = {op:"op"+gettok(i+3,1),lhs:tokens[i+1],rhs:tokens[i+2],pos}
 			asc.push(x);
 			i+=4;
-		}else if (tokens[i][0]=="ctnr"&&tokens[i][1]=="cat"){
-			var x = {op:"cat",containers:[tokens[i+1][1]]}
+		}else if (gettok(i,0)=="ctnr"&&gettok(i,1)=="cat"){
+			var x = {op:"cat",containers:[gettok(i+1,1)],pos}
 			i+=2;
-			while(tokens[i][0]=="operand"&&tokens[i][1]=="l"){
-				x.containers.push(tokens[i+1][1]);
+			while(gettok(i,0)=="opord"&&gettok(i,1)=="l"){
+				x.containers.push(gettok(i+1,1));
 				i+=2;
 			}
 			asc.push(x)
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="for"&&tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="forin"){
-			var x = {op:"for",container:tokens[i+1][1],iterator:tokens[i+3][1]}
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="for"&&gettok(i+2,0)=="ctrl"&&gettok(i+2,1)=="forin"){
+			var x = {op:"for",container:gettok(i+1,1),iterator:gettok(i+3,1),pos}
 			i+=4;
 			asc.push(x)
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="whiletrue"){
-			asc.push({op:"whiletrue"});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="whiletrue"){
+			asc.push({op:"whiletrue",pos});
 			i++;
-		}else if (tokens[i][0]=="ctrl"&&tokens[i][1]=="whilen0"){
-			assert(tokens[i+2][1]=="whilen1");
-			asc.push({op:"whilen",value:tokens[i+1]});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="whilen0"){
+			assert(`<${cmd}> Incorrect loop start`,pos,gettok(i+2,1)=="whilen1");
+			asc.push({op:"whilen",value:tokens[i+1],pos});
 			i+=3;
-		}else if (tokens[i][0]=="rassgn"&&tokens[i][1]=="a"){
-			var x = {op:"reassign",lhs:tokens[i+1]}
-			if (tokens[i+2][0]=="ctnr"&&tokens[i+2][1]=="subs"){
+		}else if (gettok(i,0)=="rassgn"&&gettok(i,1)=="a"){
+			var x = {op:"reassign",lhs:tokens[i+1],pos}
+			if (gettok(i+2,0)=="ctnr"&&gettok(i+2,1)=="subs"){
 				x.rhs = tokens[i+6];
 				x.lhssubs = tokens[i+3];
 				i+=8;
 			}else{
-				assert(tokens[i+2][0]=="ctrl"&&tokens[i+2][1]=="conj");
+				assert(`<${cmd}> Missing conj`,pos,gettok(i+2,0)=="ctrl"&&gettok(i+2,1)=="conj");
 				x.rhs = tokens[i+4];
 				i+=6;
 			}
 			asc.push(x)
-		}else if (tokens[i][0]=="discard"){
-			asc.push({op:"discard"});
+		}else if (gettok(i,0)=="discard"){
+			asc.push({op:"discard",pos});
 			i++;
-		}else if (tokens[i][0]=="comment"){
-			asc.push({op:"comment",value:tokens[i+1]});
+		}else if (gettok(i,0)=="comment"){
+			asc.push({op:"comment",value:tokens[i+1],pos});
 			i+=2;
 		}else{
 			console.log("Unrecognized",tokens[i])
@@ -810,7 +806,7 @@ function asc2js(asc){
 		}else if (a.op.startsWith("op")){
 			var lhs = a.lhs
 			var rhs = a.rhs
-			assert(!(a.lhs[0] == "ans" && a.rhs[0] == "ans"));
+			
 			if (a.lhs[0] == "ans"){
 				a.lhs = ["ans",currTmpVar()]
 				strayvar=0;
@@ -844,12 +840,7 @@ function asc2js(asc){
 		}else if (a.op == "push"){
 			js += `${a.container}.push(${a.values.map(x=>x[1]).join(",")});`
 		}else if (a.op == "for"){
-			if (a.container){
-				js += `for (var ${a.iterator} of ${a.container}){`
-			}else{
-				console.log("for loop varient not implemented yet")
-				process.exit();
-			}
+			js += `for (var ${a.iterator} of ${a.container}){`
 			curlvl++;
 		}else if (a.op == "whiletrue"){
 			js += "while (true){";
@@ -892,22 +883,43 @@ function asc2js(asc){
 	return js;	
 }
 
-function compile(lang,txt,options={}){
-	txt = preprocess(txt);
-
-	console.log("\n\n=== [PASS 0] PREPROCESSER ===");
-	console.log(txt);
+function compile(lang,txt,{romanizeIdentifiers=true,errorCallback=process.exit}={}){
+	txt = txt.replace(/\r\n/g,"\n");
 
 	var tokens = wy2tokens(txt);
 
 	console.log("\n\n=== [PASS 1] TOKENIZER ===");
 	console.dir(tokens,{ depth: null , 'maxArrayLength': null})
 
-	if (options.romanizeIdentifiers){
+	if (romanizeIdentifiers){
 		tokenRomanize(tokens);
 	}
 
-	var asc = tokens2asc(tokens);
+	var txtlines = txt.split("\n")
+	function assert(msg,pos,b){
+		var errmsg = "";
+		if (!b){
+			errmsg +=`[Syntax Error] ${msg}\n`;
+			var l = 0;
+			for (var i = 0; i < txtlines.length; i++){
+				l += txtlines[i].length+1;
+				if (l > pos){
+					errmsg+=`Line ${1+i}, Character ${1+pos-(l-txtlines[i].length)}:${txtlines[i]}`
+					break;
+				}
+			}
+			console.log(errmsg)
+		}
+		if (errmsg.length){
+			if (errorCallback){
+				errorCallback(errmsg);
+			}
+			return errmsg
+		}
+		return 0;
+	}
+
+	var asc = tokens2asc(tokens,assert);
 
 	console.log("\n\n=== [PASS 3] ABSTRACT SYNTAX CHAIN ===");
 	console.dir(asc,{ depth: null , 'maxArrayLength': null})
@@ -924,14 +936,14 @@ function compile(lang,txt,options={}){
 }
 
 try{
-    module.exports = {KEYWORDS,NUMBER_KEYWORDS,SYNONYMS,compile};
+    module.exports = {KEYWORDS,NUMBER_KEYWORDS,compile};
 }catch(e){}
 
 
 </script>
 <script>try{
   const fs = require('fs')
-  const {KEYWORDS,NUMBER_KEYWORDS,SYNONYMS}=require("./parser");
+  const {KEYWORDS,NUMBER_KEYWORDS}=require("./parser");
 }catch(e){}
 
 const DEFAULT_COLORS = {
@@ -998,28 +1010,7 @@ var semantic = function(txt){
           if (NUMBER_KEYWORDS.includes(txt[i])){
             out.push("num");
           }else{
-            ok = false;
-            for (var s in SYNONYMS){
-              ok = true;
-              for (var j = 0; j < k.length; j++){
-                if (s[j]!=txt[i+j]){
-                  ok = false;
-                  break;
-                }
-              }
-              if (ok){
-                for (var j = 0; j < s.length; j++){
-                  out.push(KEYWORDS[SYNONYMS[s]][0]);
-                  i++;
-                }
-                i--;
-                break;
-              }
-            }
-            if (!ok){
-              out.push("data")
-            }
-            
+            out.push("data")
           }
         }
       }
@@ -1142,7 +1133,7 @@ var highlight = function(codes){
 	function run(){
 		highlight([ed]);
 		document.getElementById("out").innerText="";
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:true});
+		var code = compile('js',ed.innerText,{romanizeIdentifiers:true,errorCallback:log2div});
 		document.getElementById("js").innerText=js_beautify(code);
 		hljs.highlightBlock(document.getElementById("js"));
 		code = code.replace(/console.log\(/g, `log2div(`);
