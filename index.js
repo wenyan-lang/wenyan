@@ -9,6 +9,7 @@ for (var i = 0; i < files.length; i++){
 	
 function main(){
 	var ed = newEditor(prgms["mandelbrot"])
+	// var ln = newLineNo(ed);
 
 	var sel = document.getElementById("pick-example");
 	for (var k in prgms){
@@ -33,8 +34,9 @@ function main(){
 		eval(code);
 	}
 
-	
+	// document.getElementById("in").append(ln);
 	document.getElementById("in").append(ed);
+	
 	document.getElementById("run").onclick=run;
 	function log2div(){
 		var outdiv = document.getElementById("out");

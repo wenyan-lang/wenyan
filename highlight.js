@@ -1,5 +1,6 @@
 try{
   const fs = require('fs')
+  const {num2hanzi}=require("./hanzi2num")
   const {KEYWORDS,NUMBER_KEYWORDS}=require("./parser");
 }catch(e){}
 
@@ -165,4 +166,31 @@ var highlight = function(codes){
       }
     }
   }
+}
+
+
+function newLineNo(ed){
+  var div = document.createElement("pre");
+  div.style.float="left"
+  div.style.textAlign="right"
+  div.style.color=DEFAULT_COLORS.endl
+  function isRoman(x){
+    return x.replace(/[ -~\t]/g,'').length==0;
+  }
+  function genLineNo(){
+    var ls = ed.innerText.split("\n");
+    var n = ls.length;
+    div.innerText = "";
+    for (var i = 0; i < n; i++){
+      if (!isRoman(ls[i])){
+        div.innerText += num2hanzi(i+1)+" ";
+      }
+      if (i != n-1){
+        div.innerText += "\n";
+      }
+    }
+  }
+  setInterval(genLineNo,1000);
+  genLineNo();
+  return div;
 }
