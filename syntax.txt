@@ -9,7 +9,7 @@ print_statement := 書之
 clean_statement := 噫
 declare_statement := 吾有NUM TYPE
 reference_statement := 名之曰 identifier
-identifier := 「字」
+identifier := 「(字)+」
 comment := 。
 
 
