@@ -17,4 +17,5 @@ function runAll(){
 	}
 }
 
-runExample("fizzbuzz")
+runExample("turing")
+// runAll()

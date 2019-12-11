@@ -247,7 +247,7 @@ function tokenRomanize(tokens){
 		return true;
 	}
 	function isRoman(x){
-		return x.replace(/[a-zA-Z\.]/g,'').length==0;
+		return x.replace(/[ -~]/g,'').length==0;
 	}
 	for (var i = 0; i < tokens.length; i++){
 		if (tokens[i][0]=="iden" && !isRoman(tokens[i][1])){
@@ -471,7 +471,6 @@ function asc2js(asc){
 	var js = ""
 	var prevfun="";
 	var curlvl = 0;
-	var lastparenlvl=-1;
 	var strayvar = 0;
 	for (var i = 0; i < asc.length; i++){
 		var a = asc[i];
@@ -534,10 +533,6 @@ function asc2js(asc){
 		}else if (a.op == "end"){
 			js += "}"
 			curlvl--;
-			if (lastparenlvl == curlvl){
-				js += ")";
-				lastparenlvl = -1;
-			}
 			js += ";"
 			
 		}else if (a.op == "if"){
@@ -615,8 +610,7 @@ function asc2js(asc){
 			js += `${a.container}.push(${a.values.map(x=>x[1]).join(",")});`
 		}else if (a.op == "for"){
 			if (a.container){
-				js += `${a.container}.forEach(function(${a.iterator}){`
-				lastparenlvl = curlvl
+				js += `for (var ${a.iterator} of ${a.container}){`
 			}else{
 				console.log("for loop varient not implemented yet")
 				process.exit();
