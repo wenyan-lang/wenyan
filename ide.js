@@ -76,5 +76,5 @@ pre{tab-size: 4;}
 </body>
 `
 
-fs.writeFileSync("index.html",html);
+fs.writeFileSync("site/ide.html",html);
 
