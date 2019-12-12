@@ -10,3 +10,4 @@
 - strict parse error checking
 - ~~traditional chinese~~
 - negative numbers
+- source mapping
