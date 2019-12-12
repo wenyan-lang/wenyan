@@ -468,6 +468,18 @@ function asc2js(asc){
 	var prevfun="";
 	var curlvl = 0;
 	var strayvar = 0;
+
+	function getval(x){
+		if (x == undefined){
+			return "";
+		}
+		if (x[0]=="ans"){
+			strayvar = 0;
+			return currTmpVar();
+		}
+		return x[1];
+	}
+
 	for (var i = 0; i < asc.length; i++){
 		var a = asc[i];
 		if (a.op == 'var'){
@@ -558,28 +570,12 @@ function asc2js(asc){
 		}else if (a.op == "else"){
 			js += "}else{"
 		}else if (a.op == "return"){
-			if (a.value){
-				if (a.value[0] == "ans"){
-					js += `return ${currTmpVar()};`;
-					strayvar=0;
-				}else{
-					js += `return ${a.value[1]};`;
-				}
-			}else{
-				js += `return;`;
-			}
+			js += `return ${getval(a.value)}`
 		}else if (a.op.startsWith("op")){
-			var lhs = a.lhs
-			var rhs = a.rhs
+			var lhs = getval(a.lhs);
+			var rhs = getval(a.rhs);
 			
-			if (a.lhs[0] == "ans"){
-				a.lhs = ["ans",currTmpVar()]
-				strayvar=0;
-			}else if (a.rhs[0] == "ans"){
-				a.rhs = ["ans",currTmpVar()]
-				strayvar=0;
-			}
-			js += `var ${nextTmpVar()}=${a.lhs[1]}${a.op.slice(2)}${a.rhs[1]};`
+			js += `var ${nextTmpVar()}=${lhs}${a.op.slice(2)}${rhs};`
 			strayvar ++;
 		}else if (a.op == "name"){
 			
@@ -588,11 +584,11 @@ function asc2js(asc){
 			}
 			strayvar-=a.names.length;
 		}else if (a.op == "call"){
-			js += `var ${nextTmpVar()}=${a.fun}(${a.args.map(x=>x[1]).join(",")});`
+			js += `var ${nextTmpVar()}=${a.fun}(${a.args.map(x=>getval(x)).join(",")});`
 			strayvar ++;
 		}else if (a.op == "subscript"){
-			var idx =a.value[1];
-			if (a.value[0]=="ctnr" && idx=="rest"){
+			var idx =getval(a.value);
+			if (idx=="rest"){
 				js += `var ${nextTmpVar()}=${a.container}.slice(1);`
 				strayvar ++;
 			}else{
@@ -603,7 +599,7 @@ function asc2js(asc){
 			js += `var ${nextTmpVar()}=${a.containers[0]}.concat(`+a.containers.slice(1).join(").concat(")+");"
 			strayvar ++;
 		}else if (a.op == "push"){
-			js += `${a.container}.push(${a.values.map(x=>x[1]).join(",")});`
+			js += `${a.container}.push(${a.values.map(x=>getval(x)).join(",")});`
 		}else if (a.op == "for"){
 			js += `for (var ${a.iterator} of ${a.container}){`
 			curlvl++;
@@ -612,34 +608,26 @@ function asc2js(asc){
 			curlvl++;
 		}else if (a.op == "whilen"){
 			var v = randVar();
-			js += `for (var ${v}=0;${v}<${a.value[1]};${v}++){`;
+			js += `for (var ${v}=0;${v}<${getval(a.value)};${v}++){`;
 			curlvl++;
 		}else if (a.op == "break"){
 			js += "break;";
 		}else if (a.op == "not"){
-			if (a.value[0]=="ans"){
-				var v = currTmpVar()
-				js += `var ${nextTmpVar()}=!${v};`
-				strayvar=0;
-			}else{
-				js += `var ${nextTmpVar()}=!${a.value[1]};`
-			}
+			var v = getval(a.value);
+			js += `var ${nextTmpVar()}=!${v};`
+			
 			strayvar++;
 		}else if (a.op == "reassign"){
-			var rhs = a.rhs;
-			if (rhs[0]=="ans"){
-				strayvar=0;
-				rhs[1] = currTmpVar();
-			}
-			var lhs = a.lhs[1];
+			var rhs = getval(a.rhs);
+			var lhs = getval(a.lhs);
 			if (a.lhssubs){
 				lhs += `[${a.lhssubs[1]}-1]`
 			}
-			js += `${lhs}=${rhs[1]};`
+			js += `${lhs}=${rhs};`
 		}else if (a.op == "discard"){
 			strayvar = 0;
 		}else if (a.op == "comment"){
-			js += `/*${a.value[1]}*/`
+			js += `/*${getval(a.value)}*/`
 		}else{
 			console.log(a.op)
 		}
@@ -686,10 +674,10 @@ function compile(lang,txt,{romanizeIdentifiers=true,errorCallback=process.exit}=
 
 	var asc = tokens2asc(tokens,assert);
 
-	console.log("\n\n=== [PASS 3] ABSTRACT SYNTAX CHAIN ===");
+	console.log("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
 	console.dir(asc,{ depth: null , 'maxArrayLength': null})
 
-	console.log("\n\n=== [PASS 4] COMPILER ===");
+	console.log("\n\n=== [PASS 3] COMPILER ===");
 	var targ;
 	if (lang == "js"){
 		targ = asc2js(asc);
