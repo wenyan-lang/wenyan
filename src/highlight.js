@@ -1,7 +1,9 @@
 try{
-  const fs = require('fs')
-  const {num2hanzi}=require("./hanzi2num")
-  const {KEYWORDS,NUMBER_KEYWORDS}=require("./parser");
+  var fs = require('fs')
+  var {num2hanzi}=require("./hanzi2num")
+  var parser = require("./parser");
+  var KEYWORDS = parser.KEYWORDS;
+  var NUMBER_KEYWORDS = parser.NUMBER_KEYWORDS;
 }catch(e){}
 
 const DEFAULT_COLORS = {

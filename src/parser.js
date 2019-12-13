@@ -455,7 +455,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 			asc.push({op:"comment",value:tokens[i+1],pos});
 			i+=2;
 		}else{
-			console.log("Unrecognized",tokens[i])
+			//console.log("Unrecognized",tokens[i])
 			i++;
 		}
 	}
@@ -464,7 +464,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 
 function asc2js(asc){
 
-	var js = ""
+	var js = `"use strict";`;
 	var prevfun="";
 	var curlvl = 0;
 	var strayvar = 0;
@@ -554,7 +554,11 @@ function asc2js(asc){
 						if (a.test[j+1][1]=="rest"){
 							js += ".slice(1)"
 						}else{
-							js += "["+(a.test[j+1][1])+"-1]"
+							if (a.test[j+1][0]=="lit"){
+								js += "["+(a.test[j+1][1])+"]"
+							}else{
+								js += "["+(a.test[j+1][1])+"-1]"
+							}
 						}
 						j++;
 					}else if (a.test[j][1]=="len"){
@@ -592,7 +596,7 @@ function asc2js(asc){
 				js += `var ${nextTmpVar()}=${a.container}.slice(1);`
 				strayvar ++;
 			}else{
-				js += `var ${nextTmpVar()}=${a.container}[${idx}-1];`
+				js += `var ${nextTmpVar()}=${a.container}[${idx}${a.value[0]=="lit"?"":"-1"}];`
 				strayvar ++;
 			}
 		}else if (a.op == "cat"){
@@ -621,7 +625,7 @@ function asc2js(asc){
 			var rhs = getval(a.rhs);
 			var lhs = getval(a.lhs);
 			if (a.lhssubs){
-				lhs += `[${a.lhssubs[1]}-1]`
+				lhs += `[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}]`
 			}
 			js += `${lhs}=${rhs};`
 		}else if (a.op == "discard"){
@@ -629,20 +633,23 @@ function asc2js(asc){
 		}else if (a.op == "comment"){
 			js += `/*${getval(a.value)}*/`
 		}else{
-			console.log(a.op)
+			//console.log(a.op)
 		}
 		// js+="\n"
 	}
 	return js;	
 }
 
-function compile(lang,txt,{romanizeIdentifiers=true,errorCallback=process.exit}={}){
+function compile(lang,txt,{
+		romanizeIdentifiers=true,
+		logCallback=(x)=>((typeof x)=="string")?console.log(x):console.dir(x,{depth:null,'maxArrayLength':null}),
+		errorCallback=process.exit}={}){
 	txt = txt.replace(/\r\n/g,"\n");
 
 	var tokens = wy2tokens(txt);
 
-	console.log("\n\n=== [PASS 1] TOKENIZER ===");
-	console.dir(tokens,{ depth: null , 'maxArrayLength': null})
+	logCallback("\n\n=== [PASS 1] TOKENIZER ===");
+	logCallback(tokens)
 
 	if (romanizeIdentifiers){
 		tokenRomanize(tokens);
@@ -661,7 +668,7 @@ function compile(lang,txt,{romanizeIdentifiers=true,errorCallback=process.exit}=
 					break;
 				}
 			}
-			console.log(errmsg)
+			logCallback(errmsg)
 		}
 		if (errmsg.length){
 			if (errorCallback){
@@ -674,17 +681,20 @@ function compile(lang,txt,{romanizeIdentifiers=true,errorCallback=process.exit}=
 
 	var asc = tokens2asc(tokens,assert);
 
-	console.log("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
-	console.dir(asc,{ depth: null , 'maxArrayLength': null})
+	logCallback("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
+	logCallback(asc)
 
-	console.log("\n\n=== [PASS 3] COMPILER ===");
+	logCallback("\n\n=== [PASS 3] COMPILER ===");
 	var targ;
 	if (lang == "js"){
 		targ = asc2js(asc);
-		console.log(targ);
+	}else if (lang == "py"){
+		try{asc2py = require('./asc2py.js')}catch(e){}
+		targ = asc2py(asc)
 	}else{
-		console.log("Target language not supported.")
+		logCallback("Target language not supported.")
 	}
+	logCallback(targ);
 	return targ;
 }
 

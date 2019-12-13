@@ -1,10 +1,12 @@
 var fs = require('fs');
-var parser = require('./parser');
+var execSync = require('child_process').execSync;
+var parser = require('../src/parser');
+var utils = require('./utils')
 
-var files = fs.readdirSync("examples/");
+var files = fs.readdirSync("../examples/");
 var prgms = {}
 for (var i = 0; i < files.length; i++){
-	prgms[files[i].split(".")[0]]= fs.readFileSync("examples/"+files[i]).toString();
+	prgms[files[i].split(".")[0]]= fs.readFileSync("../examples/"+files[i]).toString();
 }
 	
 function main(){
@@ -64,10 +66,7 @@ pre{tab-size: 4;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-<script>${fs.readFileSync("hanzi2num.js").toString()}</script>
-<script>${fs.readFileSync("hanzi2pinyin.js").toString()}</script>
-<script>${fs.readFileSync("parser.js").toString()}</script>
-<script>${fs.readFileSync("highlight.js").toString()}</script>
+<script>${utils.catsrc()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
@@ -76,5 +75,5 @@ pre{tab-size: 4;}
 </body>
 `
 
-fs.writeFileSync("site/ide.html",html);
+fs.writeFileSync("../site/ide.html",html);
 
