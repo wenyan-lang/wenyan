@@ -1,16 +1,15 @@
 var fs = require('fs');
 var parser = require('../src/parser');
 var execSync = require('child_process').execSync;
+var utils = require('utils')
 
 function runExample(lang,name){
 	var txt = fs.readFileSync("../examples/"+name+".txt").toString();
 	var js = parser.compile(lang,txt,{romanizeIdentifiers:true})
 	console.log("=== EVAL ===")
 	if (lang == "py"){
-		fs.writeFileSync("tmp.py",js);
-		var ret = execSync("which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi; rm tmp.py",{ encoding: 'utf-8' })
-		console.log(ret)
-	}else{
+		console.log(pyeval(js))
+	}else if (lang == "js"){
 		eval(js);
 	}
 }

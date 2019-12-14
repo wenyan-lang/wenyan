@@ -141,7 +141,7 @@ function wy2tokens(txt){
 			tok="";
 			i++;
 		}else if (txt[i]=="」"&&txt[i+1]=="」"){
-			tokens.push(["lit",`"${tok}"`,i])
+			tokens.push(["lit",`"${tok}"`,i+1])
 			idt = false;
 			tok = "";
 			i++;
@@ -464,7 +464,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 
 function asc2js(asc){
 
-	var js = `"use strict";`;
+	var js = ``;//`"use strict";`;
 	var prevfun="";
 	var curlvl = 0;
 	var strayvar = 0;
@@ -699,7 +699,7 @@ function compile(lang,txt,{
 }
 
 try{
-    module.exports = {KEYWORDS,NUMBER_KEYWORDS,compile};
+    module.exports = {KEYWORDS,NUMBER_KEYWORDS,compile,wy2tokens,tokens2asc};
 }catch(e){}
 
 

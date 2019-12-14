@@ -196,3 +196,8 @@ function newLineNo(ed){
   genLineNo();
   return div;
 }
+
+
+try{
+    module.exports = {semantic,DEFAULT_COLORS};
+}catch(e){}

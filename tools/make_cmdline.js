@@ -1,19 +1,56 @@
 const fs = require("fs");
 var execSync = require('child_process').execSync;
 var utils = require('./utils')
+var compileinfo = `${new Date().toLocaleDateString('en-US')}`
 
 function cmdlinecode(){
 	var ARGS = [
-		["--lang","-l",String,"js"],
-		["--roman","-r",Boolean,true],
-		["--output","-o",String,"/dev/stdout"],
-		["--exec","-x",Boolean,false],
-		["--eval","-e",String,""],
-		["--log",undefined,String,"/dev/null"],
+		["--lang",    "-l", String,  "js",          "Language: js/py"],
+		["--roman",   "-r", Boolean, true,          "Romanize identifiers"],
+		["--output",  "-o", String,  "/dev/stdout", "Output file"],
+		["--exec",    "-x", Boolean, false,         "Execute ouput"],
+		["--eval",    "-e", String,  "",            "Give a string instead of a file"],
+		["--log",     null, String,  "/dev/null",   "Log file"],
+		["--inspect", "-i", Boolean, false,         "Interactive REPL"],
 	]
+	var ART = ` ,_ ,_\n \\/ ==\n /\\ []`
+	function printhelp(){
+		ARGS.sort()
+		console.log(ART);
+		console.log("\nWENYAN LANG 文言 Compiler 0.01 ("+compileinfo+")")
+		console.log("\nUsage: wenyan [options] [input files]")
+		console.log("\nOptions:")
+		var ret = "";
+		for (var i = 0; i < ARGS.length; i++){
+			ret += ARGS[i][0].padEnd(9) + " "
+			if (ARGS[i][1]){
+				ret += ARGS[i][1] + " "
+			}else{
+				ret += "   "
+			}
+			ret += ("<"+(typeof ARGS[i][2]())+">").padEnd(9);
+			ret += " : "
+			var s = ARGS[i][4]+" (default: `"+ARGS[i][3]+"')"
+			var n = 50
+			if (s.length < n){
+				ret += s
+			}else{
+				var l = s.split(" ");
+				var m = Math.floor(l.length/2)
+				var s0 = l.slice(0,m);
+				var s1 = l.slice(m);
+				ret += s0 + "\n" + " ".repeat(16)+s1
+			}
+			ret += "\n"
+		}
+		console.log(ret)
+	}
 
 	function argparse(){
-		
+		if (process.argv.length <= 2){
+			printhelp()
+			process.exit();
+		}
 		var args = {};
 		for (var i = 0; i < ARGS.length; i++){
 			args[ARGS[i][0]]=ARGS[i][3];
@@ -44,6 +81,60 @@ function cmdlinecode(){
 		}
 		return {files,args};
 	}
+	function replscope(){
+		function generate(depth){
+			var s0 = "global.__scope=new function(){\n"
+			var s1 = "\n}"
+			for (var i = 0; i < depth; i++){
+				var istr = "__"+(''+i).padStart(8,'0');
+				s0 += `this.evil=function(${istr}){global.__scope=this;var __r=eval(${istr});\n`
+				s1 = `;return __r}` + s1
+			}
+			return eval(s0+s1);
+		}
+		var stackCallSize = 1000;
+		for (var i = stackCallSize; i > 0; i-=200){
+		  try{
+		    generate(i);
+		    stackCallSize = i;
+		    break;
+		  }catch(e){
+		    //console.log(i+ " exceeds max stack size");
+		  }
+		}
+		// console.log("final stack size "+stackCallSize);
+	}
+
+	function repl(args){
+		const readline = require('readline');
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout
+		});
+		global.haserr = false;
+		rl.question('> ', (inp) => {
+			var out = compile('js',
+				inp,
+				{
+					romanizeIdentifiers:args['--roman'],
+					logCallback:writer('/dev/null','a'),
+					errorCallback:function(x){console.error(x);global.haserr = true},
+				}
+			)
+			if (global.haserr){
+				// console.log("Not evaulated.")
+			}else{
+				console.log("\x1b[2m"+out+"\x1b[0m")
+				try{
+					global.__scope.evil(out);
+				}catch(e){
+					console.log(e)
+				}
+			}
+			rl.close();
+			repl(args);
+		});
+	}
 
 	function writer(f,mode){
 		if (f == "/dev/null"){
@@ -66,6 +157,7 @@ function cmdlinecode(){
 
 	function main(){
 		var {files, args} = argparse();
+		var scope_generated = false;
 		var out = compile(args['--lang'],
 			files.map(x=>fs.readFileSync(x).toString()).join("\n")+"\n"+args['--eval'],
 			{
@@ -76,20 +168,43 @@ function cmdlinecode(){
 		)
 		writer(args['--output'],'w')(out);
 		if (args['--exec']){
-			eval(out);
+			if (args['--lang'] == 'js'){
+				if (!args['--inspect']){
+					eval(out);
+				}else{
+					replscope();
+					scope_generated = true;
+					global.__scope.evil(out);
+				}
+			}else if (args['--lang'] == 'py'){
+				var execSync = require('child_process').execSync;
+				fs.writeFileSync("tmp.py",out);
+				var ret = execSync("which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi; rm tmp.py",{ encoding: 'utf-8' })
+				console.log(ret);
+			}
+		}
+		if (args['--inspect']){
+			if (!scope_generated){
+				replscope();
+			}
+			repl(args);
 		}
 		return 0;
 	}
 
 	main();
 }
-
-const minify = utils.uglifier();
-
+var minify;
+try{
+	// delibrateError();
+	minify = utils.uglifier();
+}catch(e){//no wifi?
+	minify = x=>({code:x});
+}
 const nodepath = execSync('which node', { encoding: 'utf-8' });
 var exe = `#!${nodepath}\n`
 exe += utils.catsrc();
-exe+="\n"+cmdlinecode.toString()+"\ncmdlinecode();";
+exe+="\n"+cmdlinecode.toString()+"\nvar compileinfo=`"+compileinfo+"`\ncmdlinecode();";
 fs.writeFileSync("../build/wenyan",minify(exe).code);
 
 execSync('chmod +x ../build/wenyan');
