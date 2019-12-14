@@ -49,7 +49,6 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
-- Even numbers are expressed in Chinese characters
 - [Turing complete]()
 - An [online IDE]()
 - [Examples]() to get started
@@ -122,7 +121,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 |`加一以二。乘其以三。` | `(1+2)*3` |
 |`除十以三。所餘幾何。` | `10%3` |
 |`減七百五十六以四百三十三。名之曰「甲」。` | `var a = 756-433;` |
-|`夫「甲」「乙」中有陽乎。` | `a || b` |
+|`夫「甲」「乙」中有陽乎。` | `a \|\| b` |
 |`夫「甲」「乙」中無陰乎。` | `a && b` |
 
 
