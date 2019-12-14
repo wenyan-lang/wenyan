@@ -159,7 +159,11 @@ function cmdlinecode(){
 		var {files, args} = argparse();
 		var scope_generated = false;
 		var out = compile(args['--lang'],
-			files.map(x=>fs.readFileSync(x).toString()).join("\n")+"\n"+args['--eval'],
+			files.map(x=>
+				x.endsWith('.svg')?
+					 unrender([fs.readFileSync(x).toString()])
+					:fs.readFileSync(x).toString()
+				).join("\n")+"\n"+args['--eval'],
 			{
 				romanizeIdentifiers:args['--roman'],
 				logCallback:writer(args["--log"],'a'),

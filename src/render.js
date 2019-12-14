@@ -1,7 +1,9 @@
-const fs = require('fs')
-const hl = require('./highlight')
-const {num2hanzi} = require('./hanzi2num')
-const parser = require('./parser')
+try{
+	var fs = require('fs')
+	var hl = require('./highlight')
+	var {num2hanzi} = require('./hanzi2num')
+	var parser = require('./parser')
+}catch(e){}
 
 const RED = "#E53"
 const BLACK = "#222"
@@ -33,7 +35,7 @@ const BOOK_COLORS = {
   "num":"#872",
 }
 
-function render(fname,txt){
+function render(fname,txt,{plotResult=false}={}){
 	var svgs = []
 	var W2 = 792
 
@@ -45,10 +47,10 @@ function render(fname,txt){
 	var X1 = 10;
 	var Y1 = H-20;
 
-	var CW = (X0-X1)/14;
-	var CH = 16;
-	var CS = 18;
-	var CO = 3;
+	var CW = (X0-X1)/13;
+	var CH = 18;
+	var CS = 20;
+	var CO = 4;
 
 	var PCT = 40;
 	var PCB = 5;
@@ -60,10 +62,6 @@ function render(fname,txt){
 
 	
 	// txt = txt + txt + txt;
-	// var out = "";
-	// var js = parser.compile('js',txt).replace(/console.log\((.+?)\)/g,`out+=$1+"\\n"`)
-	// eval(js)
-	// txt += "\n"+out
 
 	var tokens = parser.wy2tokens(txt);
 
@@ -83,25 +81,36 @@ function render(fname,txt){
 		var uo=Y0+(Y1-Y0)*0.7
 		if (!side){
 			svg += `<path d="M${W2} ${Y0} L${W2-X0-p} ${Y0} L${W2-X0-p} ${Y1} L${W2} ${Y1}" stroke="${BLACK}" fill="none" stroke-width="3"></path>`
-			for (var i = W2-X1; i >= W2-X0-p; i-=CW){
-				svg += `<line x1="${i}" y1="${Y0}" x2="${i}" y2="${Y1}" stroke="${BLACK}"></line>`
-			}
 			svg += `<path d="M${W2} ${vo} L${W2-X1} ${vo} L${W2-X1} ${vo+vh} L${W2} ${vo+vh/2}" fill="${BLACK}" stroke="none"></path>`
 			svg += `<path d="M${W2} ${vo-vp} L${W2-X1} ${vo-vp}" fill="none" stroke="${BLACK}"></path>`
 			svg += `<path d="M${W2-X1} ${vo+vh+vp} L${W2} ${vo+vh/2+vp}" fill="none" stroke="${BLACK}"></path>`
 			svg += `<path d="M${W2} ${uo} L${W2-X1} ${uo}" fill="none" stroke="${BLACK}"></path>`
 
+			
+
 		}else{
 			svg += `<path d="M${0} ${Y0} L${X0+p} ${Y0} L${X0+p} ${Y1} L${0} ${Y1}" stroke="${BLACK}" fill="none" stroke-width="3"></path>`
-			for (var i = X0; i >= X1-p; i-=CW){
-				svg += `<line x1="${i}" y1="${Y0}" x2="${i}" y2="${Y1}" stroke="${BLACK}"></line>`
-			}
 			svg += `<path d="M${0} ${vo} L${X1} ${vo} L${X1} ${vo+vh} L${0} ${vo+vh/2}" fill="${BLACK}" stroke="none"></path>`
 			svg += `<path d="M${0} ${vo-vp} L${X1} ${vo-vp}" fill="none" stroke="${BLACK}"></path>`
 			svg += `<path d="M${X1} ${vo+vh+vp} L${0} ${vo+vh/2+vp}" fill="none" stroke="${BLACK}"></path>`
 			svg += `<path d="M${0} ${uo} L${X1} ${uo}" fill="none" stroke="${BLACK}"></path>`
+
 		}
 		
+		if (!plotResult){
+			for (var i = side?X0:(W2-X1); i >= (side?X1:(W2-X0))-p; i-=CW){
+				svg += `<line x1="${i}" y1="${Y0}" x2="${i}" y2="${Y1}" stroke="${BLACK}"></line>`
+			}
+		}else{
+			if (!side){
+				svg += `<line x1="${W2-X1}" y1="${Y0}" x2="${W2-X1}" y2="${Y1}" stroke="${BLACK}"></line>`
+				svg += `<line x1="${W2-X0}" y1="${Y0}" x2="${W2-X0}" y2="${Y1}" stroke="${BLACK}"></line>`
+			}else{
+				svg += `<line x1="${X1}" y1="${Y0}" x2="${X1}" y2="${Y1}" stroke="${BLACK}"></line>`
+				svg += `<line x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y1}" stroke="${BLACK}"></line>`
+			}
+		}
+
 		for (var i = 0; i < fname.length; i++){
 			svg += `<text x="${(side?0:(W2-X1))+X1*0.1}" y="${vo+30+i*X1*1.5}" font-size="${X1*0.8}" font-family="serif" fill="${BLACK}">${fname[i]}</text>`
 
@@ -149,13 +158,52 @@ function render(fname,txt){
 			makeBorder();
 		}
 	}
+	function makeLine(){
+		if (plotResult){
+			if (Math.abs(x-X1)>0.1 && Math.abs(x-(W2-X0))>0.1){
+				svg += `<line x1="${x}" y1="${Y0}" x2="${x}" y2="${Y1}" stroke="${BLACK}"></line>`
+			}
+		}
+	}
+	function nextLine(){
+		makeLine();
+		x -= CW;
+		y = Y0+CH;
+		managePage();
+	}
+
+	function resultPlotter(){
+		var out = "";
+
+		var js = parser.compile('js',txt).replace(/console.log\(\)/g,`out+="\\n";`).replace(/console.log\((.+?)\)/g,function(_,p1){
+			return `out+=`+(p1.split(",").join("+"))+`+"\\n";`
+		})
+
+		eval(js)
+		makeLine();
+		x -=CW/2;
+		y=Y0+CH;
+		for (var i = 0; i < out.length; i++){
+			if (out[i] == "\n"){
+				y=Y0+CH;
+				x-=CW/3.7;
+				
+			}else{
+				svg += `<text x="${x}" y="${y}" font-size="${CS/3}" font-family="serif" fill="rgba(0,0,0,0.7)">${out[i]}</text>`
+				y+=CH/2.5;
+				if (y >= Y1){
+					y=Y0+CH;
+					x-=CW/3.7;
+				}
+			}
+		}
+	}
+
 	var iden = false;
 	for (var i = 0; i < txt.length; i++){
 
 		if (txt[i] == "\n"){
-			x -= CW;
-			y = Y0+CH;
-			managePage();
+			nextLine();
 		}else{
 
 			if (!iden && txt[i] == "批" && txt[i+1] == "曰"){
@@ -184,53 +232,71 @@ function render(fname,txt){
 				}
 			}else if (txt[i] == "。"){
 				// svg += `<text x="${x+CW*0.6+CO}" y="${y-CH}" font-size="${CS}" font-family="serif" fill="${RED}">${txt[i]}</text>`
-				svg += `<circle cx="${x+CW-3}" cy="${y-CH}" r="${CH/7}" stroke="${RED}" fill="none" stroke-width="1"></circle>`
+				svg += `<circle cx="${x+CW-3}" cy="${y-CH}" r="${CH/7}" stroke="${RED}" fill="none" stroke-width="1" wy-data="${txt[i]}"></circle>`
 			}else if (txt[i] == "「"){
 				iden = true;
 				if (y > Y1){
-					x -= CW;
-					y = Y0+CH;
-					managePage();
+					nextLine();
 					
 				}
 				var h = CH/4
-				svg += `<path d="M${x} ${y-CH/2+h/2} L${x+CW/5} ${y-CH/2-h/2} L${x+4*CW/5} ${y-CH/2-h/2} L${x+CW} ${y-CH/2+h/2}" stroke="${BLACK}" fill="none" stroke-width="0.5"></path>`
+				svg += `<path d="M${x} ${y-CH/2+h/2} L${x+CW/5} ${y-CH/2-h/2} L${x+4*CW/5} ${y-CH/2-h/2} L${x+CW} ${y-CH/2+h/2}" stroke="${BLACK}" fill="none" stroke-width="0.5" wy-data="${txt[i]}"></path>`
 				// svg += `<text x="${x+CO}" y="${y-CH/2}" font-size="${CS}" font-family="serif">︹</text>`
 				y += CH/2;
 			}else if (txt[i] == "」"){
 				iden = false;
 				if (y > Y1){
-					x -= CW;
-					y = Y0+CH;
-					managePage();
+					nextLine();
 					
 				}
 				var h = CH/4
-				svg += `<path d="M${x} ${y-CH/2-h} L${x+CW/5} ${y-CH/2} L${x+4*CW/5} ${y-CH/2} L${x+CW} ${y-CH/2-h}" stroke="${BLACK}" fill="none" stroke-width="0.5"></path>`
+				svg += `<path d="M${x} ${y-CH/2-h} L${x+CW/5} ${y-CH/2} L${x+4*CW/5} ${y-CH/2} L${x+CW} ${y-CH/2-h}" stroke="${BLACK}" fill="none" stroke-width="0.5" wy-data="${txt[i]}"></path>`
 				// svg += `<text x="${x+CO}" y="${y}" font-size="${CS}" font-family="serif">︺</text>`
 				y += CH/2;
 			}else{
 				if (y >= Y1){
-					x -= CW;
-					y = Y0+CH;
-					managePage();
+					nextLine();
 				}
-				svg += `<text x="${x+CO}" y="${y}" font-size="${CS}" font-family="serif" fill="${BOOK_COLORS[sm[i]]}">${txt[i]}</text>`
+				svg += `<text x="${x+CO}" y="${y}" font-size="${CS}" font-family="serif" fill="${BOOK_COLORS[sm[i]]}" wy-data="${txt[i]}">${txt[i]}</text>`
 				y += CH;
 			}
 			
 		}
 		
 	}
+	if (plotResult){
+		resultPlotter();
+	}
+	// makeLine();
 	svg += "</svg>"
 	svgs.push(svg);
 	return svgs
 }
 
-// var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
-var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString())
-for (var i = 0; i < svgs.length; i++){
-	fs.writeFileSync("../test"+i+".svg",svgs[i])
+function unrender(svgs){
+	var txt = "";
+	for (var i = 0; i < svgs.length; i++){
+		svgs[i].replace(/wy-data="(.*?)"/g,function(_,p){
+			txt+=p
+		})
+	}
+	return txt;
 }
+
+function test_render(){
+	// var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
+	var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
+	// var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
+	// var svgs = render("漢諾塔",fs.readFileSync("../examples/hanoi.txt").toString(),{plotResult:true})
+	console.log(unrender(svgs))
+	for (var i = 0; i < svgs.length; i++){
+		fs.writeFileSync("../render"+i+".svg",svgs[i])
+	}
+}
+
+
+try{
+	module.exports={render,unrender}
+}catch(e){}
 
 
