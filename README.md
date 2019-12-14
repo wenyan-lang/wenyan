@@ -1,3 +1,4 @@
+<img src="screenshots/logo.png" align="right" width="100" height="100"/>
 # 文言 wenyan-lang
 文言文編程語言。A programming language for the ancient Chinese. [Try it online.]()
 
@@ -45,7 +46,7 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
-- Compiles to [Javascript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or Python
+- Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
 - Even numbers are expressed in Chinese characters
 - [Turing complete]()
 - An [online IDE]()
