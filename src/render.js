@@ -290,8 +290,8 @@ function unrender(svgs){
 }
 
 function test_render(){
-	// var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
-	var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
+	var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
+	// var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
 	// var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
 	// var svgs = render("漢諾塔",fs.readFileSync("../examples/hanoi.txt").toString(),{plotResult:true})
 	console.log(unrender(svgs))
