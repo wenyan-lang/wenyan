@@ -2,7 +2,9 @@
 
 # 文言 wenyan-lang
 
-文言文編程語言。A programming language for the ancient Chinese. [Try it online.]()
+[http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
+
+文言文編程語言。A programming language for the ancient Chinese. [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot01.png)
 
@@ -49,9 +51,9 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
-- [Turing complete]()
-- An [online IDE]()
-- [Examples]() to get started
+- [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.txt)
+- An [online IDE](Try it online.](http://wenyan-lang.lingdong.works/ide.html)
+- [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
 
 ## Installation
@@ -78,7 +80,7 @@ Try building the included examples first, e.g.:
 ./build/wenyan examples/helloworld.txt -o helloworld.js
 ```
 
-### [The online IDE]()
+### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
 
