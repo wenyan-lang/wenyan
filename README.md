@@ -52,7 +52,7 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.txt)
-- An [online IDE](Try it online.](http://wenyan-lang.lingdong.works/ide.html)
+- An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
 
