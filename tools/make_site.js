@@ -168,7 +168,8 @@ pre{
 #content-box{
 	width: 100%;
 	background: white;
-	box-shadow: 0 0 10px rgba(0,0,0,0.3);
+	--shadow-color: rgba(0, 0, 0, 0.3);
+	box-shadow: 0 0 10px var(--shadow-color);
 }
 #content{
 	min-height: 1000px;
@@ -272,15 +273,15 @@ h2{
 
 Syntax of <i>wenyan</i> is just like that of its namesake, classical Chinese:
 
-<h2>天地，好在否！/ HELLO WORLD <span class="play-btn">▶</span></h2>
+<h2>天地，好在否！/ HELLO WORLD <span class="play-btn">▶&#xFE0E;</span></h2>
 
 <table class="tryit" data-prgm="helloworld"><tr>
 	<td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
 </tr></table>
 
-The code above is editable, go ahead customize the greeting and hit ▶! Another slightly more sophisticated example, using the sieve of Erathosthenes to find prime numbers:
+The code above is editable, go ahead customize the greeting and hit ▶&#xFE0E;! Another slightly more sophisticated example, using the sieve of Erathosthenes to find prime numbers:
 
-<h2>埃氏筛 / SIEVE OF ERATOSTHENES <span class="play-btn">▶</span></h2>
+<h2>埃氏筛 / SIEVE OF ERATOSTHENES <span class="play-btn">▶&#xFE0E;</span></h2>
 
 <table class="tryit" data-prgm="sieve"><tr>
 	<td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
