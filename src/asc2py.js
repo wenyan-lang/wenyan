@@ -79,6 +79,7 @@ class Ctnr():
 		self.it += 1
 		if (self.it >= self.length): raise StopIteration()
 		return self[self.it]
+#####
 `
 
 function asc2py(asc){

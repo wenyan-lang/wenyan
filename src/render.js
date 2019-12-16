@@ -7,7 +7,7 @@ try{
 
 const RED = "#E53"
 const BLACK = "#222"
-const FONT = "Source Han Serif TC"
+const FONT = "serif"//"Source Han Serif TC"
 const BOOK_COLORS = {
   'ctrl':RED,
   'lop':BLACK,
@@ -29,7 +29,7 @@ const BOOK_COLORS = {
   'not':BLACK,
   'operand':BLACK,
   'bool':BLACK,
-  'data':BLACK,
+  'data':"#666",
   "iden":"#248",
   "quot":BLACK,
   "num":"#872",
@@ -55,8 +55,8 @@ function render(fname,txt,{plotResult=false}={}){
 	var PCT = 40;
 	var PCB = 5;
 
-	var PSH = -2;
-	var MA = 10;
+	var PSH = 0;//-2;
+	var MA = 0//10;
 
 	txt = txt.replace(/\r\n/g,"\n");
 	txt = txt.replace(/\n+/g,"");
@@ -290,8 +290,8 @@ function unrender(svgs){
 }
 
 function test_render(){
-	var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
-	// var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
+	// var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
+	var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
 	// var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
 	// var svgs = render("漢諾塔",fs.readFileSync("../examples/hanoi.txt").toString(),{plotResult:true})
 	console.log(unrender(svgs))
@@ -299,10 +299,10 @@ function test_render(){
 		fs.writeFileSync("../render"+i+".svg",svgs[i])
 	}
 }
-test_render()
+// test_render()
 
 try{
-	module.exports={render,unrender}
+	module.exports={render,unrender,BOOK_COLORS}
 }catch(e){}
 
 

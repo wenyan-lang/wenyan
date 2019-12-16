@@ -6,7 +6,7 @@ try{
   var NUMBER_KEYWORDS = parser.NUMBER_KEYWORDS;
 }catch(e){}
 
-const DEFAULT_COLORS = {
+var DEFAULT_COLORS = {
   'ctrl':'#F92672',
   'lop':'#FFF',
   'name':'#FFF',
