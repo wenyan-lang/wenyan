@@ -92,7 +92,7 @@ function main(){
 
 	for (var i = 0; i < trythem.length; i++){
 		var ed = newEditor(prgms[trythem[i].getAttribute('data-prgm')]);
-		ed.style.width="50%";
+		// ed.style.width="50%";
 		var out = document.createElement("div");
 		out.classList.add("out");
 		trythem[i].getElementsByClassName("in-box")[0].appendChild(ed);
@@ -266,7 +266,7 @@ h2{
 <div id="content-box">
 <div id="content">
 
-<i>文言</i>, or <i>wenyan</i>, is an esoteric programming language that closely follows the grammar and tone of classical Chinese literature. Moreover, the alphabet of <i>wenyan</i> contains only traditional Chinese characters and <code>「」</code> quotes, so it is guarenteed to be readable by ancient Chinese people. You too can try it out on the <a href="./ide.html">online Editor</a>, <a href="https://github.com/LingDong-/wenyan-lang#installation">download a compiler</a>, or view the <a href="https://github.com/LingDong-/wenyan-lang">source code</a>.
+<i>文言</i>, or <i>wenyan</i>, is an esoteric programming language that closely follows the grammar and tone of classical Chinese literature. Moreover, the alphabet of <i>wenyan</i> contains only traditional Chinese characters and <code>「」</code> quotes, so it is guarenteed to be readable by ancient Chinese people. You too can try it out on the <a href="./ide.html">online editor</a>, <a href="https://github.com/LingDong-/wenyan-lang#installation">download a compiler</a>, or view the <a href="https://github.com/LingDong-/wenyan-lang">source code</a>.
 
 <h1>Syntax</h1>
 

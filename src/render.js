@@ -299,7 +299,7 @@ function test_render(){
 		fs.writeFileSync("../render"+i+".svg",svgs[i])
 	}
 }
-test_render()
+// test_render()
 
 try{
 	module.exports={render,unrender,BOOK_COLORS}
