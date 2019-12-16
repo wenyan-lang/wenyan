@@ -260,7 +260,7 @@ h2{
 <script>${utils.catsrc()}</script>
 <div id="bg"><div id="bg-inner">${load_svg("../renders/turing.svg")}</div></div>
 
-<div id="title-box"><div id="title1">文言 / wenyan&#8209;lang</div><div id="title2">编程语言 Programming Language for the ancient Chinese</div></div>
+<div id="title-box"><div id="title1">文言 / wenyan&#8209;lang</div><div id="title2">編程語言 Programming Language for the ancient Chinese</div></div>
 
 
 <div id="content-box">
