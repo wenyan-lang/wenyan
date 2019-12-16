@@ -1468,7 +1468,7 @@ var BOOK_COLORS = {
   'not':BLACK,
   'operand':BLACK,
   'bool':BLACK,
-  'data':BLACK,
+  'data':"#666",
   "iden":"#248",
   "quot":BLACK,
   "num":"#872",
@@ -1729,8 +1729,8 @@ function unrender(svgs){
 }
 
 function test_render(){
-	// var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
-	var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
+	var svgs = render("圖靈機",fs.readFileSync("../examples/turing.txt").toString())
+	// var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
 	// var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
 	// var svgs = render("漢諾塔",fs.readFileSync("../examples/hanoi.txt").toString(),{plotResult:true})
 	console.log(unrender(svgs))
@@ -1772,7 +1772,7 @@ try{
 		highlight([ed]);
 		document.getElementById("out").innerText="";
 		var code = compile('js',ed.innerText,{romanizeIdentifiers:true,errorCallback:log2div});
-		document.getElementById("js").innerText="//JavaScript\n"+js_beautify(code);
+		document.getElementById("js").innerText=js_beautify(code);
 		hljs.highlightBlock(document.getElementById("js"));
 		code = code.replace(/console.log\(/g, `log2div(`);
 		eval(code);
