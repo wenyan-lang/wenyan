@@ -94,7 +94,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 | wenyan | JavaScript |
 |---|---|
 |`吾有一數。曰三。名之曰「甲」。` | `var a = 3;` |
-|`一數五十。名之曰「大衍」。` | `var dayan = 50;` |
+|`有數五十。名之曰「大衍」。` | `var dayan = 50;` |
 |`昔之「甲」者。今「大衍」是也。` | `a = dayan;` |
 |`吾有一言。曰「「噫吁戲」」。名之曰「乙」。` | `var b = "alas!";` |
 |`吾有一爻。曰陰。名之曰「丙」。` | `var c = false;` |
