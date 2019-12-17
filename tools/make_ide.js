@@ -1,3 +1,5 @@
+process.chdir("./tools");
+
 var fs = require('fs');
 var execSync = require('child_process').execSync;
 var parser = require('../src/parser');

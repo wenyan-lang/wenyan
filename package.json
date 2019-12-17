@@ -1,0 +1,17 @@
+{
+  "name": "wenyan-lang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LingDong-/wenyan-lang.git"
+  },
+  "scripts": {
+    "make_cmdline": "node ./tools/make_cmdline.js && pkg ./build/wenyan.js --out-path ./build",
+    "make_ide": "node ./tools/make_ide.js",
+    "make_site": "node ./tools/make_site.js",
+    "test_parser": "node ./tools/test_parser.js"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "pkg": "^4.4.2"
+  }
+}

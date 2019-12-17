@@ -1,3 +1,5 @@
+process.chdir("./tools");
+
 const fs = require("fs");
 var execSync = require('child_process').execSync;
 var utils = require('./utils')
@@ -205,11 +207,11 @@ try{
 }catch(e){//no wifi?
 	minify = x=>({code:x});
 }
-const nodepath = execSync('which node', { encoding: 'utf-8' });
+const nodepath = execSync('node', { encoding: 'utf-8' });
 var exe = `#!${nodepath}\n`
 exe += utils.catsrc();
 exe+="\n"+cmdlinecode.toString()+"\nvar compileinfo=`"+compileinfo+"`\ncmdlinecode();";
-fs.writeFileSync("../build/wenyan",minify(exe).code);
+fs.writeFileSync("../build/wenyan.js",minify(exe).code);
 
-execSync('chmod +x ../build/wenyan');
+//execSync('chmod +x ../build/wenyan');
 
