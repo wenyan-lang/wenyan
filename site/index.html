@@ -508,7 +508,9 @@ function hanzi2num(s){
         var n2 = _h2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
         return n1 + n2
     }
-    
+    if (s[0]=="負"){
+        return -1*hanzi2num(s.slice(1));
+    }
     if (s.includes("又")){
         var s0 = s.split("又")[0]
         var s1 = s.split("又")[1]
@@ -607,7 +609,7 @@ function num2hanzi(n,nfrac=6){
     }
 
     if (n < 0){
-        return "負"+int2hanzi(-n);
+        return "負"+num2hanzi(-n);
     }
     var intn = Math.floor(n);
     if (intn==n){
@@ -626,6 +628,8 @@ function test_hanzi2num(){
     console.log(num2hanzi(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")))
     console.log(num2hanzi(-(10**10+99)))
     console.log(num2hanzi(0))
+    console.log(num2hanzi(-0.765433))
+    console.log(hanzi2num("負一又二分三釐四毫五絲六忽七微"))
     console.log(hanzi2num("一沙一塵"))
     console.log(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一"))
     console.log(hanzi2num("無量大數"))
@@ -869,7 +873,7 @@ var {hanzi2num,num2hanzi} = require('./hanzi2num')
 var hanzi2pinyin = require('./hanzi2pinyin')
 }catch(e){}
 
-var NUMBER_KEYWORDS = "又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split("")
+var NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split("")
 
 var KEYWORDS = {
 	"吾有":["decl","uninit"],

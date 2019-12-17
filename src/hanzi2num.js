@@ -69,7 +69,9 @@ function hanzi2num(s){
         var n2 = _h2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
         return n1 + n2
     }
-    
+    if (s[0]=="負"){
+        return -1*hanzi2num(s.slice(1));
+    }
     if (s.includes("又")){
         var s0 = s.split("又")[0]
         var s1 = s.split("又")[1]
@@ -205,4 +207,4 @@ function test_hanzi2num(){
 try{
     module.exports = {hanzi2num,num2hanzi};
 }catch(e){}
-test_hanzi2num()
+// test_hanzi2num()
