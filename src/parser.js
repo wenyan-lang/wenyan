@@ -4,7 +4,7 @@ var {hanzi2num,num2hanzi} = require('./hanzi2num')
 var hanzi2pinyin = require('./hanzi2pinyin')
 }catch(e){}
 
-const NUMBER_KEYWORDS = "又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split("")
+const NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split("")
 
 var KEYWORDS = {
 	"吾有":["decl","uninit"],

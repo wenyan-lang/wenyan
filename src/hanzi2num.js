@@ -168,7 +168,7 @@ function num2hanzi(n,nfrac=6){
     }
 
     if (n < 0){
-        return "負"+int2hanzi(-n);
+        return "負"+num2hanzi(-n);
     }
     var intn = Math.floor(n);
     if (intn==n){
@@ -187,6 +187,8 @@ function test_hanzi2num(){
     console.log(num2hanzi(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")))
     console.log(num2hanzi(-(10**10+99)))
     console.log(num2hanzi(0))
+    console.log(num2hanzi(-0.765433))
+    console.log(hanzi2num("負一又二分三釐四毫五絲六忽七微"))
     console.log(hanzi2num("一沙一塵"))
     console.log(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一"))
     console.log(hanzi2num("無量大數"))
@@ -203,4 +205,4 @@ function test_hanzi2num(){
 try{
     module.exports = {hanzi2num,num2hanzi};
 }catch(e){}
-// test_hanzi2num()
+test_hanzi2num()
