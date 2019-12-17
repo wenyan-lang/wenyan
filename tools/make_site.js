@@ -3,8 +3,8 @@ const fs = require('fs');
 const utils = require('./utils');
 const render = require("../src/render")
 
-const helloworld = fs.readFileSync("../examples/helloworld+.txt").toString()
-const sieve = fs.readFileSync("../examples/sieve.txt").toString()
+const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString()
+const sieve = fs.readFileSync("../examples/sieve.wy").toString()
 
 
 function base64_encode(file) {

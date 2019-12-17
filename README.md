@@ -51,7 +51,7 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
-- [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.txt)
+- [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
@@ -77,7 +77,7 @@ Options:
 Try building the included examples first, e.g.:
 
 ```
-./build/wenyan examples/helloworld.txt -o helloworld.js
+./build/wenyan examples/helloworld.wy -o helloworld.js
 ```
 
 ### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
