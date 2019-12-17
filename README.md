@@ -153,3 +153,9 @@ Arrays are 1-indexed.
 
 ![](screenshots/screenshot03.png)
 
+
+## Contributed Tools
+
+- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+
+
