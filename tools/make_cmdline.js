@@ -1,4 +1,4 @@
-process.chdir("./tools");
+try{process.chdir("./tools");}catch(e){}//make sure we're in tools directory
 
 const fs = require("fs");
 var execSync = require('child_process').execSync;
@@ -207,11 +207,15 @@ try{
 }catch(e){//no wifi?
 	minify = x=>({code:x});
 }
-const nodepath = execSync('node', { encoding: 'utf-8' });
-var exe = `#!${nodepath}\n`
+var exe = ``
+try{//on unix and linux this will work:
+	const nodepath = execSync('which node', { encoding: 'utf-8' });
+	exe += `#!${nodepath}\n`
+}catch(e){}
 exe += utils.catsrc();
 exe+="\n"+cmdlinecode.toString()+"\nvar compileinfo=`"+compileinfo+"`\ncmdlinecode();";
 fs.writeFileSync("../build/wenyan.js",minify(exe).code);
 
-//execSync('chmod +x ../build/wenyan');
-
+try{
+	execSync('chmod +x ../build/wenyan.js');
+}catch(e){}

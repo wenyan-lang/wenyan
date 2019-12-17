@@ -1,4 +1,4 @@
-process.chdir("./tools");
+try{process.chdir("./tools");}catch(e){}//make sure we're in tools directory
 
 const fs = require('fs');
 const utils = require('./utils');
