@@ -28,16 +28,16 @@ Equivalent JavaScript:
 ```JavaScript
 var n = 3;
 for (var i = 0; i < n; i++) {
-	console.log("問天地好在");
+	console.log("問天地好在。");
 }
 ```
 
 Output:
 
 ```
-問天地好在
-問天地好在
-問天地好在
+問天地好在。
+問天地好在。
+問天地好在。
 ```
 
 Punctuations and newlines are completely optional (just like they are in Classical Chinese), so the above code is equivalent to:
