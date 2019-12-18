@@ -4,9 +4,7 @@
 
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
-[中文版本](./README-ZH.md)
-
-文言文編程語言。A programming language for the ancient Chinese. [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
+文言文編程語言。 [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot01.png)
 
@@ -17,7 +15,7 @@
 
 ## Helloworld
 
-Wenyan:
+文言:
 
 ```
 吾有一數。曰三。名之曰「甲」。
@@ -25,7 +23,7 @@ Wenyan:
 	吾有一言。曰「「問天地好在。」」。書之。
 云云。
 ```
-Equivalent JavaScript:
+等同于以下 JavaScript:
 
 ```JavaScript
 var n = 3;
@@ -34,7 +32,7 @@ for (var i = 0; i < n; i++) {
 }
 ```
 
-Output:
+输出:
 
 ```
 問天地好在。
@@ -42,27 +40,29 @@ Output:
 問天地好在。
 ```
 
-Punctuations and newlines are completely optional (just like they are in Classical Chinese), so the above code is equivalent to:
+标点符号和换行都是可选的（就像古汉语中是连续的），所以上面的代码等同于：
+
 
 ```
 吾有一數曰三名之曰「甲」為是「甲」遍吾有一言曰「「問天地好在」」書之云云
 ```
 
-More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mandelbrot set, and Tower of Hanoi, can be found in the `./examples` folder.
-
-## Features
-- An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
-- Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
-- [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
-- [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
+更多复杂的例子，可以在 `./examples` 中找到。比如，埃拉托斯特尼筛法、 快速排序、曼德博集合、汉诺塔。
 
 
-## Installation
+## 特点
+- 符合古汉语的语法
+- 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) 或者 [Python](https://python.org)
+- [通过图灵测试](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
+- [在线 IDE]，即刻体验(http://wenyan-lang.lingdong.works/ide.html)
+- 通过 [几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
 
-### The Compiler
 
-Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
+## 安装
+
+### 编译器
+
+克隆此项目, (或者直接下载 `./build/wenyan.js` 然后赋予它执行权限，在终端中输入 `chmod +x wenyan.js`)。 之后执行 `./build/wenyan.js` 把源代码编译成为目标语言。如果执行此命令不带任何参数，则输出以下帮助信息。
 
 ```
 Usage: wenyan [options] [input files]
@@ -76,31 +76,30 @@ Options:
 --output  -o <string>  : Output file (default: `/dev/stdout')
 --roman   -r <boolean> : Romanize identifiers (default: `true')
 ```
-Try building the included examples first, e.g.:
+首先，尝试去编译几个现有的例子：
 
 ```
 ./build/wenyan.js examples/helloworld.wy -o helloworld.js
 ```
 
-#### Building platform-specific binaries
+#### 构建平台特定的二进制文件
 
-- Clone the repo
+- 克隆此项目
 - `npm install`
 - `npm run make_cmdline`
 
-The macOS, Windows and Linux binaries will be in the `./build` folder.
+macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文件夹中。
 
-
-### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
+### [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
 
 
-## Syntax Cheatsheet
+## 语法表
 
-A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below, or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
+与上文无关的语法描述还在构建中。同时，请查阅下面的语法表，或者在 `src/parser.js` 中学习其他更多语法。当然你也可以从在线 IDE 现有的例子中学习更多语法知识！
 
-### Variables
+### 变量
 
 | wenyan | JavaScript |
 |---|---|
@@ -113,7 +112,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 |`吾有三數。曰一。曰三。曰五。名之曰「甲」曰「乙」曰「丙」。` | `var a=1,b=3,c=5;` |
 
 
-### Control
+### 流程控制
 
 | wenyan | JavaScript |
 |---|---|
@@ -125,7 +124,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 |`乃止。` | `break;` |
 
 
-### Math
+### 运算
 
 | wenyan | JavaScript |
 |---|---|
@@ -138,8 +137,8 @@ A context-free grammar description is under construction. Meanwhile, please chec
 |`夫「甲」「乙」中無陰乎。` | `a && b` |
 
 
-### Containers
-Arrays are 1-indexed.
+### 容器
+数组下标从一开始。而不是零。
 
 | wenyan | JavaScript |
 |---|---|
@@ -151,7 +150,7 @@ Arrays are 1-indexed.
 |`夫「寶劍」之長。` | `sword.length;` |
 
 
-### Functions
+### 函数
 | wenyan | JavaScript |
 |---|---|
 |`吾有一術。名之曰「吸星大法」。是術曰。⋯⋯是謂「吸星大法」之術也。`|`function f(){...}`|
@@ -160,26 +159,26 @@ Arrays are 1-indexed.
 |`施「翻倍」於「大衍」。`|`double(dayan);`|
 |`吾有一數。曰五。書之。`|`console.log(5);`|
 
-## Renderer
+## 渲染器
 
-`src/render.js` can render a wenyan program into an image that resembles pages from historical printed books. It can also parse the resultant SVG file back to the original program. Below is the rendering of the Universal Turing Machine written in wenyan:
+`src/render.js` 脚本文件能把 `wy` 代码格式化输出成为古汉语书籍样式（历史印刷书籍）的矢量图（SVG）。同时它还可以将生成的SVG文件解析回原始文言代码。下图是用 wenyan 编写的 Universal Turing Machine 渲染而成。
 
 ![](screenshots/screenshot03.png)
 
 
-## Contributed Tools
+## 贡献者提供的工具
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
 
-## Test
+## 测试
 
-Install Mochajs
+安装 Mochajs
 
 ```Shell
 npm install --global mocha
 ```
 
-Go to src/test folder, run
+切换到 `src/test` ，然后执行
 
 ```Shell
 mocha
