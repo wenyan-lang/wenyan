@@ -40,13 +40,13 @@ Output:
 問天地好在
 ```
 
-Punctuations and newlines are completely optional (just like they are in Classical Chinese), so the above code is equivallent to:
+Punctuations and newlines are completely optional (just like they are in Classical Chinese), so the above code is equivalent to:
 
 ```
 吾有一數曰三名之曰「甲」為是「甲」遍吾有一言曰「「問天地好在」」書之云云
 ```
 
-More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot set, Tower of Hanoi, can be found in the `./examples` folder.
+More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mandelbrot set, and Tower of Hanoi, can be found in the `./examples` folder.
 
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
@@ -60,14 +60,14 @@ More sophisticated examples such as Sieve of Eratosthenes, quicksort, Mandelbrot
 
 ### The Compiler
 
-Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reporduced below:
+Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
 
 ```
 Usage: wenyan [options] [input files]
 
 Options:
 --eval    -e <string>  : Give a string instead of a file (default: `')
---exec    -x <boolean> : Execute ouput (default: `false')
+--exec    -x <boolean> : Execute output (default: `false')
 --inspect -i <boolean> : Interactive REPL (default: `false')
 --lang    -l <string>  : Language: js/py (default: `js')
 --log        <string>  : Log file (default: `/dev/null')
@@ -86,7 +86,7 @@ Try building the included examples first, e.g.:
 - `npm install`
 - `npm run make_cmdline`
 
-The macOS, windows and linux binaries will be in `./build` folder.
+The MacOS, Windows and Linux binaries will be in the `./build` folder.
 
 
 ### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
@@ -96,7 +96,7 @@ The macOS, windows and linux binaries will be in `./build` folder.
 
 ## Syntax Cheatsheet
 
-A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
+A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below, or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
 
 ### Variables
 
