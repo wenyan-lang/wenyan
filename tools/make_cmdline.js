@@ -174,7 +174,34 @@ function cmdlinecode(){
 				errorCallback:function(x){console.error(x);process.exit()},
 			}
 		)
-		writer(args['--output'],'w')(out);
+		if (args['--output'] == "."){
+			
+			if (files.length == 0){
+				console.log("Cannot infer output filename because no input file was found.");
+				process.exit();
+			}else{
+				var basename = files[0].split(".").slice(0,-1).join(".")
+				if (args['--render'] == 'none'){
+					args['--output'] = basename+"."+args['--lang']
+				}else{
+					args['--output'] = basename
+				}
+			}
+				
+		}
+		if (args['--render'] == 'none'){
+			writer(args['--output'],'w')(out);
+		}else{
+			var dispname = args['--render'];
+			if (dispname == "."){
+				var p = args['--output'].split(/[/\\]/);
+				dispname = p[p.length-1];
+			}
+			var svgs = render(dispname,src,{plotResult:false})
+			for (var i = 0; i < svgs.length; i++){
+				fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg",svgs[i])
+			}
+		}
 		if (args['--exec']){
 			if (args['--lang'] == 'js'){
 				if (!args['--inspect']){
@@ -197,12 +224,7 @@ function cmdlinecode(){
 			}
 			repl(args);
 		}
-		if (args['--render'] != "none") {
-			var svgs = render(args['--render'],src,{plotResult:false})
-			for (var i = 0; i < svgs.length; i++){
-				fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg",svgs[i])
-			}
-		}
+
 		return 0;
 	}
 
