@@ -50,9 +50,9 @@ var KEYWORDS = {
 	"夫":["expr"],
 
 	"等於":["cmp","=="],
-	"弗等於":["cmp","!="],
-	"弗大於":["cmp","<="],
-	"弗小於":["cmp",">="],
+	"不等於":["cmp","!="],
+	"不大於":["cmp","<="],
+	"不小於":["cmp",">="],
 	"大於":["cmp",">"],
 	"小於":["cmp","<"],
 
@@ -78,7 +78,7 @@ var KEYWORDS = {
 	"陰":["bool",false],
 	"陽":["bool",true],
 
-	"批曰":["comment"],
+	"注曰":["comment"],
 
 }
 var ke = Object.entries(KEYWORDS);
