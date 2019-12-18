@@ -167,4 +167,16 @@ Arrays are 1-indexed.
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
 
+## Test
 
+Install Mochajs
+
+```Shell
+npm install --global mocha
+```
+
+Go to src/test folder, run
+
+```Shell
+mocha
+```
