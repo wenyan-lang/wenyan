@@ -116,7 +116,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 | wenyan | JavaScript |
 |---|---|
 |`若三大於二者。乃得「「想當然耳」」也。` | `if (3>2){ return "of course"; }` |
-|`若三弗大於五者。乃得「「想當然耳」」。若非。乃得「「怪哉」」也。` | `if(3<=5){return "of course"}else{return "no way"}` |
+|`若三不大於五者。乃得「「想當然耳」」。若非。乃得「「怪哉」」也。` | `if(3<=5){return "of course"}else{return "no way"}` |
 |`為是百遍。⋯⋯ 云云。` | `for (var i = 0; i < 100; i++){ ... }` |
 |`恆為是。⋯⋯ 云云。` | `while (true) { ... }` |
 |`凡「天地」中之「人」。⋯⋯ 云云。` | `for (var human of world){ ... }` |
