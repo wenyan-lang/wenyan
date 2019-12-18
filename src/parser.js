@@ -306,7 +306,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 			
 			var x = {op:"var",count:1,type:gettok(i+1,1),values:[tokens[i+2]],pos};
 			i+=3;
-			if (gettok(i,0) == "name"){
+			if (tokens[i]!=undefined && gettok(i,0) == "name"){
 				x.names = [gettok(i+1,1)];
 				i+=2;
 			}
@@ -645,12 +645,15 @@ function asc2js(asc){
 				lhs += `[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}]`
 			}
 			js += `${lhs}=${rhs};`
+		}else if (a.op == "length"){
+			js += `var ${nextTmpVar()}=${a.container}.length;`
+			strayvar ++;
 		}else if (a.op == "discard"){
 			strayvar = 0;
 		}else if (a.op == "comment"){
 			js += `/*${getval(a.value)}*/`
 		}else{
-			//console.log(a.op)
+			console.log(a.op)
 		}
 		// js+="\n"
 	}
