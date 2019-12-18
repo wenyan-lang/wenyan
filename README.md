@@ -106,7 +106,7 @@ A context-free grammar description is under construction. Meanwhile, please chec
 |---|---|
 |`吾有一數。曰三。名之曰「甲」。` | `var a = 3;` |
 |`有數五十。名之曰「大衍」。` | `var dayan = 50;` |
-|`昔之「甲」者。今「大衍」是也。` | `a = dayan;` |
+|`昔之「甲」者。今「大衍」是矣。` | `a = dayan;` |
 |`吾有一言。曰「「噫吁戲」」。名之曰「乙」。` | `var b = "alas!";` |
 |`吾有一爻。曰陰。名之曰「丙」。` | `var c = false;` |
 |`吾有一列。名之曰「丁」。` | `var d = [];` |
