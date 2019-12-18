@@ -210,6 +210,7 @@ Before opening an Issue, please check if it belongs to the below categories:
 |[Alternative symbols for 。](https://github.com/LingDong-/wenyan-lang/issues/93)|  ** | |
 |Online IDE [fonts](https://github.com/LingDong-/wenyan-lang/issues/5) and [vertical text](https://github.com/LingDong-/wenyan-lang/issues/9) |  ** | |
 |[Rendering comment as small inline text](https://github.com/LingDong-/wenyan-lang/issues/148) | ** | |
+|More examples | ** | √ |
 
 If you could help implement a feature with a `√` under `help needed`, please feel free to submit a pull request. It would be very much appreciated! If you would like to help out on other features, please let me know too! Thanks.
 
