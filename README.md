@@ -86,7 +86,7 @@ Try building the included examples first, e.g.:
 - `npm install`
 - `npm run make_cmdline`
 
-The MacOS, Windows and Linux binaries will be in the `./build` folder.
+The macOS, Windows and Linux binaries will be in the `./build` folder.
 
 
 ### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
