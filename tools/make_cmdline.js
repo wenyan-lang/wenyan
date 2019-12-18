@@ -192,7 +192,12 @@ function cmdlinecode(){
 		if (args['--render'] == 'none'){
 			writer(args['--output'],'w')(out);
 		}else{
-			var svgs = render(args['--render'],src,{plotResult:false})
+			var dispname = args['--render'];
+			if (dispname == "."){
+				var p = args['--output'].split(/[/\\]/);
+				dispname = p[p.length-1];
+			}
+			var svgs = render(dispname,src,{plotResult:false})
 			for (var i = 0; i < svgs.length; i++){
 				fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg",svgs[i])
 			}
