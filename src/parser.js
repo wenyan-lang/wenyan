@@ -662,8 +662,13 @@ function asc2js(asc){
 
 function compile(lang,txt,{
 		romanizeIdentifiers="none",
+		resetVarCnt,
 		logCallback=(x)=>((typeof x)=="string")?console.log(x):console.dir(x,{depth:null,'maxArrayLength':null}),
 		errorCallback=process.exit}={}){
+	if (resetVarCnt) {
+		tmpVarCnt = 0;
+		randVarCnt = 0;
+	}
 	txt = txt.replace(/\r\n/g,"\n");
 
 	var tokens = wy2tokens(txt);
