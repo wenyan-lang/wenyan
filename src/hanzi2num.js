@@ -6,7 +6,7 @@ var FRACS4 = ["塵","埃","渺","漠","模糊","逡巡","須臾","瞬息","彈�
 
 
 function hanzi2num(s){
-    s = s.replace(/零/g,"")
+    // s = s.replace(/零/g,"")
     s = s.replace(/有/g,"")
 
     function _sp(s,units){
@@ -22,6 +22,51 @@ function hanzi2num(s){
     }
 
     function _h2n(s,m1,n1,m4,n4){
+        var st = _sp(s,m4);
+        var result = 0
+
+        for (var i = 0; i < st.length; i++){
+            if (st[i].length > 1 && st[i][0] == '零'){
+                st[i][0] = "一"
+            }
+            var stt = _sp(st[i][0], m1)
+            
+            var r = 0;
+            
+            var lastpow = 10;
+
+            for (var j = 0; j < stt.length; j++){
+                var shorthand = false;
+                if (stt[j][0][0] == "零"){
+                    stt[j][0]=stt[j][0].slice(1)
+                }else{
+                    shorthand = true;
+                }
+                if (stt[j].length == 1){
+                    if (stt[j][0] != ''){
+                        if (shorthand){
+                            r += NUMS.indexOf(stt[j][0])*(lastpow/10);
+                        }else{
+                            r += NUMS.indexOf(stt[j][0])
+                        }
+                    }
+                } else{
+                    if (stt[j][0] == ''){
+                        stt[j][0] = '一'
+                    }
+                    lastpow = Math.pow(n1,m1.indexOf(stt[j][1])+1)
+                    r += NUMS.indexOf(stt[j][0]) * lastpow;
+                }
+            }
+            if (st[i].length == 2){
+                result += r * Math.pow(n4,m4.indexOf(st[i][1])+1)
+            }else{
+                result += r
+            }
+        }
+        return result
+    }
+    function _fh2n(s,m1,n1,m4,n4){
         var st = _sp(s,m4);
         var result = 0
 
@@ -52,7 +97,7 @@ function hanzi2num(s){
         return result
     }
     function hanzi2int(s){
-        return _h2n(s,MULTS1,10,MULTS4,10000)
+        return _h2n("零"+s,MULTS1,10,MULTS4,10000)
     }
 
     function hanzi2frac(s){
@@ -65,8 +110,8 @@ function hanzi2num(s){
                 break
             }
         }
-        var n1 = _h2n(s.slice(0,l+1),[],0,FRACS1,0.1) 
-        var n2 = _h2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
+        var n1 = _fh2n(s.slice(0,l+1),[],0,FRACS1,0.1) 
+        var n2 = _fh2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
         return n1 + n2
     }
     if (s[0]=="負"){
@@ -182,6 +227,7 @@ function num2hanzi(n,nfrac=6){
 
 
 
+
 function test_hanzi2num(){
     console.log(num2hanzi(0.53212121222))
     console.log(num2hanzi(0.5))
@@ -202,6 +248,12 @@ function test_hanzi2num(){
     console.log(hanzi2num("不可思議"))
     console.log(hanzi2num("一萬"))
     console.log(hanzi2num("零"))
+
+    console.log(hanzi2num("二百五"))
+    console.log(hanzi2num("二百零五"))
+    console.log(hanzi2num("三千七"))
+    console.log(hanzi2num("五萬三千七"))
+    console.log(hanzi2num("五萬三千零七"))
 }
 
 try{

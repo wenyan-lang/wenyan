@@ -25,5 +25,5 @@ function runAll(lang){
 	}
 }
 
-runExample("py","quicksort")
-// runAll("py")
+// runExample("py","quicksort")
+runAll("js")
