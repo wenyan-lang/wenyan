@@ -10,13 +10,13 @@ statement           := reference_statement
 print_stm           := 書之
 clean_stm           := 噫
 uinit_declare_stm   := (吾有|今有) num type
-init_define_stm     := 有 type (data|num|literature|identifier|bool_value)[reference_stm]
+init_define_stm     := 有 type (data|num|string_literal|identifier|bool_value)[reference_stm]
 assign              := 曰
 uinit_define_stm    := declare_stm [assign data]* [reference_stm][assign data]*
 reference_stm       := 名之曰 identifier
 identifier          := 「字+」
-literature          := 「「字*」」
-comment             := (注曰|疏曰|批曰)literature
+string_literal      := 「「字*」」
+comment             := (注曰|疏曰|批曰)string_literal
 
 function_start      := 欲行是術
 function_arg        := 必先得 num type [assign identifier] 是術曰|乃行是術曰 
