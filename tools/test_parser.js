@@ -1,4 +1,4 @@
-process.chdir("./tools");
+try{process.chdir("./tools");}catch(e){}
 
 var fs = require('fs');
 var parser = require('../src/parser');

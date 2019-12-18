@@ -79,6 +79,8 @@ var KEYWORDS = {
 	"陽":["bool",true],
 
 	"注曰":["comment"],
+	"疏曰":["comment"],
+	"批曰":["comment"],
 
 }
 var ke = Object.entries(KEYWORDS);
