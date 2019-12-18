@@ -224,39 +224,3 @@ function num2hanzi(n,nfrac=6){
         return int2hanzi(intn)+"又"+frac2hanzi(n-intn);
     }
 }
-
-
-
-
-function test_hanzi2num(){
-    console.log(num2hanzi(0.53212121222))
-    console.log(num2hanzi(0.5))
-    console.log(hanzi2num(num2hanzi(0.532)))
-    console.log(num2hanzi(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")))
-    console.log(num2hanzi(-(10**10+99)))
-    console.log(num2hanzi(0))
-    console.log(num2hanzi(-0.765433))
-    console.log(hanzi2num("負一又二分三釐四毫五絲六忽七微"))
-    console.log(hanzi2num("一沙一塵"))
-    console.log(hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一"))
-    console.log(hanzi2num("無量大數"))
-    console.log(hanzi2num("三十二又一分"))
-    console.log(hanzi2num("二分七釐三毫一絲二忽三微四纖五沙三千萬塵一埃"))
-    console.log(hanzi2num("剎那"))
-    console.log(hanzi2num("三千萬埃"))
-    console.log(hanzi2num("三十二"))
-    console.log(hanzi2num("不可思議"))
-    console.log(hanzi2num("一萬"))
-    console.log(hanzi2num("零"))
-
-    console.log(hanzi2num("二百五"))
-    console.log(hanzi2num("二百零五"))
-    console.log(hanzi2num("三千七"))
-    console.log(hanzi2num("五萬三千七"))
-    console.log(hanzi2num("五萬三千零七"))
-}
-
-try{
-    module.exports = {hanzi2num,num2hanzi};
-}catch(e){}
-// test_hanzi2num()
