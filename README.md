@@ -170,6 +170,7 @@ Arrays are 1-indexed.
 ## Contributed Tools
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
 
 ## Test
 
