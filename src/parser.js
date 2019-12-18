@@ -718,8 +718,9 @@ function compile(lang,txt,{
 	return targ;
 }
 
+var parser = {KEYWORDS,NUMBER_KEYWORDS,compile,wy2tokens,tokens2asc}
 try{
-    module.exports = {KEYWORDS,NUMBER_KEYWORDS,compile,wy2tokens,tokens2asc};
+    module.exports = parser;
 }catch(e){}
 
 

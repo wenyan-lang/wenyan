@@ -14,6 +14,7 @@ function cmdlinecode(){
 		["--eval",    "-e", String,  "",            "Give a string instead of a file"],
 		["--log",     null, String,  "/dev/null",   "Log file"],
 		["--inspect", "-i", Boolean, false,         "Interactive REPL"],
+		["--render",  null, String,  "none", 		"Render input under given title"],
 	]
 	var ART = ` ,_ ,_\n \\/ ==\n /\\ []`
 	function printhelp(){
@@ -160,12 +161,13 @@ function cmdlinecode(){
 	function main(){
 		var {files, args} = argparse();
 		var scope_generated = false;
-		var out = compile(args['--lang'],
-			files.map(x=>
+		var src = files.map(x=>
 				x.endsWith('.svg')?
 					 unrender([fs.readFileSync(x).toString()])
 					:fs.readFileSync(x).toString()
-				).join("\n")+"\n"+args['--eval'],
+				).join("\n")+"\n"+args['--eval'];
+		var out = compile(args['--lang'],
+			src,
 			{
 				romanizeIdentifiers:args['--roman'],
 				logCallback:writer(args["--log"],'a'),
@@ -194,6 +196,12 @@ function cmdlinecode(){
 				replscope();
 			}
 			repl(args);
+		}
+		if (args['--render'] != "none") {
+			var svgs = render(args['--render'],src,{plotResult:false})
+			for (var i = 0; i < svgs.length; i++){
+				fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg",svgs[i])
+			}
 		}
 		return 0;
 	}
