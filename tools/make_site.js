@@ -41,14 +41,14 @@ function main(){
 		highlight([ed]);
 		out.innerText="";
 		var hasError = false;
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:true,errorCallback:function(x){
+		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",errorCallback:function(x){
 			hasError = true;
 			log2div(i,x);
 		}});
 		if (i == 0){
 			document.getElementById("js").innerText="// JavaScript\n"+js_beautify(code);
 
-			var py = compile('py',ed.innerText,{romanizeIdentifiers:true,errorCallback:()=>0});
+			var py = compile('py',ed.innerText,{romanizeIdentifiers:"none",errorCallback:()=>0});
 			document.getElementById("py").innerText="# Python\n"+py.split("#####\n")[1];
 			// hljs.highlightBlock(document.getElementById("py"));
 		}

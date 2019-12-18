@@ -8,7 +8,7 @@ var compileinfo = `${new Date().toLocaleDateString('en-US')}`
 function cmdlinecode(){
 	var ARGS = [
 		["--lang",    "-l", String,  "js",          "Language: js/py"],
-		["--roman",   "-r", Boolean, true,          "Romanize identifiers"],
+		["--roman",   "-r", String,  "none",        "Romanize identifiers"],
 		["--output",  "-o", String,  "/dev/stdout", "Output file"],
 		["--exec",    "-x", Boolean, false,         "Execute ouput"],
 		["--eval",    "-e", String,  "",            "Give a string instead of a file"],

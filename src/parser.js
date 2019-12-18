@@ -213,11 +213,11 @@ function wy2tokens(txt){
 	return tokens;
 }
 
-var iden2pinyin={}
-function tokenRomanize(tokens){
+var idenMap={}
+function tokenRomanize(tokens,method){
 	function noDup(x){
-		for (var k in iden2pinyin){
-			if (iden2pinyin[k]==x){
+		for (var k in idenMap){
+			if (idenMap[k]==x){
 				return false;
 			}
 		}
@@ -226,20 +226,35 @@ function tokenRomanize(tokens){
 	function isRoman(x){
 		return x.replace(/[ -~]/g,'').length==0;
 	}
+	function hanzi2unicodeEntry(s){
+		var y = ""
+		for (var c of s){
+			y += "U"+c.charCodeAt(0).toString(16).toUpperCase();
+		}
+		return y;
+	}
 	for (var i = 0; i < tokens.length; i++){
 		if (tokens[i][0]=="iden" && !isRoman(tokens[i][1])){
-			var r = iden2pinyin[tokens[i][1]]
+			var r = idenMap[tokens[i][1]]
 			var key = tokens[i][1];
 			if (r != undefined){
 				tokens[i][1]=r;
 			}else{
-				r=hanzi2pinyin(tokens[i][1])
+				if (method=="pinyin"){
+					r=hanzi2pinyin(tokens[i][1])
+				}else if (method=="unicode"){
+					r=hanzi2unicodeEntry(tokens[i][1])
+				}else{
+					r=hanzi2pinyin(tokens[i][1]) // legacy
+					//console.log("Unrecognized Romanization method");
+					//return;
+				}
 				while(!noDup(r)){
 					r+="_";
 				}
 				tokens[i][1]=r
 			}
-			iden2pinyin[key]=r;
+			idenMap[key]=r;
 		}
 	}
 }
@@ -643,7 +658,7 @@ function asc2js(asc){
 }
 
 function compile(lang,txt,{
-		romanizeIdentifiers=true,
+		romanizeIdentifiers="none",
 		logCallback=(x)=>((typeof x)=="string")?console.log(x):console.dir(x,{depth:null,'maxArrayLength':null}),
 		errorCallback=process.exit}={}){
 	txt = txt.replace(/\r\n/g,"\n");
@@ -653,8 +668,8 @@ function compile(lang,txt,{
 	logCallback("\n\n=== [PASS 1] TOKENIZER ===");
 	logCallback(tokens)
 
-	if (romanizeIdentifiers){
-		tokenRomanize(tokens);
+	if (romanizeIdentifiers != "none"){
+		tokenRomanize(tokens,romanizeIdentifiers);
 	}
 
 	var txtlines = txt.split("\n")
