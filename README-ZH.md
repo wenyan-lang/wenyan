@@ -54,7 +54,7 @@ for (var i = 0; i < n; i++) {
 - 符合古汉语的语法
 - 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) 或者 [Python](https://python.org)
 - [通过图灵测试](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- [在线 IDE]，即刻体验(http://wenyan-lang.lingdong.works/ide.html)
+- [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻体验
 - 通过 [几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
 
 
