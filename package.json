@@ -10,7 +10,7 @@
     "make_site": "node ./tools/make_site.js",
     "test_parser": "node ./tools/test_parser.js"
   },
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "pkg": "^4.4.2"
   }

@@ -31,7 +31,7 @@ function main(){
 	function run(){
 		highlight([ed]);
 		document.getElementById("out").innerText="";
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",errorCallback:log2div});
+		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",resetVarCnt:true,errorCallback:log2div});
 		document.getElementById("js").innerText=js_beautify(code);
 		hljs.highlightBlock(document.getElementById("js"));
 		code = code.replace(/console.log\(/g, `log2div(`);
