@@ -1,118 +1,130 @@
-try{process.chdir("./tools");}catch(e){}//make sure we're in tools directory
+try {
+  process.chdir("./tools");
+} catch (e) {} //make sure we're in tools directory
 
-const fs = require('fs');
-const utils = require('./utils');
-const render = require("../src/render")
+const fs = require("fs");
+const utils = require("./utils");
+const render = require("../src/render");
 
-const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString()
-const sieve = fs.readFileSync("../examples/sieve.wy").toString()
-
+const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString();
+const sieve = fs.readFileSync("../examples/sieve.wy").toString();
 
 function base64_encode(file) {
-    var bitmap = fs.readFileSync(file);
-    var h;
-    if (file.endsWith(".png")){
-    	h = "data:image/png;base64, "
-    }else{
-    	h = "data:image/jpeg;base64, "
+  var bitmap = fs.readFileSync(file);
+  var h;
+  if (file.endsWith(".png")) {
+    h = "data:image/png;base64, ";
+  } else {
+    h = "data:image/jpeg;base64, ";
+  }
+  return h + Buffer.from(bitmap).toString("base64");
+}
+
+function load_svg(pth) {
+  var svg = fs.readFileSync(pth).toString();
+  svg = svg.replace(/(\d+)\.(\d)\d*/g, `$1.$2`);
+  svg = svg.replace(/width=".+?"/, `width="100%"`);
+  svg = svg.replace(/height=".+?"/, ``);
+  console.log(svg);
+  return svg;
+}
+
+function main() {
+  DEFAULT_COLORS = BOOK_COLORS;
+
+  var eds = [];
+  var outs = [];
+
+  function run(i) {
+    var ed = eds[i];
+    var out = outs[i];
+    highlight([ed]);
+    out.innerText = "";
+    var hasError = false;
+    var code = compile("js", ed.innerText, {
+      romanizeIdentifiers: "none",
+      errorCallback: function(x) {
+        hasError = true;
+        log2div(i, x);
+      }
+    });
+    if (i == 0) {
+      document.getElementById("js").innerText =
+        "// JavaScript\n" + js_beautify(code);
+
+      var py = compile("py", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("py").innerText =
+        "# Python\n" + py.split("#####\n")[1];
+      // hljs.highlightBlock(document.getElementById("py"));
     }
-    return h+Buffer.from(bitmap).toString('base64');
-}
+    // hljs.highlightBlock(document.getElementById("js"));
+    if (!hasError) {
+      code = code.replace(/console.log\(/g, `log2div(` + i + ",");
+      eval(code);
+    }
+  }
 
-function load_svg(pth){
-	var svg = fs.readFileSync(pth).toString()
-	svg = svg.replace(/(\d+)\.(\d)\d*/g,`$1.$2`)
-	svg = svg.replace(/width=".+?"/,`width="100%"`);
-	svg = svg.replace(/height=".+?"/,``);
-	console.log(svg)
-	return svg;
-}
+  function log2div() {
+    // alert(arguments[1])
+    if (arguments[1] instanceof Array && arguments.length == 2) {
+      var l = [];
+      for (var i = 0; i < arguments[1].length; i++) {
+        if (i != 0) {
+          l.push("。");
+        }
+        l.push(arguments[1][i]);
+      }
+      return log2div(arguments[0], ...l);
+    }
+    var outdiv = outs[arguments[0]];
+    for (var i = 1; i < arguments.length; i++) {
+      if (typeof arguments[i] == "number") {
+        outdiv.innerText += num2hanzi(arguments[i]);
+      } else {
+        outdiv.innerText += arguments[i];
+      }
+    }
+    outdiv.innerText += "\n";
+  }
 
-function main(){
-	DEFAULT_COLORS = BOOK_COLORS;
+  function loop() {
+    requestAnimationFrame(loop);
+    document.getElementById("bg-inner").style.top =
+      -250 - window.scrollY * 0.8 + "px";
+    document.getElementById("bg-inner").style.left =
+      50 + window.scrollY * 0.141 + "px";
+  }
+  loop();
 
-	var eds=[];
-	var outs=[];
+  var trythem = document.getElementsByClassName("tryit");
 
-	function run(i){
-		
-		var ed = eds[i];
-		var out = outs[i]
-		highlight([ed]);
-		out.innerText="";
-		var hasError = false;
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",errorCallback:function(x){
-			hasError = true;
-			log2div(i,x);
-		}});
-		if (i == 0){
-			document.getElementById("js").innerText="// JavaScript\n"+js_beautify(code);
+  for (var i = 0; i < trythem.length; i++) {
+    var ed = newEditor(prgms[trythem[i].getAttribute("data-prgm")]);
+    // ed.style.width="50%";
+    var out = document.createElement("div");
+    out.classList.add("out");
+    trythem[i].getElementsByClassName("in-box")[0].appendChild(ed);
+    trythem[i].getElementsByClassName("out-box")[0].appendChild(out);
+    eds.push(ed);
+    outs.push(out);
+  }
 
-			var py = compile('py',ed.innerText,{romanizeIdentifiers:"none",errorCallback:()=>0});
-			document.getElementById("py").innerText="# Python\n"+py.split("#####\n")[1];
-			// hljs.highlightBlock(document.getElementById("py"));
-		}
-		// hljs.highlightBlock(document.getElementById("js"));
-		if (!hasError){
-			code = code.replace(/console.log\(/g, `log2div(`+i+",");
-			eval(code);
-		}
-	}
+  var trybuts = document.getElementsByClassName("play-btn");
+  for (var i = 0; i < trybuts.length; i++) {
+    (function() {
+      var _i = i;
+      trybuts[_i].onclick = function() {
+        run(_i);
+      };
+    })();
+  }
 
-	function log2div(){
-		// alert(arguments[1])
-		if (arguments[1] instanceof Array && arguments.length == 2){
-			var l = []
-			for (var i = 0; i < arguments[1].length; i++){
-				if (i != 0){
-					l.push("。")
-				}
-				l.push(arguments[1][i])
-			}
-			return log2div(arguments[0],...l)
-		}
-		var outdiv = outs[arguments[0]];
-		for (var i = 1; i < arguments.length; i++){
-			if (typeof arguments[i] == 'number'){
-				outdiv.innerText += num2hanzi(arguments[i]);
-			}else{
-				outdiv.innerText += arguments[i];
-			}
-		}
-		outdiv.innerText+="\n";
-	}
-
-	function loop(){
-		requestAnimationFrame(loop)
-		document.getElementById("bg-inner").style.top=(-250-window.scrollY*0.8)+"px";
-		document.getElementById("bg-inner").style.left=(50+window.scrollY*0.141)+"px";
-	}
-	loop();
-
-	var trythem = document.getElementsByClassName("tryit");
-
-	for (var i = 0; i < trythem.length; i++){
-		var ed = newEditor(prgms[trythem[i].getAttribute('data-prgm')]);
-		// ed.style.width="50%";
-		var out = document.createElement("div");
-		out.classList.add("out");
-		trythem[i].getElementsByClassName("in-box")[0].appendChild(ed);
-		trythem[i].getElementsByClassName("out-box")[0].appendChild(out);
-		eds.push(ed);
-		outs.push(out);
-	}
-
-	var trybuts = document.getElementsByClassName("play-btn");
-	for (var i = 0; i < trybuts.length; i++){
-		;;(function(){var _i = i; trybuts[_i].onclick = function(){
-			run(_i);
-		}})()
-	}
-
-	for (var i = 0; i < eds.length; i++){
-		run(i);
-	}
-
+  for (var i = 0; i < eds.length; i++) {
+    run(i);
+  }
 }
 
 var html = `<!--GENERATED FILE, DO NOT READ-->
@@ -315,6 +327,6 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
 <script>var prgms={helloworld:\`${helloworld}\`,sieve:\`${sieve}\`}</script>
 <script>${main.toString()};main()</script>
 </body>
-`
+`;
 
-fs.writeFileSync("../site/index.html",html);
+fs.writeFileSync("../site/index.html", html);
