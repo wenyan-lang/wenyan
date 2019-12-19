@@ -53,7 +53,7 @@ for (var i = 0; i < n; i++) {
 ## 特点
 - 符合古汉语的语法
 - 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) 或者 [Python](https://python.org)
-- [通过图灵测试](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
+- [图灵完备](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻体验
 - 通过 [几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
 
@@ -194,7 +194,7 @@ mocha
 |---|---|---|
 |[语言规范](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  |
 |[类](https://github.com/LingDong-/wenyan-lang/issues/31) / [对象文法](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | |
-|[import导入语句](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
+|[import语句](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
 |标准库 ([Math(数学)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位运算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(随机)](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
 |[测试套件](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  |
 |[Switch语句](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
