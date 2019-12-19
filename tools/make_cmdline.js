@@ -206,6 +206,7 @@ function cmdlinecode(){
 				if (!outputEndsWithSvg)
 					args['--output'] += '.svg'
 				fs.writeFileSync(args['--output'], svgs[0])
+				console.log(args['--output'])
 			}
 			// multiple pages rendered, output file as `filename.001.svg` etc
 			else {
@@ -213,7 +214,9 @@ function cmdlinecode(){
 					args['--output'] = args['--output'].slice(0, -4) // remove .svg suffix
 
 				for (var i = 0; i < svgs.length; i++) {
-					fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg", svgs[i])
+					var filename = args['--output']+"."+i.toString().padStart(3,'0')+".svg"
+					fs.writeFileSync(filename, svgs[i])
+					console.log(filename)
 				}
 			}
 		}
