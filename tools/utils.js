@@ -46,13 +46,4 @@ function beautifier() {
   return js_beautify;
 }
 
-function pyeval(py) {
-  fs.writeFileSync("tmp.py", py);
-  var ret = execSync(
-    "which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi; rm tmp.py",
-    { encoding: "utf-8" }
-  );
-  return ret;
-}
-
-module.exports = { uglifier, beautifier, catsrc, remotelib, pyeval };
+module.exports = { uglifier, beautifier, catsrc, remotelib };

@@ -4,3 +4,4 @@ node_modules/
 build/wenyan-linux
 build/wenyan-macos
 build/wenyan-win.exe
+temp
