@@ -8,10 +8,11 @@
     "make_cmdline": "node ./tools/make_cmdline.js && pkg ./build/wenyan.js --out-path ./build",
     "make_ide": "node ./tools/make_ide.js",
     "make_site": "node ./tools/make_site.js",
+    "test": "mocha",
     "test_parser": "node ./tools/test_parser.js",
     "lint:fix": "npm run lint -- --fix",
-    "lint": "eslint {src,tools}/**/*.js",
-    "prettify": "prettier {src,tools}/**/*.js --write"
+    "lint": "eslint {src,tools,test}/**/*.js",
+    "prettify": "prettier {src,tools,test}/**/*.js --write"
   },
   "husky": {
     "hooks": {
@@ -19,7 +20,7 @@
     }
   },
   "lint-staged": {
-    "{src,tools}/**/*.js": [
+    "{src,tools,test}/**/*.js": [
       "prettier --write",
       "eslint --fix",
       "git add"
@@ -33,6 +34,7 @@
     "eslint-plugin-prettier": "^3.1.2",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
+    "mocha": "^6.2.2",
     "pkg": "^4.4.2",
     "prettier": "^1.19.1"
   }
