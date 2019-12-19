@@ -37,17 +37,19 @@ function main(){
 		run();
 	}
 
-	ed.oninput = () => {
-		if (ed.innerText.length < 1500) {
-			highlightCode();
-			highlighted = true;
-		} else {
-			if (!highlighted) {
-				clearTimeout(currentHighlightTimeout);
+	ed.oninput = e => {
+		if (e.inputType !== 'insertParagraph') {
+			if (ed.innerText.length < 1500) {
+				highlightCode();
+				highlighted = true;
+			} else {
+				if (!highlighted) {
+					clearTimeout(currentHighlightTimeout);
+				}
+				const wait = ed.innerText.length / 2;
+				currentHighlightTimeout = setTimeout(highlightCode, wait);
+				highlighted = false;
 			}
-			const wait = ed.innerText.length / 2;
-			currentHighlightTimeout = setTimeout(highlightCode, wait);
-			highlighted = false;
 		}
 	}
 
