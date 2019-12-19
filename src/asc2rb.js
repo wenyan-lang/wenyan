@@ -11,8 +11,9 @@ let lop = {
 }
 
 let rblib = `# encoding: UTF-8
-require 'pry'
+require 'forwardable'
 	class Ctnr
+		extend Forwardable
 		attr_accessor :dict, :length, :it
 		def initialize()
 			@dict = {}
@@ -35,14 +36,10 @@ require 'pry'
 			i.upto(@length).map {|index| @dict[index.to_s]}
 		end
 		def concat(other)
-			other.each {|item| push(item) }
+			other.length.times {|i| push(other[i]) }
 			self
 		end
-		def each
-			dict.each do |item|
-				yield if block_given?
-			end
-		end
+		def_delegators :@dict, :each
 	end
 	module Math
 		def self.random(*args)
