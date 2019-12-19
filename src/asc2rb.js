@@ -11,16 +11,19 @@ let lop = {
 }
 
 let rblib = `# encoding: UTF-8
+require 'pry'
 	class Ctnr
 		attr_accessor :dict, :length, :it
 		def initialize()
-			@dict = dict
+			@dict = {}
 			@length = 0
 			@it = -1
 		end
 		def push(*args)
-			@dict[@length.to_s] = args
-			@length += 1
+			args.each do |arg|
+				@dict[@length.to_s] = arg
+				@length += 1
+			end
 		end
 		def [](i)
 			@dict[i.to_s]
@@ -33,41 +36,118 @@ let rblib = `# encoding: UTF-8
 		end
 		def concat(other)
 			other.each {|item| push(item) }
+			self
+		end
+		def each
+			dict.each do |item|
+				yield if block_given?
+			end
+		end
+	end
+	module Math
+		def self.random(*args)
+			rand(*args)
+		end
+		def self.floor(number)
+			number.floor
 		end
 	end
 #####
 `
+const rename = (name) => name && `${name.toLowerCase()}`
+
+// #REFACTOR ME#
+// temperory patch
+// need some code refactoring.
+function lowerAllPinYinAndMakeItGlobal(asc) {
+	for (let i = 0; i < asc.length; i++) {
+		const item = asc[i];
+		switch (item.op) {
+			case "var":
+			case "name":
+				item.names = item.names.map((e) => rename(e));
+				break;
+			case "call":
+				item.fun = rename(item.fun)
+				item.args = item.args.map((arg) => {
+					if(arg[0] == 'iden') arg[1] = rename(arg[1])
+					return arg
+				})
+				break;
+			case "fun":
+				item.args = item.args.map((arg) => {
+					arg.name = rename(arg.name)
+					return arg
+				})
+				break;
+			case "return":
+				if(item.value[0] == 'iden') item.value[1] = rename(item.value[1]);
+				break;
+			case "cat":
+				item.containers = item.containers.map((e) => rename(e));
+				break;
+			case "for":
+				item.container = rename(item.container);
+				item.iterator = rename(item.iterator);
+				break;
+			case "push":
+				item.container = rename(item.container);
+				break;
+			case "subscript":
+				item.container = rename(item.container);
+				if (item.value[0] == 'iden') rename(item.value[1]);
+				break;
+			default:
+				break;
+		}
+		if (item.values){
+			item.values.forEach((value) => {
+				if(value[0]== 'iden') value[1] = rename(value[1])
+			})
+		}
+		["rhs", "lhs", "lhssubs", "value"].forEach((key) => {
+			if(item[key] && item[key][0]== 'iden') item[key][1] = rename(item[key][1])
+		})
+	}
+	return asc;
+}
 
 function asc2rb(asc){
-	console.log(asc)
 	let rb = rblib;
 	let prevfun = "";
 	let curlvl = 0;
 	let strayvar = 0;
+	asc = lowerAllPinYinAndMakeItGlobal(asc)
+	// console.log("START!",asc)
 	function getval(x){
 		if (!x) return "";
 		if (x[0] == "ans"){
 			strayvar = 0;
 			return currTmpVar();
 		}
-		return x[1] || undefined;
+		if (x[0] == 'iden') return rename(x[1])
+		if (x[1] == undefined) return 'nil';
+		return x[1];
 	}
-
 	for (let i = 0; i < asc.length; i++){
 		let a = asc[i];
+		if(a.args) console.log(a.args, a, "+++++++=======++++_____")
 		if (a.op == 'var'){
 			for (let j = 0; j < a.count; j++){
 				if (a.values[j]==undefined){
 					a.values[j]=[]
 				}
 				let name = a.names[j]
+				if(a.type == 'fun') {
+					prevfun = name;
+					continue;
+				}
 				let value = getval(a.values[j])
 				if (name==undefined){
 					name = nextTmpVar();
 					strayvar++;
 				}
-				if (value==undefined){
-
+				if ([undefined, 'nil'].includes(value)){
 					if (a.type=="arr"){
 						value="Ctnr.new"
 					}else if (a.type=="num"){
@@ -75,10 +155,7 @@ function asc2rb(asc){
 					}else if (a.type=="str"){
 						value=`""`
 					}else if (a.type=="bol"){
-						value="False"
-					}else if (a.type=="fun"){
-						value="lambda _:0"
-						prevfun=name;
+						value="false"
 					}
 				}
 				rb += "\t".repeat(curlvl);
@@ -114,7 +191,7 @@ function asc2rb(asc){
 			curlvl++;
 		}else if (a.op == "funend"){
 			curlvl--;
-			rb += `${"\t".repeat(curlvl)}end \n`
+			rb += `${"\t".repeat(curlvl)}end\n`
 		}else if (a.op == "end"){
 			curlvl--;
 			rb += `${"\t".repeat(curlvl)}end \n`
@@ -141,7 +218,7 @@ function asc2rb(asc){
 						rb += ".length"
 					}
 				}else{
-					rb+=a.test[j][1]
+					rb += a.test[j][0] == "iden" ? a.test[j][1].toLowerCase() : a.test[j][1]
 				}
 				j++;
 			}
@@ -152,7 +229,7 @@ function asc2rb(asc){
 			rb += "else\n"
 		}else if (a.op == "return"){
 			rb += "\t".repeat(curlvl);
-			rb += `return ${getval(a.value)}\nend\n`
+			rb += `return ${getval(a.value)}\n`
 		}else if (a.op.startsWith("op")){
 			rb += "\t".repeat(curlvl);
 			let lhs = getval(a.lhs);
@@ -193,7 +270,7 @@ function asc2rb(asc){
 			rb += `${a.container}.push(${a.values.map(x=>getval(x)).join(",")})\n`
 		}else if (a.op == "for"){
 			rb += "\t".repeat(curlvl);
-			rb += `for ${a.iterator} in ${a.container}:\n`
+			rb += `${a.container}.each do |${a.iterator.toLowerCase()}|\n`
 			curlvl++;
 		}else if (a.op == "whiletrue"){
 			rb += "\t".repeat(curlvl);
@@ -210,7 +287,7 @@ function asc2rb(asc){
 		}else if (a.op == "not"){
 			rb += "\t".repeat(curlvl);
 			let v = getval(a.value);
-			rb += `${nextTmpVar()}=not ${v}\n`
+			rb += `${nextTmpVar()}=!${v}\n`
 			strayvar++;
 		}else if (a.op == "reassign"){
 			rb += "\t".repeat(curlvl);
@@ -227,7 +304,7 @@ function asc2rb(asc){
 			rb += `# ${getval(a.value)}\n`
 			rb += "\t".repeat(curlvl);
 		}else{
-			console.log(a.op)
+			// console.log(a.op)
 		}
 	}
 	return rb;

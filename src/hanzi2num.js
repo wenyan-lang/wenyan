@@ -30,9 +30,9 @@ function hanzi2num(s){
                 st[i][0] = "一"
             }
             var stt = _sp(st[i][0], m1)
-            
+
             var r = 0;
-            
+
             var lastpow = 10;
 
             for (var j = 0; j < stt.length; j++){
@@ -110,7 +110,7 @@ function hanzi2num(s){
                 break
             }
         }
-        var n1 = _fh2n(s.slice(0,l+1),[],0,FRACS1,0.1) 
+        var n1 = _fh2n(s.slice(0,l+1),[],0,FRACS1,0.1)
         var n2 = _fh2n(s.slice(l+1),MULTS1,10,FRACS4,0.0001) * Math.pow(0.1,FRACS1.length)
         return n1 + n2
     }
@@ -163,7 +163,7 @@ function num2hanzi(n,nfrac=6){
                 s+="零"
                 z = 1;
             }
-            
+
         }
         if (n){
             s += int2hanzi(n)
@@ -224,3 +224,8 @@ function num2hanzi(n,nfrac=6){
         return int2hanzi(intn)+"又"+frac2hanzi(n-intn);
     }
 }
+
+
+try{
+    module.exports = {hanzi2num, num2hanzi};
+}catch(e){}

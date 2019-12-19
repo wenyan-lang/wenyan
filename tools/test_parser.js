@@ -25,7 +25,6 @@ function runExample(lang,name){
 }
 
 function runAll(lang){
-
 	var files = fs.readdirSync("../examples/");
 	console.log(files);
 	for (var i = 0; i < files.length; i++){
@@ -33,5 +32,5 @@ function runAll(lang){
 	}
 }
 
-runExample("rb","divination")
+runExample("rb","hanoi")
 // runAll("rb")
