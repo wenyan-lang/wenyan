@@ -46,4 +46,10 @@ function pyeval(py){
 	return ret;
 }
 
-module.exports={uglifier,beautifier,catsrc,remotelib,pyeval}
+function rbeval(rb){
+	fs.writeFileSync("tmp.rb",rb);
+	let ret = execSync("ruby tmp.rb", { encoding: 'utf-8' })
+	execSync("rm tmp.rb");
+	return ret;
+}
+module.exports={uglifier,beautifier,catsrc,remotelib,pyeval,rbeval}
