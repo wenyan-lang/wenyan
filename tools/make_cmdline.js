@@ -189,9 +189,8 @@ function cmdlinecode(){
 			}
 				
 		}
-		if (args['--render'] == 'none'){
-			writer(args['--output'],'w')(out);
-		}else{
+
+		if (args['--render'] !== 'none'){
 			var dispname = args['--render'];
 			if (dispname == "."){
 				var p = args['--output'].split(/[/\\]/);
@@ -206,7 +205,7 @@ function cmdlinecode(){
 				if (!outputEndsWithSvg)
 					args['--output'] += '.svg'
 				fs.writeFileSync(args['--output'], svgs[0])
-				console.log(args['--output'])
+				console.log(args['--output']) // Outputs generated filename
 			}
 			// multiple pages rendered, output file as `filename.001.svg` etc
 			else {
@@ -216,11 +215,11 @@ function cmdlinecode(){
 				for (var i = 0; i < svgs.length; i++) {
 					var filename = args['--output']+"."+i.toString().padStart(3,'0')+".svg"
 					fs.writeFileSync(filename, svgs[i])
-					console.log(filename)
+					console.log(filename) // Outputs generated filename
 				}
 			}
 		}
-		if (args['--exec']){
+		else if (args['--exec']){
 			if (args['--lang'] == 'js'){
 				if (!args['--inspect']){
 					eval(out);
@@ -236,11 +235,16 @@ function cmdlinecode(){
 				console.log(ret);
 			}
 		}
-		if (args['--inspect']){
+		else if (args['--inspect']){
 			if (!scope_generated){
 				replscope();
 			}
 			repl(args);
+		}
+		else {
+			// none of "--render", "--exec", "--inspect" are specified
+			// going to compile mode
+			writer(args['--output'],'w')(out);
 		}
 
 		return 0;
