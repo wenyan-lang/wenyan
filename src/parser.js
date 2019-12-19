@@ -355,7 +355,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "decl" && gettok(i, 1) == "prop") {
-      typeassert(i + 1, ["iden"], "identifier");
+      typeassert(i + 1, ["lit"], "property key");
       typeassert(i + 3, ["type"], "property type");
       typeassert(i + 4, ["assgn"], "property value");
       var x = {
@@ -672,7 +672,7 @@ function asc2js(asc) {
     } else if (a.op == "objbody") {
       js += `${prevobj}={`;
     } else if (a.op == "prop") {
-      js += `"${a.name}":${a.value[1]},`;
+      js += `${a.name}:${a.value[1]},`;
     } else if (a.op == "end") {
       js += "}";
       curlvl--;
