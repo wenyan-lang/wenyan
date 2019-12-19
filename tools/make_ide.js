@@ -15,6 +15,15 @@ function main(){
 	var ed = newEditor(prgms["mandelbrot"])
 	// var ln = newLineNo(ed);
 
+	let highlighted = true
+	let currentHighlightTimeout
+	const highlightCode = () => {
+		console.time('highlight')
+		highlight([ed]);
+		highlighted = true
+		console.timeEnd('highlight')
+	}
+
 	var sel = document.getElementById("pick-example");
 	for (var k in prgms){
 		var opt = document.createElement("option");
@@ -28,8 +37,22 @@ function main(){
 		run();
 	}
 
+	ed.oninput = () => {
+		if (ed.innerText.length < 1500) {
+			highlightCode()
+			highlighted = true
+		} else {
+			if (!highlighted) {
+				clearTimeout(currentHighlightTimeout)
+			}
+			const wait = ed.innerText.length / 2;
+			currentHighlightTimeout = setTimeout(highlightCode, wait);
+			highlighted = false;
+		}
+	}
+
 	function run(){
-		highlight([ed]);
+		highlightCode()
 		document.getElementById("out").innerText="";
 		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",resetVarCnt:true,errorCallback:log2div});
 		document.getElementById("js").innerText=js_beautify(code);
