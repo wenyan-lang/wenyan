@@ -170,21 +170,6 @@ macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
 
-## 测试
-
-安装 Mochajs
-
-```Shell
-npm install --global mocha
-```
-
-切换到 `src/test` ，然后执行
-
-```Shell
-mocha
-```
-
-
 
 ## 功能请求
 
