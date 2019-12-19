@@ -15,13 +15,13 @@ function main(){
 	var ed = newEditor(prgms["mandelbrot"])
 	// var ln = newLineNo(ed);
 
-	let highlighted = true
-	let currentHighlightTimeout
+	let highlighted = true;
+	let currentHighlightTimeout;
 	const highlightCode = () => {
-		console.time('highlight')
+		console.time('highlight');
 		highlight([ed]);
-		highlighted = true
-		console.timeEnd('highlight')
+		highlighted = true;
+		console.timeEnd('highlight');
 	}
 
 	var sel = document.getElementById("pick-example");
@@ -39,11 +39,11 @@ function main(){
 
 	ed.oninput = () => {
 		if (ed.innerText.length < 1500) {
-			highlightCode()
-			highlighted = true
+			highlightCode();
+			highlighted = true;
 		} else {
 			if (!highlighted) {
-				clearTimeout(currentHighlightTimeout)
+				clearTimeout(currentHighlightTimeout);
 			}
 			const wait = ed.innerText.length / 2;
 			currentHighlightTimeout = setTimeout(highlightCode, wait);
@@ -52,7 +52,7 @@ function main(){
 	}
 
 	function run(){
-		highlightCode()
+		highlightCode();
 		document.getElementById("out").innerText="";
 		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",resetVarCnt:true,errorCallback:log2div});
 		document.getElementById("js").innerText=js_beautify(code);
