@@ -7,6 +7,8 @@ const exampleDir = "./examples/";
 const outputDir = "./test/temp/examples/";
 const python = getPythonExecutable();
 
+const examplesContainsRandom = ["divination"];
+
 function getPythonExecutable() {
   try {
     const output = execSync(`python3 -V`).toString();
@@ -26,17 +28,17 @@ function runExample(lang, name) {
   const filename = `${outputDir}${name}.${lang}`;
   fs.writeFileSync(filename, compiled, "utf-8");
 
+  let output = undefined;
   if (lang == "py") {
-    const output = execSync(`${python} ${filename}`, {
+    output = execSync(`${python} ${filename}`, {
       encoding: "utf-8"
     }).toString();
-    expect(output).to.matchSnapshot();
   } else if (lang == "js") {
-    const output = execSync(`node ${filename}`, {
+    output = execSync(`node ${filename}`, {
       encoding: "utf-8"
     }).toString();
-    expect(output).to.matchSnapshot();
   }
+  if (!examplesContainsRandom.includes(name)) expect(output).to.matchSnapshot();
 }
 
 function runAll(lang) {
