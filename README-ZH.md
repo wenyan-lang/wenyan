@@ -183,3 +183,37 @@ npm install --global mocha
 ```Shell
 mocha
 ```
+
+
+
+## 功能请求
+
+在你打开一个新Issue之前，请先检查你的需求是否属于以下类别：
+
+|名称|优先级|需要帮助|
+|---|---|---|
+|[语言规范](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  |
+|[类](https://github.com/LingDong-/wenyan-lang/issues/31) / [对象文法](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | |
+|[import导入语句](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
+|标准库 ([Math(数学)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位运算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(随机)](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
+|[测试套件](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  |
+|[Switch语句](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
+|[函数式程序设计](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
+|更严格的编译器 |  **** | |
+|其他语言的编译器 |  ** | √ |
+|[编辑器的插件](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ |
+|将 [js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/[anything](https://github.com/LingDong-/wenyan-lang/issues/73) 转换回 wenyan(文言) |  * | √ |
+|[转义](https://github.com/LingDong-/wenyan-lang/issues/84)/[生成](https://github.com/LingDong-/wenyan-lang/issues/128) 特殊符号 |  *** | |
+|[对「「」」的替换语法](https://github.com/LingDong-/wenyan-lang/issues/81)|  ** | |
+|[对 。的替换语法](https://github.com/LingDong-/wenyan-lang/issues/93)|  ** | |
+|在线 IDE 的 [字体](https://github.com/LingDong-/wenyan-lang/issues/5) 和 [垂直文本](https://github.com/LingDong-/wenyan-lang/issues/9) |  ** | |
+|[将注释呈现为小型内联文本](https://github.com/LingDong-/wenyan-lang/issues/148) | ** | |
+|更多示例 | ** | √ |
+
+如果你可以帮助我们实现一个在`需要帮助`下有`√`的功能，请放心提交一个PR。我们将非常感谢你！如果你想帮助我们实现其他功能，也请让我们知道！谢谢。
+
+## 已知问题
+|名称|优先级|需要帮助|
+|---|---|---|
+|[汉字到数字的转换问题](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | |
+|[汉字到数字转换中多字符数字没有被加入支持](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | |
