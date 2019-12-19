@@ -898,12 +898,14 @@ var NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆京
 var KEYWORDS = {
 	"吾有":["decl","uninit"],
 	"今有":["decl","uninit"],
+	"物之":["decl","prop"],
 	"有":["decl","init"],
 	"數":["type","num"],
 	"列":["type","arr"],
 	"言":["type","str"],
 	"術":["type","fun"],
 	"爻":["type","bol"],
+	"物":["type","obj"],
 	"書之":["print"],
 	"名之曰":["name"],
 	"施":["call"],
@@ -913,12 +915,13 @@ var KEYWORDS = {
 	"昔之":["rassgn",'a'],
 	"今":["rassgn",'b'],
 	"是矣":["rassgn",'c'],
+	"不復存矣":["rassgn",'delete'],
 	"其":["ans"],
 	
 	"乃得":["ctrl","ret"],
 	"乃歸空無":["ctrl","retvoid"],
-	"是謂":["ctrl","funend0"],
-	"之術也":["ctrl","funend1"],
+	"是謂":["ctrl","bigend"],
+	"之術也":["ctrl","funend"],
 	"必先得":["ctrl","funarg"],
 	"是術曰":["ctrl","funbody"],
 	"乃行是術曰":["ctrl","funbody"],
@@ -935,6 +938,9 @@ var KEYWORDS = {
 	"若非":["ctrl","else"],
 	"若":["ctrl","if"],
 	"者":["ctrl","conj"],
+
+	"如是":["ctrl","objbody"],
+	"之物也":["ctrl","objend"],
 
 	"夫":["expr"],
 
@@ -1200,6 +1206,13 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 				i+=2;
 			}
 			asc.push(x);
+		}else if (gettok(i,0)=="decl" && gettok(i,1) == "prop"){
+			typeassert(i+1,["iden"],"identifier")
+			typeassert(i+3,["type"],"property type")
+			typeassert(i+4,["assgn"],"property value")
+			var x = {op:"prop",type:gettok(i+3,1),name:tokens[i+1][1],value:tokens[i+5],pos};
+			i+=6;
+			asc.push(x);
 		}else if (gettok(i,0)=="print"){
 			asc.push({op:"print",pos});
 			i++;
@@ -1229,11 +1242,16 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funbody"){
 			asc.push({op:"funbody",pos});
 			i++;
-		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funend0"){
-			assert(`<${cmd}> Incorrect function end`,
-				pos,gettok(i+2,0)=="ctrl"&&gettok(i+2,1)=="funend1"&&gettok(i+1,0)=="iden")
-			asc.push({op:"funend",pos});
+		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="bigend"){
+			assert(`<${cmd}> Incorrect function/object end`,
+				pos,gettok(i+2,0)=="ctrl"&&gettok(i+1,0)=="iden")
+			asc.push({op:gettok(i+2,1),pos});
 			i+=3;
+
+		}else if (gettok(i,0)=="ctrl" && gettok(i,1) == "objbody"){
+			asc.push({op:"objbody",pos})
+			i++;
+		
 		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="if"){
 			var x = {op:"if",test:[],pos};
 			i++;
@@ -1345,13 +1363,21 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 		}else if (gettok(i,0)=="rassgn"&&gettok(i,1)=="a"){
 			var x = {op:"reassign",lhs:tokens[i+1],pos}
 			if (gettok(i+2,0)=="ctnr"&&gettok(i+2,1)=="subs"){
-				x.rhs = tokens[i+6];
 				x.lhssubs = tokens[i+3];
-				i+=8;
+				if (gettok(i+6,0)=="rassgn" && gettok(i+6,1)=="delete"){
+					x.rhs=undefined;
+					x.del=true;
+					i+=7;
+				}else{
+					x.rhs = tokens[i+6];
+					i+=8;
+				}
+				
 			}else{
 				assert(`<${cmd}> Missing conj`,pos,gettok(i+2,0)=="ctrl"&&gettok(i+2,1)=="conj");
 				x.rhs = tokens[i+4];
 				i+=6;
+				
 			}
 			asc.push(x)
 		}else if (gettok(i,0)=="discard"){
@@ -1372,6 +1398,7 @@ function asc2js(asc){
 
 	var js = ``;//`"use strict";`;
 	var prevfun="";
+	var prevobj="";
 	var curlvl = 0;
 	var strayvar = 0;
 
@@ -1412,6 +1439,9 @@ function asc2js(asc){
 					}else if (a.type=="fun"){
 						value="()=>0"
 						prevfun=name;
+					}else if (a.type=="obj"){
+						value="{}";
+						prevobj=name
 					}
 				}
 				js += `var ${name}=${value};`
@@ -1444,6 +1474,12 @@ function asc2js(asc){
 		}else if (a.op == "funend"){
 			js += "};"
 			curlvl--;
+		}else if (a.op == "objend"){
+			js += "};"
+		}else if (a.op == "objbody"){
+			js += `${prevobj}={`
+		}else if (a.op == "prop"){
+			js += `"${a.name}":${a.value[1]},`
 		}else if (a.op == "end"){
 			js += "}"
 			curlvl--;
@@ -1528,12 +1564,17 @@ function asc2js(asc){
 			
 			strayvar++;
 		}else if (a.op == "reassign"){
-			var rhs = getval(a.rhs);
-			var lhs = getval(a.lhs);
-			if (a.lhssubs){
-				lhs += `[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}]`
+			if (a.del==true){
+				var lhs = getval(a.lhs);
+				js+=`delete ${lhs}[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}];`
+			}else{
+				var rhs = getval(a.rhs);
+				var lhs = getval(a.lhs);
+				if (a.lhssubs){
+					lhs += `[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}]`
+				}
+				js += `${lhs}=${rhs};`
 			}
-			js += `${lhs}=${rhs};`
 		}else if (a.op == "length"){
 			js += `var ${nextTmpVar()}=${a.container}.length;`
 			strayvar ++;
@@ -2007,90 +2048,101 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
 是謂「埃氏篩」之術也。
 
 施「埃氏篩」於一百。書之。`}</script>
-<script>function main(){
-	DEFAULT_COLORS = BOOK_COLORS;
+<script>function main() {
+  DEFAULT_COLORS = BOOK_COLORS;
 
-	var eds=[];
-	var outs=[];
+  var eds = [];
+  var outs = [];
 
-	function run(i){
-		
-		var ed = eds[i];
-		var out = outs[i]
-		highlight([ed]);
-		out.innerText="";
-		var hasError = false;
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",errorCallback:function(x){
-			hasError = true;
-			log2div(i,x);
-		}});
-		if (i == 0){
-			document.getElementById("js").innerText="// JavaScript\n"+js_beautify(code);
+  function run(i) {
+    var ed = eds[i];
+    var out = outs[i];
+    highlight([ed]);
+    out.innerText = "";
+    var hasError = false;
+    var code = compile("js", ed.innerText, {
+      romanizeIdentifiers: "none",
+      errorCallback: function(x) {
+        hasError = true;
+        log2div(i, x);
+      }
+    });
+    if (i == 0) {
+      document.getElementById("js").innerText =
+        "// JavaScript\n" + js_beautify(code);
 
-			var py = compile('py',ed.innerText,{romanizeIdentifiers:"none",errorCallback:()=>0});
-			document.getElementById("py").innerText="# Python\n"+py.split("#####\n")[1];
-			// hljs.highlightBlock(document.getElementById("py"));
-		}
-		// hljs.highlightBlock(document.getElementById("js"));
-		if (!hasError){
-			code = code.replace(/console.log\(/g, `log2div(`+i+",");
-			eval(code);
-		}
-	}
+      var py = compile("py", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("py").innerText =
+        "# Python\n" + py.split("#####\n")[1];
+      // hljs.highlightBlock(document.getElementById("py"));
+    }
+    // hljs.highlightBlock(document.getElementById("js"));
+    if (!hasError) {
+      code = code.replace(/console.log\(/g, `log2div(` + i + ",");
+      eval(code);
+    }
+  }
 
-	function log2div(){
-		// alert(arguments[1])
-		if (arguments[1] instanceof Array && arguments.length == 2){
-			var l = []
-			for (var i = 0; i < arguments[1].length; i++){
-				if (i != 0){
-					l.push("。")
-				}
-				l.push(arguments[1][i])
-			}
-			return log2div(arguments[0],...l)
-		}
-		var outdiv = outs[arguments[0]];
-		for (var i = 1; i < arguments.length; i++){
-			if (typeof arguments[i] == 'number'){
-				outdiv.innerText += num2hanzi(arguments[i]);
-			}else{
-				outdiv.innerText += arguments[i];
-			}
-		}
-		outdiv.innerText+="\n";
-	}
+  function log2div() {
+    // alert(arguments[1])
+    if (arguments[1] instanceof Array && arguments.length == 2) {
+      var l = [];
+      for (var i = 0; i < arguments[1].length; i++) {
+        if (i != 0) {
+          l.push("。");
+        }
+        l.push(arguments[1][i]);
+      }
+      return log2div(arguments[0], ...l);
+    }
+    var outdiv = outs[arguments[0]];
+    for (var i = 1; i < arguments.length; i++) {
+      if (typeof arguments[i] == "number") {
+        outdiv.innerText += num2hanzi(arguments[i]);
+      } else {
+        outdiv.innerText += arguments[i];
+      }
+    }
+    outdiv.innerText += "\n";
+  }
 
-	function loop(){
-		requestAnimationFrame(loop)
-		document.getElementById("bg-inner").style.top=(-250-window.scrollY*0.8)+"px";
-		document.getElementById("bg-inner").style.left=(50+window.scrollY*0.141)+"px";
-	}
-	loop();
+  function loop() {
+    requestAnimationFrame(loop);
+    document.getElementById("bg-inner").style.top =
+      -250 - window.scrollY * 0.8 + "px";
+    document.getElementById("bg-inner").style.left =
+      50 + window.scrollY * 0.141 + "px";
+  }
+  loop();
 
-	var trythem = document.getElementsByClassName("tryit");
+  var trythem = document.getElementsByClassName("tryit");
 
-	for (var i = 0; i < trythem.length; i++){
-		var ed = newEditor(prgms[trythem[i].getAttribute('data-prgm')]);
-		// ed.style.width="50%";
-		var out = document.createElement("div");
-		out.classList.add("out");
-		trythem[i].getElementsByClassName("in-box")[0].appendChild(ed);
-		trythem[i].getElementsByClassName("out-box")[0].appendChild(out);
-		eds.push(ed);
-		outs.push(out);
-	}
+  for (var i = 0; i < trythem.length; i++) {
+    var ed = newEditor(prgms[trythem[i].getAttribute("data-prgm")]);
+    // ed.style.width="50%";
+    var out = document.createElement("div");
+    out.classList.add("out");
+    trythem[i].getElementsByClassName("in-box")[0].appendChild(ed);
+    trythem[i].getElementsByClassName("out-box")[0].appendChild(out);
+    eds.push(ed);
+    outs.push(out);
+  }
 
-	var trybuts = document.getElementsByClassName("play-btn");
-	for (var i = 0; i < trybuts.length; i++){
-		;;(function(){var _i = i; trybuts[_i].onclick = function(){
-			run(_i);
-		}})()
-	}
+  var trybuts = document.getElementsByClassName("play-btn");
+  for (var i = 0; i < trybuts.length; i++) {
+    (function() {
+      var _i = i;
+      trybuts[_i].onclick = function() {
+        run(_i);
+      };
+    })();
+  }
 
-	for (var i = 0; i < eds.length; i++){
-		run(i);
-	}
-
+  for (var i = 0; i < eds.length; i++) {
+    run(i);
+  }
 };main()</script>
 </body>
