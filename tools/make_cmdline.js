@@ -198,8 +198,26 @@ function cmdlinecode(){
 				dispname = p[p.length-1];
 			}
 			var svgs = render(dispname,src,{plotResult:false})
-			for (var i = 0; i < svgs.length; i++){
-				fs.writeFileSync(args['--output']+"."+i.toString().padStart(3,'0')+".svg",svgs[i])
+			
+			var outputEndsWithSvg = args['--output'].toLowerCase().endsWith('.svg');
+
+			// only one page rendered
+			if (svgs.length === 1) {
+				if (!outputEndsWithSvg)
+					args['--output'] += '.svg'
+				fs.writeFileSync(args['--output'], svgs[0])
+				console.log(args['--output'])
+			}
+			// multiple pages rendered, output file as `filename.001.svg` etc
+			else {
+				if (outputEndsWithSvg)
+					args['--output'] = args['--output'].slice(0, -4) // remove .svg suffix
+
+				for (var i = 0; i < svgs.length; i++) {
+					var filename = args['--output']+"."+i.toString().padStart(3,'0')+".svg"
+					fs.writeFileSync(filename, svgs[i])
+					console.log(filename)
+				}
 			}
 		}
 		if (args['--exec']){
