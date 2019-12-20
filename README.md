@@ -62,11 +62,7 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 
 ### The Compiler
 
-```bash
-npm install -g wenyan-lang
-```
-
-Calling the compiler without arguments prints the help message, reproduced below:
+Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
 
 ```
 Usage: wenyan [options] [input files]
