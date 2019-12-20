@@ -62,7 +62,11 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 
 ### The Compiler
 
-Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
+```bash
+npm install -g @wenyan-lang/cli
+```
+
+Calling the compiler without arguments prints the help message, reproduced below:
 
 ```
 Usage: wenyan [options] [input files]
@@ -76,20 +80,12 @@ Options:
 --output  -o <string>  : Output file (default: `/dev/stdout')
 --roman   -r <boolean> : Romanize identifiers (default: `true')
 ```
+
 Try building the included examples first, e.g.:
 
 ```
-./build/wenyan.js examples/helloworld.wy -o helloworld.js
+wenyan examples/helloworld.wy -o helloworld.js
 ```
-
-#### Building platform-specific binaries
-
-- Clone the repo
-- `npm install`
-- `npm run make_cmdline`
-
-The macOS, Windows and Linux binaries will be in the `./build` folder.
-
 
 ### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
 
