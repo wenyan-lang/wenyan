@@ -185,13 +185,13 @@ Objects
 
 Before opening an Issue, please check if it belongs to the below categories:
 
-|Name|Priority|Help needed|
-|---|---|---|
-|[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  |
-|[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | |
+|Name|Priority|Help needed|Status|
+|---|---|---|---|
+|[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
+|[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
 |[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
 |Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
-|[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  |
+|[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
 |Stricter compiler |  **** | |
@@ -209,9 +209,10 @@ If you could help implement a feature with a `√` under `help needed`, please f
 
 
 ## Known bugs
-|Name|Priority|Help needed|
-|---|---|---|
-|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | |
-|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | |
+|Name|Priority|Help needed|Status|
+|---|---|---|---|
+|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
+|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
+
 
 
