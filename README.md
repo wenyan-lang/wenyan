@@ -63,7 +63,7 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 ### The Compiler
 
 ```bash
-npm install -g @wenyan-lang/cli
+npm install -g wenyan-lang
 ```
 
 Calling the compiler without arguments prints the help message, reproduced below:
