@@ -25,7 +25,7 @@ var KEYWORDS = {
 	"今":["rassgn",'b'],
 	"是矣":["rassgn",'c'],
 	"其":["ans"],
-
+	
 	"乃得":["ctrl","ret"],
 	"乃歸空無":["ctrl","retvoid"],
 	"是謂":["ctrl","funend0"],
@@ -303,7 +303,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 		}else if (gettok(i,0)=="decl" && gettok(i,1) == "init"){
 			typeassert(i+1,["type"],"variable type");
 			typeassert(i+2,["data","num","lit","iden","bool"],"variable initialization");
-
+			
 			var x = {op:"var",count:1,type:gettok(i+1,1),values:[tokens[i+2]],pos};
 			i+=3;
 			if (tokens[i]!=undefined && gettok(i,0) == "name"){
@@ -334,7 +334,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 						i+=cnt*2;
 					}
 				}
-
+				
 			}
 			asc.push(x)
 		}else if (gettok(i,0)=="ctrl"&&gettok(i,1)=="funbody"){
@@ -400,7 +400,7 @@ function tokens2asc(tokens,assert=(msg,pos,b)=>console.log(`ERROR@${pos}: ${msg}
 			}
 			asc.push(x);
 		}else if (gettok(i,0)=="call"){
-
+			
 			var x = {op:"call",fun:gettok(i+1,1),args:[],pos};
 			i+=2;
 			while(tokens[i]&&gettok(i,0)=="opord"&&gettok(i,1)=="r"){
@@ -559,7 +559,7 @@ function asc2js(asc){
 			js += "}"
 			curlvl--;
 			js += ";"
-
+			
 		}else if (a.op == "if"){
 			js += "if (";
 			var j = 0;
@@ -595,11 +595,11 @@ function asc2js(asc){
 		}else if (a.op.startsWith("op")){
 			var lhs = getval(a.lhs);
 			var rhs = getval(a.rhs);
-
+			
 			js += `var ${nextTmpVar()}=${lhs}${a.op.slice(2)}${rhs};`
 			strayvar ++;
 		}else if (a.op == "name"){
-
+			
 			for (var j = 0; j < a.names.length; j++){
 				js += `var ${a.names[j]}=${prevTmpVar(strayvar-j)};`
 			}
@@ -636,7 +636,7 @@ function asc2js(asc){
 		}else if (a.op == "not"){
 			var v = getval(a.value);
 			js += `var ${nextTmpVar()}=!${v};`
-
+			
 			strayvar++;
 		}else if (a.op == "reassign"){
 			var rhs = getval(a.rhs);
@@ -657,7 +657,7 @@ function asc2js(asc){
 		}
 		// js+="\n"
 	}
-	return js;
+	return js;	
 }
 
 function compile(lang,txt,{
