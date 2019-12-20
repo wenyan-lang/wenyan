@@ -40,19 +40,19 @@ for (var i = 0; i < n; i++) {
 問天地好在。
 ```
 
-标点符号和换行都是可选的（就像古汉语中是连续的），所以上面的代码等同于：
+标点符号和换行都是可选的（就像古汉语中文字是连续的），所以上面的代码等同于：
 
 
 ```
 吾有一數曰三名之曰「甲」為是「甲」遍吾有一言曰「「問天地好在」」書之云云
 ```
 
-更多复杂的例子，可以在 `./examples` 中找到。比如，埃拉托斯特尼筛法、 快速排序、曼德博集合、汉诺塔。
+更多复杂的例子，可以在 `./examples` 中找到。比如，埃拉托斯特尼筛法、快速排序、曼德博集合、汉诺塔。
 
 
 ## 特点
 - 符合古汉语的语法
-- 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) 或者 [Python](https://python.org)
+- 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org),或者[Ruby](http://ruby-lang.org)
 - [图灵完备](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻体验
 - 通过 [几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
@@ -150,6 +150,15 @@ macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文
 |`夫「寶劍」之長。` | `sword.length;` |
 
 
+
+### 对象
+
+| wenyan | JavaScript |
+|---|---|
+|`吾有一物。名之曰「甲」。` | `var a = {};` |
+|`吾有一物。名之曰「甲」。其物如是。物之「「乙」」者。數曰三。物之「「丙」」者。言曰「「丁」」。是謂「甲」之物也。` | `var a = {b:3, c:"d"}` |
+
+
 ### 函数
 | wenyan | JavaScript |
 |---|---|
@@ -168,7 +177,8 @@ macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文
 
 ## 贡献者提供的工具
 
-- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [适用于VSCode的插件](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [适用于Vim的插件](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
 
 
 ## 功能请求
