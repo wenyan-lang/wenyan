@@ -39,6 +39,19 @@ function uglifier() {
   return minify;
 }
 
+function pyeval(py){
+	fs.writeFileSync("tmp.py",py);
+	var ret = execSync("which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi;",{ encoding: 'utf-8' })
+	return ret;
+}
+
+function rbeval(rb){
+	fs.writeFileSync("tmp.rb",rb);
+	let ret = execSync("ruby tmp.rb", { encoding: 'utf-8' })
+	execSync("rm tmp.rb");
+	return ret;
+}
+
 function beautifier() {
   remotelib([
     "https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"
@@ -46,4 +59,4 @@ function beautifier() {
   return js_beautify;
 }
 
-module.exports = { uglifier, beautifier, catsrc, remotelib };
+module.exports = { uglifier, beautifier, catsrc, remotelib, pyeval, rbeval };

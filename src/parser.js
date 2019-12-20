@@ -851,16 +851,21 @@ function compile(
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var targ;
-  if (lang == "js") {
-    targ = asc2js(asc);
-  } else if (lang == "py") {
-    try {
-      asc2py = require("./asc2py.js");
-    } catch (e) {}
-    targ = asc2py(asc);
-  } else {
-    logCallback("Target language not supported.");
-  }
+	switch(lang) {
+		case "js":
+			targ = asc2js(asc);
+			break;
+		case "py":
+			try{asc2py = require('./asc2py.js')}catch(e){};
+			targ = asc2py(asc);
+			break;
+		case "rb":
+			try{asc2rb = require('./asc2rb.js')}catch(e){};
+			targ = asc2rb(asc);
+			break;
+		default:
+			logCallback("Target language not supported.");
+	}
   logCallback(targ);
   return targ;
 }

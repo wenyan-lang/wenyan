@@ -7,15 +7,23 @@ var parser = require("../src/parser");
 var execSync = require("child_process").execSync;
 var utils = require("./utils");
 
-function runExample(lang, name) {
-  var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
-  var js = parser.compile(lang, txt, { romanizeIdentifiers: true });
-  console.log("=== EVAL ===");
-  if (lang == "py") {
-    console.log(utils.pyeval(js));
-  } else if (lang == "js") {
-    eval(js);
-  }
+function runExample(lang,name){
+	var txt = fs.readFileSync("../examples/"+name+".wy").toString();
+	var js = parser.compile(lang,txt,{romanizeIdentifiers:true})
+	console.log("=== EVAL ===")
+	switch (lang) {
+		case 'py':
+			console.log(utils.pyeval(js));
+			break;
+		case 'js':
+			eval(js);
+			break;
+		case 'rb':
+			console.log(utils.rbeval(js));
+			break;
+		default:
+			break;
+	}
 }
 
 function runAll(lang) {
