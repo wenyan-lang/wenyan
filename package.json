@@ -1,10 +1,24 @@
 {
   "name": "wenyan-lang",
+  "version": "0.0.1",
+  "author": "LingDong<lingdong0618@hotmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/LingDong-/wenyan-lang.git"
   },
+  "license": "MIT",
+  "bin": {
+    "wenyan": "./dist/cli.js"
+  },
+  "main": "./dist/core.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "npm run clear && webpack --mode production && chmod -x ./dist/cli.js",
+    "dev": "npm run clear && webpack --mode development --watch",
+    "clear": "rimraf ./dist",
+    "release": "bump --commit --tag && git push --follow-tags",
     "make_cmdline": "node ./tools/make_cmdline.js && pkg ./build/wenyan.js --out-path ./build",
     "make_ide": "node ./tools/make_ide.js",
     "make_site": "node ./tools/make_site.js",
@@ -26,7 +40,6 @@
       "git add"
     ]
   },
-  "license": "MIT",
   "devDependencies": {
     "chai": "^4.2.0",
     "enzyme": "^3.10.0",
@@ -40,6 +53,11 @@
     "mocha": "^6.2.2",
     "mocha-snapshots": "^4.2.0",
     "pkg": "^4.4.2",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
+    "version-bump-prompt": "^5.0.6",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10",
+    "webpack-shell-plugin": "^0.5.0"
   }
 }
