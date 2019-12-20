@@ -1,59 +1,92 @@
-try{process.chdir("./tools");}catch(e){}//make sure we're in tools directory
+try {
+  process.chdir("./tools");
+} catch (e) {} //make sure we're in tools directory
 
-var fs = require('fs');
-var execSync = require('child_process').execSync;
-var parser = require('../src/parser');
-var utils = require('./utils')
+var fs = require("fs");
+var execSync = require("child_process").execSync;
+var parser = require("../src/parser");
+var utils = require("./utils");
 
 var files = fs.readdirSync("../examples/");
-var prgms = {}
-for (var i = 0; i < files.length; i++){
-	prgms[files[i].split(".")[0]]= fs.readFileSync("../examples/"+files[i]).toString();
+var prgms = {};
+for (var i = 0; i < files.length; i++) {
+  prgms[files[i].split(".")[0]] = fs
+    .readFileSync("../examples/" + files[i])
+    .toString();
 }
-	
-function main(){
-	var ed = newEditor(prgms["mandelbrot"])
-	// var ln = newLineNo(ed);
 
-	var sel = document.getElementById("pick-example");
-	for (var k in prgms){
-		var opt = document.createElement("option");
-		opt.value = k;
-		opt.innerHTML = k;
-		sel.appendChild(opt);
-	}
-	sel.value = "mandelbrot";
-	sel.onchange = function(){
-		ed.innerText = prgms[sel.value];
-		run();
-	}
+function main() {
+  var ed = newEditor(prgms["mandelbrot"]);
+  // var ln = newLineNo(ed);
 
-	function run(){
-		highlight([ed]);
-		document.getElementById("out").innerText="";
-		var code = compile('js',ed.innerText,{romanizeIdentifiers:"none",errorCallback:log2div});
-		document.getElementById("js").innerText=js_beautify(code);
-		hljs.highlightBlock(document.getElementById("js"));
-		code = code.replace(/console.log\(/g, `log2div(`);
-		eval(code);
-	}
+  let highlighted = true;
+  let currentHighlightTimeout;
+  const highlightCode = () => {
+    console.time("highlight");
+    highlight([ed]);
+    highlighted = true;
+    console.timeEnd("highlight");
+  };
 
-	// document.getElementById("in").append(ln);
-	document.getElementById("in").append(ed);
-	
-	document.getElementById("run").onclick=run;
-	function log2div(){
-		var outdiv = document.getElementById("out");
-		for (var i = 0; i < arguments.length; i++){
-			if (typeof arguments[i] == 'number'){
-				outdiv.innerText += num2hanzi(arguments[i]);
-			}else{
-				outdiv.innerText += arguments[i];
-			}
-		}
-		outdiv.innerText+="\n";
-	}
-	run();
+  var sel = document.getElementById("pick-example");
+  for (var k in prgms) {
+    var opt = document.createElement("option");
+    opt.value = k;
+    opt.innerHTML = k;
+    sel.appendChild(opt);
+  }
+  sel.value = "mandelbrot";
+  sel.onchange = function() {
+    ed.innerText = prgms[sel.value];
+    run();
+  };
+
+  ed.oninput = e => {
+    if (e.inputType !== "insertParagraph") {
+      if (ed.innerText.length < 1500) {
+        highlightCode();
+        highlighted = true;
+      } else {
+        if (!highlighted) {
+          clearTimeout(currentHighlightTimeout);
+        }
+        const wait = ed.innerText.length / 2;
+        currentHighlightTimeout = setTimeout(highlightCode, wait);
+        highlighted = false;
+      }
+    }
+  };
+
+  function run() {
+    highlightCode();
+    document.getElementById("out").innerText = "";
+    var code = compile("js", ed.innerText, {
+      romanizeIdentifiers: "none",
+      resetVarCnt: true,
+      errorCallback: log2div
+    });
+    document.getElementById("js").innerText = js_beautify(code);
+    hljs.highlightBlock(document.getElementById("js"));
+    code = code.replace(/console.log\(/g, `log2div(`);
+    eval(code);
+  }
+
+  // document.getElementById("in").append(ln);
+  document.getElementById("in").append(ed);
+
+  document.getElementById("run").onclick = run;
+  function log2div() {
+    var outdiv = document.getElementById("out");
+    for (var i = 0; i < arguments.length; i++) {
+      if (typeof arguments[i] == "number") {
+        outdiv.innerText += num2hanzi(arguments[i]);
+      } else {
+        outdiv.innerText += arguments[i];
+      }
+    }
+    outdiv.innerText += "\n";
+  }
+  run();
 }
 
 var html = `<!--GENERATED FILE, DO NOT READ-->
@@ -75,7 +108,6 @@ pre{tab-size: 4;}
 <script>var prgms = ${JSON.stringify(prgms)}</script>
 <script>${main.toString()};main();</script>
 </body>
-`
+`;
 
-fs.writeFileSync("../site/ide.html",html);
-
+fs.writeFileSync("../site/ide.html", html);

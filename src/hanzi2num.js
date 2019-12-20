@@ -224,3 +224,8 @@ function num2hanzi(n,nfrac=6){
         return int2hanzi(intn)+"又"+frac2hanzi(n-intn);
     }
 }
+
+
+try{
+    module.exports = {hanzi2num, num2hanzi};
+}catch(e){}

@@ -1,9 +1,11 @@
-try{process.chdir("./tools");}catch(e){}
+try {
+  process.chdir("./tools");
+} catch (e) {}
 
-var fs = require('fs');
-var parser = require('../src/parser');
-var execSync = require('child_process').execSync;
-var utils = require('./utils')
+var fs = require("fs");
+var parser = require("../src/parser");
+var execSync = require("child_process").execSync;
+var utils = require("./utils");
 
 function runExample(lang,name){
 	var txt = fs.readFileSync("../examples/"+name+".wy").toString();
@@ -24,14 +26,13 @@ function runExample(lang,name){
 	}
 }
 
-function runAll(lang){
-
-	var files = fs.readdirSync("../examples/");
-	console.log(files);
-	for (var i = 0; i < files.length; i++){
-		runExample(lang,files[i].split(".")[0]);
-	}
+function runAll(lang) {
+  var files = fs.readdirSync("../examples/");
+  console.log(files);
+  for (var i = 0; i < files.length; i++) {
+    runExample(lang, files[i].split(".")[0]);
+  }
 }
 
-// runExample("py","quicksort")
-runAll("js")
+runExample("js", "obj");
+// runAll("js");

@@ -59,4 +59,4 @@ function beautifier() {
   return js_beautify;
 }
 
-module.exports = { uglifier, beautifier, catsrc, remotelib, pyeval,rbeval };
+module.exports = { uglifier, beautifier, catsrc, remotelib, pyeval, rbeval };

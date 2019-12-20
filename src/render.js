@@ -1,13 +1,13 @@
 try{
 	var fs = require('fs')
-	var hl = require('./highlight')
+	var {semantic} = require('./highlight')
 	var {num2hanzi} = require('./hanzi2num')
 	var parser = require('./parser')
 }catch(e){}
 
 const RED = "#E53"
 const BLACK = "#222"
-const FONT = "serif"//"Source Han Serif TC"
+const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"//"Source Han Serif TC"
 const BOOK_COLORS = {
   'ctrl':RED,
   'lop':BLACK,
@@ -72,7 +72,7 @@ function render(fname,txt,{plotResult=false}={}){
 	var pageno = 0;
 	var commentx = W2;
 
-	var sm = hl.semantic(txt);
+	var sm = semantic(txt);
 
 	var svg = ""
 
