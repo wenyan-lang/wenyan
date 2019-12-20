@@ -2751,7 +2751,13 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-
+      var rb = compile("rb", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("rb").innerText =
+        "# Ruby\n" + rb.split("#####\n")[1];
+      // hljs.highlightBlock(document.getElementById("rb"));
       var py = compile("py", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
