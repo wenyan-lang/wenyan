@@ -51,7 +51,13 @@ function main() {
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-
+      var rb = compile("rb", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("rb").innerText =
+        "# Ruby\n" + rb.split("#####\n")[1];
+      // hljs.highlightBlock(document.getElementById("rb"));
       var py = compile("py", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
@@ -232,7 +238,8 @@ h2{
 	color: ${render.BOOK_COLORS.ctrl}
 }
 .compile-out{
-	
+	border-left: 3px solid;	
+	padding-left: 20px;
 	font-size: 15px;
 	line-height: 18px;
 	width: 100%;
@@ -242,15 +249,28 @@ h2{
 	width: calc(100% - 40px);
 	margin-left: 20px;
 	border: 1px solid black;
-	padding-left: 15px;
 	margin-top: 20px;
 }
 #js{
-	border-right: 1px solid grey;
+	border-color: #ffb115;
 }
 #py{
-	margin-left: 20px;
+	border-color: #1e2933;
 }
+#rb{
+	border-color: #990000;
+}
+
+
+.language-item {
+	border-bottom: 1px solid #ddd;
+	padding: 10px 0 20px 30px;
+}	}
+
+.language-item:last-child {
+	border-bottom: none;
+}
+
 .big-btn{
 	border: 1px solid black;
 	border-left: 5px solid black;
@@ -305,11 +325,19 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
 
 <h1>Compilation</h1>
 
-<i>wenyan</i> currently compiles to JavaScript or Python, and will support more languages (e.g. C) in the future. The Hello World example (or whatever you edited it to be) above translates to:
+<i>wenyan</i> currently compiles to JavaScript, Python, or Ruby, and will support more languages (e.g. C) in the future. The Hello World example (or whatever you edited it to be) above translates to:
 
-<table class="compile-out-box"><tr>
-<td><pre class="compile-out" id="js"></pre></td><td><pre class="compile-out" id="py"></pre></td>
-</tr></table>
+<div class="compile-out-box">
+	<div class='language-item'>
+		<pre class="compile-out" id="js"></pre>
+	</div>
+	<div class='language-item'>
+		<pre class="compile-out" id="py"></pre>
+	</div>
+	<div class='language-item'>
+		<pre class="compile-out" id="rb"></pre>
+	</div>
+</div>
 
 <h1>Get</h1>
 
