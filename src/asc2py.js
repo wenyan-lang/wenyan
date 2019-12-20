@@ -172,7 +172,7 @@ function asc2py(asc){
 		}else if (a.op == "end"){
 			py += "\n"
 			curlvl--;
-			
+
 		}else if (a.op == "if"){
 			py += "\t".repeat(curlvl);
 			py += "if ";
@@ -212,7 +212,7 @@ function asc2py(asc){
 			py += "\t".repeat(curlvl);
 			var lhs = getval(a.lhs);
 			var rhs = getval(a.rhs);
-			
+
 			var op = a.op.slice(2);
 			if (op in lop){
 				op = lop[op]
@@ -220,7 +220,7 @@ function asc2py(asc){
 			py += `${nextTmpVar()}=${lhs}${op}${rhs}\n`
 			strayvar ++;
 		}else if (a.op == "name"){
-			
+
 			for (var j = 0; j < a.names.length; j++){
 				py += "\t".repeat(curlvl);
 				py += `${a.names[j]}=${prevTmpVar(strayvar-j)}\n`
@@ -267,7 +267,7 @@ function asc2py(asc){
 			py += "\t".repeat(curlvl);
 			var v = getval(a.value);
 			py += `${nextTmpVar()}=not ${v}\n`
-			
+
 			strayvar++;
 		}else if (a.op == "reassign"){
 			py += "\t".repeat(curlvl);
@@ -279,6 +279,9 @@ function asc2py(asc){
 			py += `${lhs}=${rhs}\n`
 		}else if (a.op == "discard"){
 			strayvar = 0;
+		}else if (a.op == "length"){
+			py += `${nextTmpVar()}=len(${a.container});`
+			strayvar ++;
 		}else if (a.op == "comment"){
 			py += "\t".repeat(curlvl);
 			py += `# ${getval(a.value)}\n`
@@ -288,7 +291,7 @@ function asc2py(asc){
 		}
 		// py+="\n"
 	}
-	return py;	
+	return py;
 }
 try{
 	module.exports = asc2py
