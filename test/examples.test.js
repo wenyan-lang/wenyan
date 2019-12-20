@@ -21,9 +21,12 @@ function getPythonExecutable() {
   return undefined;
 }
 
-function runExample(lang, name) {
+function runExample(lang, name, options = {}) {
   var txt = fs.readFileSync(exampleDir + name + ".wy").toString();
-  var compiled = parser.compile(lang, txt, { logCallback: () => {} });
+  var compiled = parser.compile(lang, txt, {
+    logCallback: () => {},
+    ...options
+  });
   // expect(compiled).to.matchSnapshot();
   const filename = `${outputDir}${name}.${lang}`;
   fs.writeFileSync(filename, compiled, "utf-8");
@@ -41,11 +44,11 @@ function runExample(lang, name) {
   if (!examplesContainsRandom.includes(name)) expect(output).to.matchSnapshot();
 }
 
-function runAll(lang) {
+function runAll(lang, options) {
   var files = fs.readdirSync(exampleDir);
   for (const file of files) {
     const filename = file.split(".")[0];
-    it(filename, () => runExample(lang, filename));
+    it(filename, () => runExample(lang, filename, options));
   }
 }
 
@@ -57,6 +60,10 @@ describe("examples", () => {
 
   describe("javascript", () => {
     runAll("js");
+  });
+
+  describe("romanizeIdentifiers", () => {
+    runAll("js", { romanizeIdentifiers: true });
   });
 
   /* FIXME: there are errors for python compiler
