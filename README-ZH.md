@@ -52,10 +52,10 @@ for (var i = 0; i < n; i++) {
 
 ## 特点
 - 符合古汉语的语法
-- 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org),或者[Ruby](http://ruby-lang.org)
+- 可以编译成 [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org)，或者 [Ruby](http://ruby-lang.org)
 - [图灵完备](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻体验
-- 通过 [几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
+- 通过[几个例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入门
 
 
 ## 安装
@@ -170,7 +170,7 @@ macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文
 
 ## 渲染器
 
-`src/render.js` 脚本文件能把 `wy` 代码格式化输出成为古汉语书籍样式（历史印刷书籍）的矢量图（SVG）。同时它还可以将生成的SVG文件解析回原始文言代码。下图是用 wenyan 编写的 Universal Turing Machine 渲染而成。
+`src/render.js` 脚本文件能把 `wy` 代码格式化输出成为古汉语书籍样式（历史印刷书籍）的矢量图（SVG）。同时它还可以将生成的SVG文件解析回原始文言代码。下图是用 wenyan 编写的 万能图灵机程序 渲染而成。
 
 ![](screenshots/screenshot03.png)
 
