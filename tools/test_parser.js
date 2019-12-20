@@ -11,13 +11,13 @@ function runExample(lang,name){
 	console.log("=== EVAL ===")
 	switch (lang) {
 		case 'py':
-			console.log(utils.pyeval(js))
+			console.log(utils.pyeval(js));
 			break;
 		case 'js':
 			eval(js);
 			break;
 		case 'rb':
-			console.log(utils.rbeval(js))
+			console.log(utils.rbeval(js));
 			break;
 		default:
 			break;
@@ -25,6 +25,7 @@ function runExample(lang,name){
 }
 
 function runAll(lang){
+
 	var files = fs.readdirSync("../examples/");
 	console.log(files);
 	for (var i = 0; i < files.length; i++){
@@ -32,5 +33,5 @@ function runAll(lang){
 	}
 }
 
-runExample("rb","hanoi")
-// runAll("rb")
+// runExample("py","quicksort")
+runAll("js")
