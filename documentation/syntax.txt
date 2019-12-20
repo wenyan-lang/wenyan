@@ -1,59 +1,81 @@
 // Work in progress
 
-statement           := reference_statement
-                    | define_statement
-                    | clean_statement
-                    | print_statement 
-                    | declare_statement
-                    | if_statement
+statement                   := reference_statement
+                            | define_statement
+                            | clean_statement
+                            | print_statement 
+                            | declare_statement
+                            | if_statement
+                            | for_statement
+                            | break
+                            | comment
 
-print_stm           := 書之
-clean_stm           := 噫
-uinit_declare_stm   := (吾有|今有) num type
-init_define_stm     := 有 type (data|num|string_literal|identifier|bool_value)[reference_stm]
-assign              := 曰
-uinit_define_stm    := declare_stm [assign data]* [reference_stm][assign data]*
-reference_stm       := 名之曰 identifier
-identifier          := 「字+」
-string_literal      := 「「字*」」
-comment             := (注曰|疏曰|批曰)string_literal
+print_statement             := 書之
+clean_statement             := 噫
+uinit_declare_statement     := (吾有|今有) num type
+init_define_statement       := 有 type (data|num|string_literal|identifier|bool_value)[reference_statement]
+assign                      := 曰
+uinit_define_statement      := declare_statement [assign data]* [reference_statement][assign data]*
+reference_statement         := 名之曰 identifier
+identifier                  := 「字+」
+string_literal              := 「「字*」」
 
-function_start      := 欲行是術
-function_arg        := 必先得 num type [assign identifier] 是術曰|乃行是術曰 
-function_end        := 是謂 identifier 之術也
-function_stm        := function_start function_arg [statement]+ function_end
+comment                     := 注曰|疏曰|批曰
+break                       := 乃止
 
-num                 := (num_keywords)+
-num_keywords        := 又|零|一|二|三|四|五|六|七|八|九|十|百|千|萬|億|兆|京|垓|秭|穣|溝|澗|正|載|極|分|釐|毫|絲|忽|微|塵|埃|渺|漠
-type                := 數|列|言|術|爻
+logic_if_op                 := 等於|弗等於|弗大於|弗小於|大於|小於
+unary_expression            := num | identifier | (identifier 之 (長｜string_literal))
+binary_expression           := unary_expression logic_if_op unary_expression
+expression                  := unary_expression | binary_expression
+if_statement                := if expression 
+
+for_statement               := for_c_statement
+                            | whiletrue_statement
+                            | for_obj_statement
+
+for_c_statement             := while_start_token0 num while_start_token1 statement* while_end_token
+whiletrue_statement         := whiletrue statement* while_end_token
+for_obj_statement           := for identifier for_in identifier statement* while_end_token
+
+function_start              := 欲行是術
+function_arg                := 必先得 num type [assign identifier] 是術曰|乃行是術曰 
+function_end                := 是謂 identifier 之術也
+function_statement          := function_start function_arg [statement]+ function_end
+
+num                         := (num_keywords)+
+num_keywords                := 又|零|一|二|三|四|五|六|七|八|九|十|百|千|萬|億|兆|京|垓|秭|穣|溝|澗|正|載|極|分|釐|毫|絲|忽|微|塵|埃|渺|漠
+type                        := 數|列|言|術|爻
                             
-for                 := 凡
-for_in              := 中之
-whiletrue           := 恆為是
-whilelen0           := 為是
-whilelen1           := 遍
-break               := 乃止
-else                := 若非
-if                  := 若
-expr                := 夫
+for                         := 凡
+for_in                      := 中之
+whiletrue                   := 恆為是
+while_start_token0          := 為是
+while_start_token1          := 遍
+while_end_token             := 云云
+else                        := 若非
+if                          := 若
+expr                        := 夫
 
-call                := 施
-discard             := 噫
+call                        := 施
+discard                     := 噫
 
-rassign_a           := 昔之
-rassign_b           := 今
-rassign_c           := 是矣
-ans                 := 其
+rassign_a                   := 昔之
+rassign_b                   := 今
+rassign_c                   := 是矣
+ans                         := 其
 
-ret                 := 乃得
-retvoid             := 乃歸空無
+ret                         := 乃得
+retvoid                     := 乃歸空無
 
-end                 := 也|云云
-if_statement        := 若condition者expr[若非expr]
-pre_binary_op       := 加|減|乘|除
-logic_math_op       := 中有陽乎|中無陰乎
-logic_if_op         := 等於|弗等於|弗大於|弗小於|大於|小於
-post_math_op        := 所餘幾何
-pre_position        := 以|於
-unary_op            := 變
-bool_value          := 陰|陽
+if_end                      := 也
+
+pre_binary_op               := 加|減|乘|除
+logic_math_op               := 中有陽乎|中無陰乎
+logic_if_op                 := 等於|弗等於|弗大於|弗小於|大於|小於
+post_math_op                := 所餘幾何
+pre_position                := 以|於
+unary_op                    := 變
+comment                     := 批曰String
+bool_value                  := 陰|陽
+
+conj                        := 者
