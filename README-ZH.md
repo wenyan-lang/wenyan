@@ -62,7 +62,11 @@ for (var i = 0; i < n; i++) {
 
 ### 编译器
 
-克隆此项目, (或者直接下载 `./build/wenyan.js` 然后赋予它执行权限，在终端中输入 `chmod +x wenyan.js`)。 之后执行 `./build/wenyan.js` 把源代码编译成为目标语言。如果执行此命令不带任何参数，则输出以下帮助信息。
+```bash
+npm install -g wenyan-lang
+```
+
+如果调用编译器时不带任何参数，则输出以下帮助信息：
 
 ```
 Usage: wenyan [options] [input files]
@@ -76,19 +80,13 @@ Options:
 --output  -o <string>  : Output file (default: `/dev/stdout')
 --roman   -r <boolean> : Romanize identifiers (default: `true')
 ```
+
 首先，尝试去编译几个现有的例子：
 
 ```
-./build/wenyan.js examples/helloworld.wy -o helloworld.js
+wenyan examples/helloworld.wy -o helloworld.js
 ```
 
-#### 构建平台特定的二进制文件
-
-- 克隆此项目
-- `npm install`
-- `npm run make_cmdline`
-
-macOS， Windows 和 Linux 编译生成的二进制文件输出于 `./build` 文件夹中。
 
 ### [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)
 
