@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run clear && webpack --mode production",
+    "build": "npm run clear && webpack --mode production && chmod -x ./dist/cli.js",
     "dev": "npm run clear && webpack --mode development --watch",
     "clear": "rimraf ./dist",
     "make_cmdline": "node ./tools/make_cmdline.js && pkg ./build/wenyan.js --out-path ./build",
