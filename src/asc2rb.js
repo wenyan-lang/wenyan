@@ -33,7 +33,9 @@ require 'forwardable'
 			@dict[i.to_s] = x
 		end
 		def slice(i)
-			@length.times.map {|index| @dict[index.to_s]}
+			result = Ctnr.new;
+			i.times {|index| result.push(self[index])}
+			return result
 		end
 		def concat(other)
 			other.length.times {|i| push(other[i]) }
@@ -41,6 +43,9 @@ require 'forwardable'
 		end
 		def values
 			@dict.values
+		end
+		def to_s
+			"[#{@dict.values.join(", ")}]"
 		end
 		def_delegators :values, :each
 	end
@@ -91,12 +96,18 @@ function lowerAllPinYinAndMakeItGlobal(asc) {
 				item.iterator = rename(item.iterator);
 				break;
 			case "push":
+			case "length":
 				item.container = rename(item.container);
 				break;
 			case "subscript":
 				item.container = rename(item.container);
 				if (item.value[0] == 'iden') rename(item.value[1]);
 				break;
+			case "if":
+				item.test = item.test.map(condition => {
+					if(condition[0] == "iden") condition[1] = rename(condition[1]);
+					return condition;
+				})
 			default:
 				break;
 		}
@@ -232,7 +243,7 @@ function asc2rb(asc){
 						rb += ".length"
 					}
 				}else{
-					rb += a.test[j][0] == "iden" ? a.test[j][1].toLowerCase() : a.test[j][1]
+					rb += a.test[j][1]
 				}
 				j++;
 			}
@@ -317,6 +328,9 @@ function asc2rb(asc){
 			rb += `${lhs}=${rhs}\n`
 		}else if (a.op == "discard"){
 			strayvar = 0;
+		}else if (a.op == "length"){
+			rb += `${nextTmpVar()}=${a.container}.length;`
+			strayvar ++;
 		}else if (a.op == "comment"){
 			rb += "\t".repeat(curlvl);
 			rb += `# ${getval(a.value)}\n`
