@@ -151,6 +151,14 @@ Arrays are 1-indexed.
 |`夫「寶劍」之長。` | `sword.length;` |
 
 
+Objects
+
+| wenyan | JavaScript |
+|---|---|
+|`吾有一物。名之曰「甲」。` | `var a = {};` |
+|`吾有一物。名之曰「甲」。其物如是。物之「「乙」」者。數曰三。物之「「丙」」者。言曰「「丁」」。是謂「甲」之物也。` | `var a = {b:3, c:"d"}` |
+
+
 ### Functions
 | wenyan | JavaScript |
 |---|---|
