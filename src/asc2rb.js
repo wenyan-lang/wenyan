@@ -33,13 +33,16 @@ require 'forwardable'
 			@dict[i.to_s] = x
 		end
 		def slice(i)
-			i.upto(@length).map {|index| @dict[index.to_s]}
+			@length.times.map {|index| @dict[index.to_s]}
 		end
 		def concat(other)
 			other.length.times {|i| push(other[i]) }
 			self
 		end
-		def_delegators :@dict, :each
+		def values
+			@dict.values
+		end
+		def_delegators :values, :each
 	end
 	module Math
 		def self.random(*args)
@@ -114,6 +117,8 @@ function asc2rb(asc){
 	let prevfun = "";
 	let curlvl = 0;
 	let strayvar = 0;
+	let lambdaList = [];
+	let methodIndex = 0;
 	asc = lowerAllPinYinAndMakeItGlobal(asc)
 	// console.log("START!",asc)
 	function getval(x){
@@ -168,27 +173,39 @@ function asc2rb(asc){
 				}
 			}
 			rb+="].join)\n";
-			straylet = 0;
+			strayvar = 0;
 		}else if (a.op == 'fun'){
 			rb += "\t".repeat(curlvl);
-			rb += `def `+prevfun+`(`
-			for (let j = 0; j < a.arity; j++){
-				rb+=a.args[j].name;
-				if (j != a.arity-1){
-					rb+=","
-				}
+			let argsStr = a.args.map(arg=>arg.name).join(",");
+			if(methodIndex == 0) {
+				rb += `def ${prevfun}(${argsStr})`
+			} else {
+				lambdaList.push(prevfun);
+				rb += `${prevfun} = proc {|${argsStr}|`
 			}
-			rb+=")"
+			methodIndex++;
 		}else if (a.op == "funbody"){
 			rb += "\t".repeat(curlvl);
 			if (asc[i-1].op != 'fun'){
-				rb += `def `+prevfun+"()"
+				if(methodIndex == 0) {
+					rb += `def ${prevfun}()`
+				} else {
+					lambdaList.push(prevfun);
+					rb += `${prevfun} = proc {|_|`
+				}
+				methodIndex++;
 			}
 			rb += "\n"
 			curlvl++;
 		}else if (a.op == "funend"){
 			curlvl--;
-			rb += `${"\t".repeat(curlvl)}end\n`
+			methodIndex--;
+			if(methodIndex == 0) {
+				rb += `${"\t".repeat(curlvl)}end\n`
+			} else {
+				rb += `${"\t".repeat(curlvl)}}`;
+			}
+			rb += "\n";
 		}else if (a.op == "end"){
 			curlvl--;
 			rb += `${"\t".repeat(curlvl)}end \n`
@@ -246,7 +263,11 @@ function asc2rb(asc){
 			strayvar-=a.names.length;
 		}else if (a.op == "call"){
 			rb += "\t".repeat(curlvl);
-			rb += `${nextTmpVar()}=${a.fun}(${a.args.map(x=>getval(x)).join(",")})\n`
+			let functionCallStr = `${a.fun}(${a.args.map(x=>getval(x)).join(",")})`
+			if(lambdaList.includes(a.fun)) {
+				functionCallStr = `${a.fun}.call(${a.args.map(x=>getval(x)).join(",")})`
+			}
+			rb += `${nextTmpVar()}=${functionCallStr}\n`
 			strayvar++;
 		}else if (a.op == "subscript"){
 			rb += "\t".repeat(curlvl);
@@ -276,7 +297,7 @@ function asc2rb(asc){
 		}else if (a.op == "whilen"){
 			rb += "\t".repeat(curlvl);
 			let v = randVar();
-			rb += `0.upto(${getval(a.value)}) do |${v}|\n`;
+			rb += `${getval(a.value)}.times do |${v}|\n`;
 			curlvl++;
 		}else if (a.op == "break"){
 			rb += "\t".repeat(curlvl);
@@ -295,7 +316,7 @@ function asc2rb(asc){
 			}
 			rb += `${lhs}=${rhs}\n`
 		}else if (a.op == "discard"){
-			straylet = 0;
+			strayvar = 0;
 		}else if (a.op == "comment"){
 			rb += "\t".repeat(curlvl);
 			rb += `# ${getval(a.value)}\n`
