@@ -62,31 +62,27 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 
 ### The Compiler
 
-Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
+Install the compiler by
 
-```
-Usage: wenyan [options] [input files]
-
-Options:
---eval    -e <string>  : Give a string instead of a file (default: `')
---exec    -x <boolean> : Execute output (default: `false')
---inspect -i <boolean> : Interactive REPL (default: `false')
---lang    -l <string>  : Language: js/py (default: `js')
---log        <string>  : Log file (default: `/dev/null')
---output  -o <string>  : Output file (default: `/dev/stdout')
---roman   -r <boolean> : Romanize identifiers (default: `true')
+```bash
+npm install -g @wenyanlang/cli
 ```
 
-Try building the included examples first, e.g.:
+Try run the included examples, e.g.:
 
-```
+```bash
 wenyan examples/helloworld.wy -o helloworld.js
 ```
 
-### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
+### [The Online IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
 
+### Text Editor Plugins
+
+- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
+- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
 ## Syntax Cheatsheet
 
@@ -152,6 +148,7 @@ Arrays are 1-indexed.
 
 
 ### Functions
+
 | wenyan | JavaScript |
 |---|---|
 |`吾有一術。名之曰「吸星大法」。是術曰。⋯⋯是謂「吸星大法」之術也。`|`function f(){...}`|
@@ -161,22 +158,30 @@ Arrays are 1-indexed.
 |`吾有一數。曰五。書之。`|`console.log(5);`|
 
 ### Import
+
 | wenyan | JavaScript |
 |---|---|
-|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `{sin,cos}=require("math");` |
+|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `var {sin,cos} = require("math");` |
+
+### Comments
+
+| wenyan | JavaScript |
+|---|---|
+|`批曰。「「文氣淋灕。字句切實」」。` | `/*文氣淋灕。字句切實*/` |
+
 
 ## Renderer
 
-`src/render.js` can render a wenyan program into an image that resembles pages from historical printed books. It can also parse the resultant SVG file back to the original program. Below is the rendering of the Universal Turing Machine written in wenyan:
+```
+wenyan examples/turing.wy --render 圖靈機 --output .
+```
+
+Render a wenyan script into an image that resembles pages from historical printed books. 
+It can also parse the resultant SVG file back to the original program. For more details, please refer to the help by `wenyan -h`.
+
+Below is the rendering of the Universal Turing Machine written in wenyan:
 
 ![](screenshots/screenshot03.png)
-
-
-## Contributed Tools
-
-- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
-- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
-- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
 ## Feature Requests
 

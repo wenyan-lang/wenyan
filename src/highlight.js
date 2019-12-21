@@ -1,64 +1,63 @@
-try{
-  var fs = require('fs')
-  var {num2hanzi}=require("./hanzi2num")
-  var parser = require("./parser");
-  var KEYWORDS = parser.KEYWORDS;
-  var NUMBER_KEYWORDS = parser.NUMBER_KEYWORDS;
-}catch(e){}
+const { num2hanzi } = require("./hanzi2num");
+const { NUMBER_KEYWORDS, KEYWORDS } = require("./meta");
 
 var DEFAULT_COLORS = {
-  'ctrl':'#F92672',
-  'lop':'#FFF',
-  'name':'#FFF',
-  'cmp':'#FFF',
-  'decl':'#FFF',
-  'print':'#FFF',
-  'rassgn':'#FFF',
-  'ctnr':'#66D9EF',
-  'comment':'#FFF',
-  'type':'#66D9EF',
-  'call':'#FFF',
-  'assgn':'#FFF',
-  'discard':'#FFF',
-  'endl':'#75715E',
-  'ans':'#A6E22E',
-  'expr':'#FFF',
-  'op':'#FFF',
-  'not':'#FFF',
-  'operand':'#FFF',
-  'bool':'#AE81FF',
-  'data':'#75715E',
-  "iden":"#A6E22E",
-  "quot":"#A6E22E",
-  "num":"#AE81FF",
-}
+  ctrl: "#F92672",
+  lop: "#FFF",
+  name: "#FFF",
+  cmp: "#FFF",
+  decl: "#FFF",
+  print: "#FFF",
+  rassgn: "#FFF",
+  ctnr: "#66D9EF",
+  comment: "#FFF",
+  type: "#66D9EF",
+  call: "#FFF",
+  assgn: "#FFF",
+  discard: "#FFF",
+  endl: "#75715E",
+  ans: "#A6E22E",
+  expr: "#FFF",
+  op: "#FFF",
+  not: "#FFF",
+  operand: "#FFF",
+  bool: "#AE81FF",
+  data: "#75715E",
+  iden: "#A6E22E",
+  quot: "#A6E22E",
+  num: "#AE81FF"
+};
 
-var semantic = function(txt){
+var setTheme = function(theme) {
+  DEFAULT_COLORS = theme;
+};
+
+var semantic = function(txt) {
   var off = false;
   var out = [];
   var i = 0;
-  while(i < txt.length){
-    if (txt[i]=="「"){
+  while (i < txt.length) {
+    if (txt[i] == "「") {
       off = true;
-      out.push("quot")
-    }else if (txt[i]=="」"){
+      out.push("quot");
+    } else if (txt[i] == "」") {
       off = false;
-      out.push("quot")
-    }else{
-      if (off){
-        out.push("iden")
-      }else{
+      out.push("quot");
+    } else {
+      if (off) {
+        out.push("iden");
+      } else {
         var ok = false;
-        for (var k in KEYWORDS){
+        for (var k in KEYWORDS) {
           ok = true;
-          for (var j = 0; j < k.length; j++){
-            if (k[j]!=txt[i+j]){
+          for (var j = 0; j < k.length; j++) {
+            if (k[j] != txt[i + j]) {
               ok = false;
               break;
             }
           }
-          if (ok){
-            for (var j = 0; j < k.length; j++){
+          if (ok) {
+            for (var j = 0; j < k.length; j++) {
               out.push(KEYWORDS[k][0]);
               i++;
             }
@@ -66,11 +65,11 @@ var semantic = function(txt){
             break;
           }
         }
-        if (ok == false){
-          if (NUMBER_KEYWORDS.includes(txt[i])){
+        if (ok == false) {
+          if (NUMBER_KEYWORDS.includes(txt[i])) {
             out.push("num");
-          }else{
-            out.push("data")
+          } else {
+            out.push("data");
           }
         }
       }
@@ -78,29 +77,29 @@ var semantic = function(txt){
     i++;
   }
   return out;
-}
+};
 
 var NNL = 0;
 
-function newEditor(txt){
+function newEditor(txt) {
   var div = document.createElement("pre");
-  div.contentEditable='true';
-  div.autoComplete='off';
-  div.autoCorrect='off';
-  div.autoCapitalize='off';
-  div.spellCheck='off';
-  div.onkeyup=function(){
-    if (event.keyCode==13){NNL+=1}
-  }
-  div.innerHTML=txt;
+  div.contentEditable = "true";
+  div.autoComplete = "off";
+  div.autoCorrect = "off";
+  div.autoCapitalize = "off";
+  div.spellCheck = "off";
+  div.onkeyup = function() {
+    if (event.keyCode == 13) {
+      NNL += 1;
+    }
+  };
+  div.innerHTML = txt;
   highlight([div]);
   // setInterval(()=>highlight([div]),20000);
   return div;
 }
 
-
-
-var highlight = function(codes){
+var highlight = function(codes) {
   function getCaretPosition(element, mode) {
     var caretOffset = 0;
     var doc = element.ownerDocument || element.document;
@@ -112,9 +111,9 @@ var highlight = function(codes){
       var range = win.getSelection().getRangeAt(0);
       var preCaretRange = range.cloneRange();
       preCaretRange.selectNodeContents(element);
-      if (mode == "start"){
+      if (mode == "start") {
         preCaretRange.setEnd(range.endContainer, range.endOffset);
-      }else{
+      } else {
         preCaretRange.setEnd(range.startContainer, range.startOffset);
       }
       caretOffset = preCaretRange.toString().length;
@@ -122,7 +121,7 @@ var highlight = function(codes){
     return caretOffset;
   }
 
-  function setCaretPosition(element,i,j,ie,je){
+  function setCaretPosition(element, i, j, ie, je) {
     var range = document.createRange();
     var sel = window.getSelection();
     range.setStart(element.childNodes[i], j);
@@ -130,74 +129,104 @@ var highlight = function(codes){
     sel.removeAllRanges();
     sel.addRange(range);
   }
-  var keywords = ["break","case","catch","continue","debugger","default","delete","do","else","finally","for","function",
-                  "if","in","instanceof","new","return","switch","this","throw","try","typeof","var","void","while","with"]
-  keywords = keywords.concat(["canvas","context"])
-  var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890$_"
+  var keywords = [
+    "break",
+    "case",
+    "catch",
+    "continue",
+    "debugger",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "finally",
+    "for",
+    "function",
+    "if",
+    "in",
+    "instanceof",
+    "new",
+    "return",
+    "switch",
+    "this",
+    "throw",
+    "try",
+    "typeof",
+    "var",
+    "void",
+    "while",
+    "with"
+  ];
+  keywords = keywords.concat(["canvas", "context"]);
+  var alpha =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890$_";
 
-
-  for (var i = 0; i < codes.length; i++){
-    var c = getCaretPosition(codes[i],"start")+NNL;
-    var ce = getCaretPosition(codes[i],"end")+NNL;
+  for (var i = 0; i < codes.length; i++) {
+    var c = getCaretPosition(codes[i], "start") + NNL;
+    var ce = getCaretPosition(codes[i], "end") + NNL;
     NNL = 0;
     var cc = codes[i].innerText;
-    var nc = ""
+    var nc = "";
     var sm = semantic(cc);
 
-    for (var j = 0; j < cc.length; j++){
-      nc += `<x style="color:${DEFAULT_COLORS[sm[j]]}">${cc[j]}</x>`
-      
+    for (var j = 0; j < cc.length; j++) {
+      nc += `<x style="color:${DEFAULT_COLORS[sm[j]]}">${cc[j]}</x>`;
     }
     // console.log(cc);
     // console.log(nc);
     codes[i].innerHTML = nc;
-    if (document.activeElement == codes[i]){
-      var c0 = Math.min(c,ce);
-      var c1 = Math.max(c,ce);
-      try{
-        setCaretPosition(codes[i],c0,0,c1,0);
+    if (document.activeElement == codes[i]) {
+      var c0 = Math.min(c, ce);
+      var c1 = Math.max(c, ce);
+      try {
+        setCaretPosition(codes[i], c0, 0, c1, 0);
         // console.log(c0,0,c1,0)
-      }catch(e){
-        for (var eee = 0; eee < 10; eee++){
-          try{
-            codes[i].innerHTML += "<i></i>"
-            setCaretPosition(codes[i],c0,0,c1,0);
+      } catch (e) {
+        for (var eee = 0; eee < 10; eee++) {
+          try {
+            codes[i].innerHTML += "<i></i>";
+            setCaretPosition(codes[i], c0, 0, c1, 0);
             break;
-          }catch(e){}
+          } catch (e) {}
         }
       }
     }
   }
-}
+};
 
-
-function newLineNo(ed){
+function newLineNo(ed) {
   var div = document.createElement("pre");
-  div.style.float="left"
-  div.style.textAlign="right"
-  div.style.color=DEFAULT_COLORS.endl
-  function isRoman(x){
-    return x.replace(/[ -~\t]/g,'').length==0;
+  div.style.float = "left";
+  div.style.textAlign = "right";
+  div.style.color = DEFAULT_COLORS.endl;
+  function isRoman(x) {
+    return x.replace(/[ -~\t]/g, "").length == 0;
   }
-  function genLineNo(){
+  function genLineNo() {
     var ls = ed.innerText.split("\n");
     var n = ls.length;
     div.innerText = "";
-    for (var i = 0; i < n; i++){
-      if (!isRoman(ls[i])){
-        div.innerText += num2hanzi(i+1)+" ";
+    for (var i = 0; i < n; i++) {
+      if (!isRoman(ls[i])) {
+        div.innerText += num2hanzi(i + 1) + " ";
       }
-      if (i != n-1){
+      if (i != n - 1) {
         div.innerText += "\n";
       }
     }
   }
-  setInterval(genLineNo,1000);
+  setInterval(genLineNo, 1000);
   genLineNo();
   return div;
 }
 
-
-try{
-    module.exports = {semantic,DEFAULT_COLORS};
-}catch(e){}
+try {
+  module.exports = {
+    semantic,
+    highlight,
+    newLineNo,
+    DEFAULT_COLORS,
+    newEditor,
+    setTheme
+  };
+} catch (e) {}

@@ -19,18 +19,15 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install
-      run: npm install
+      run: npm ci
       env:
         CI: true
 
     - name: Lint
       run: npm run lint
 
-    - name: Build
-      run: |
-        npm run make_cmdline
-        npm run make_ide
-
     - name: Test
-      run: npm test
+      run: |
+        npm run build:dev
+        npm test
 
