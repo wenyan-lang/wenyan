@@ -85,7 +85,10 @@ function cmdlinecode() {
       }
     }
 
-    if (args["--version"]) return version;
+    if (args["--version"] !== undefined) {
+      console.log(version);
+      process.exit();
+    }
 
     return { files, args };
   }
