@@ -82,11 +82,17 @@ class Ctnr():
 #####
 `
 
-function asc2py(asc){
+function asc2py(asc, _imports, { resetVarCnt } = {}) {
 	var py = pylib;
 	var prevfun="";
 	var curlvl = 0;
 	var strayvar = 0;
+
+  if (resetVarCnt) {
+		tmpVarCnt = 0;
+		randVarCnt = 0;
+	}
+
 	function getval(x){
 		if (x == undefined){
 			return "";

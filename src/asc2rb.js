@@ -124,7 +124,7 @@ function lowerAllPinYinAndMakeItGlobal(asc) {
   return asc;
 }
 
-function asc2rb(asc) {
+function asc2rb(asc, _imports, { resetVarCnt } = {}) {
   let rb = rblib;
   let prevfun = "";
   let curlvl = 0;
@@ -132,6 +132,12 @@ function asc2rb(asc) {
   let lambdaList = [];
   let methodIndex = 0;
   asc = lowerAllPinYinAndMakeItGlobal(asc);
+
+  if (resetVarCnt) {
+    tmpVarCount = 0;
+    randVarCount = 0;
+  }
+
   // console.log("START!",asc)
   function getval(x) {
     if (!x) return "";

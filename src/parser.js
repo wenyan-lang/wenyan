@@ -613,7 +613,7 @@ function tokens2asc(
   return asc;
 }
 
-function asc2js(asc, imports = []) {
+function asc2js(asc, imports = [], { resetVarCnt } = {}) {
   var js = ``; //`"use strict";`;
   var prevfun = "";
   var prevfunpublic = false;
@@ -621,6 +621,11 @@ function asc2js(asc, imports = []) {
   var prevobjpublic = false;
   var curlvl = 0;
   var strayvar = 0;
+
+  if (resetVarCnt) {
+    tmpVarCnt = 0;
+    randVarCnt = 0;
+  }
 
   function getval(x) {
     if (x == undefined) {
@@ -859,10 +864,6 @@ function compile(
     reader = lvl1
   } = {}
 ) {
-  if (resetVarCnt) {
-    tmpVarCnt = 0;
-    randVarCnt = 0;
-  }
   txt = txt.replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);
@@ -909,23 +910,24 @@ function compile(
   var targ;
   var imports = [];
   var mwrapper;
+  const compilerParams = [asc, imports, { resetVarCnt }];
   switch (lang) {
     case "js":
-      targ = asc2js(asc, imports);
+      targ = asc2js(...compilerParams);
       mwrapper = jsWrapModule;
       break;
     case "py":
       try {
         asc2py = require("./asc2py.js");
       } catch (e) {}
-      targ = asc2py(asc, imports);
+      targ = asc2py(...compilerParams);
       mwrapper = x => x;
       break;
     case "rb":
       try {
         asc2rb = require("./asc2rb.js");
       } catch (e) {}
-      targ = asc2rb(asc, imports);
+      targ = asc2rb(...compilerParams);
       mwrapper = x => x;
       break;
     default:
