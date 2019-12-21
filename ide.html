@@ -27,10 +27,6 @@ function prevTmpVar(n){
 	return "_ans"+(tmpVarCnt-n+1);
 }
 
-var lop = {
-	"||":" or ",
-	"&&":" and "
-}
 
 var pylib=`# -*- coding: utf-8 -*-
 class Ctnr():
@@ -95,6 +91,11 @@ class Ctnr():
 `
 
 function asc2py(asc){
+	var lop = {
+		"||":" or ",
+		"&&":" and "
+	}
+
 	var py = pylib;
 	var prevfun="";
 	var curlvl = 0;
@@ -309,17 +310,14 @@ try{
 	module.exports = asc2py
 }catch(e){}
 ;
-var tmpVarCount = 0;
-var randVarCount = 0;
-var randVar = () => `_rand${++randVarCount}`;
-var currTmpVar = () => `_ans${tmpVarCount}`;
-var nextTmpVar = () => `_ans${++tmpVarCount}`;
-var prevTmpVar = n => `_ans${tmpVarCount - n + 1}`;
+var tmpVarCnt = 0;
+var randVarCnt = 0;
+var randVar = () => `_rand${++randVarCnt}`;
+var currTmpVar = () => `_ans${tmpVarCnt}`;
+var nextTmpVar = () => `_ans${++tmpVarCnt}`;
+var prevTmpVar = n => `_ans${tmpVarCnt - n + 1}`;
 
-var lop = {
-  "||": " or ",
-  "&&": " and "
-};
+
 
 var rblib = `# encoding: UTF-8
 require 'forwardable'
@@ -436,6 +434,10 @@ function lowerAllPinYinAndMakeItGlobal(asc) {
 }
 
 function asc2rb(asc) {
+  var lop = {
+    "||": " or ",
+    "&&": " and "
+  };
   let rb = rblib;
   let prevfun = "";
   let curlvl = 0;
@@ -1264,6 +1266,7 @@ function currTmpVar() {
   return "_ans" + tmpVarCnt;
 }
 function nextTmpVar() {
+  console.log(tmpVarCnt)
   tmpVarCnt++;
   return "_ans" + tmpVarCnt;
 }
@@ -2452,11 +2455,12 @@ try{
     run();
   };
   var autohl = document.getElementById("auto-hl");
-  autohl.onchange = function(){
-
-    if (autohl.checked){
-        alert("[WARN] Auto highlight might conflict with system input method on certian browsers.")
-        ed.oninput = e => {
+  autohl.onchange = function() {
+    if (autohl.checked) {
+      alert(
+        "[WARN] Auto highlight might conflict with system input method on certian browsers."
+      );
+      ed.oninput = e => {
         if (e.inputType !== "insertParagraph") {
           if (ed.innerText.length < 1500) {
             highlightCode();
@@ -2470,14 +2474,11 @@ try{
             highlighted = false;
           }
         }
-      }
-    }else{
-      ed.oninput = ()=>0
+      };
+    } else {
+      ed.oninput = () => 0;
     }
-    
-  }
-
-
+  };
 
   function run() {
     highlightCode();
