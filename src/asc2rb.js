@@ -1,14 +1,9 @@
-var tmpVarCount = 0;
-var randVarCount = 0;
-const randVar = () => `_rand${++randVarCount}`;
-const currTmpVar = () => `_ans${tmpVarCount}`;
-const nextTmpVar = () => `_ans${++tmpVarCount}`;
-const prevTmpVar = n => `_ans${tmpVarCount - n + 1}`;
-
-var lop = {
-  "||": " or ",
-  "&&": " and "
-};
+var tmpVarCnt = 0;
+var randVarCnt = 0;
+var randVar = () => `_rand${++randVarCnt}`;
+var currTmpVar = () => `_ans${tmpVarCnt}`;
+var nextTmpVar = () => `_ans${++tmpVarCnt}`;
+var prevTmpVar = n => `_ans${tmpVarCnt - n + 1}`;
 
 var rblib = `# encoding: UTF-8
 require 'forwardable'
@@ -125,6 +120,10 @@ function lowerAllPinYinAndMakeItGlobal(asc) {
 }
 
 function asc2rb(asc) {
+  var lop = {
+    "||": " or ",
+    "&&": " and "
+  };
   let rb = rblib;
   let prevfun = "";
   let curlvl = 0;

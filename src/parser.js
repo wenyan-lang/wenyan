@@ -115,6 +115,7 @@ function currTmpVar() {
   return "_ans" + tmpVarCnt;
 }
 function nextTmpVar() {
+  console.log(tmpVarCnt);
   tmpVarCnt++;
   return "_ans" + tmpVarCnt;
 }
