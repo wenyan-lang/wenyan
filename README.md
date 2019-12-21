@@ -160,6 +160,11 @@ Arrays are 1-indexed.
 |`施「翻倍」於「大衍」。`|`double(dayan);`|
 |`吾有一數。曰五。書之。`|`console.log(5);`|
 
+### Import
+| wenyan | JavaScript |
+|---|---|
+|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `{sin,cos}=require("math");` |
+
 ## Renderer
 
 `src/render.js` can render a wenyan program into an image that resembles pages from historical printed books. It can also parse the resultant SVG file back to the original program. Below is the rendering of the Universal Turing Machine written in wenyan:
@@ -181,8 +186,8 @@ Before opening an Issue, please check if it belongs to the below categories:
 |---|---|---|---|
 |[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
 |[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
-|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
-|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
+|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | Import statements are added |
+|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | In porgress |
 |[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
