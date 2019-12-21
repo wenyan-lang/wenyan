@@ -188,7 +188,8 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      }
+      },
+      lib: STDLIB
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {
