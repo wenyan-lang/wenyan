@@ -51,7 +51,7 @@ if                          := 若
 else                        := 若非
 if_end                      := 也
 logic_if_op                 := 等於|弗等於|弗大於|弗小於|大於|小於
-unary_if_expression         := num|identifier|(identifier之(長｜string_literal))
+unary_if_expression         := num|identifier|(identifier之(長｜string_literal))|其
 binary_if_expression        := unary_if_expression logic_if_op unary_if_expression
 if_expression               := unary_if_expression|binary_if_expression
 if_statement                := if if_expression statement else statement if_end
@@ -105,7 +105,9 @@ function_start              := 吾有 int_num 術 reference_single_statement 欲
 function_arg                := 必先得 num type [assign identifier] 是術曰|乃行是術曰 
 function_end                := 是謂 identifier 之術也
 function_define_statement   := function_start function_arg [statement]+ function_end
-function_call_statement     := 施 identifier 於 identifier
+function_plain_call         := 施 identifier 於 identifier
+function_nested_call        := ((夫 identifier)+ (取 int_num 以施 identifier)+)+ reference_single_statement
+function_call_statement     := function_plain_call|function_nested_call
 function_statement          := function_define_statement|function_call_statement
 
 // Misc
