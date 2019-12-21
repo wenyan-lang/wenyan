@@ -51,7 +51,7 @@ Punctuations and newlines are completely optional (just like they are in Classic
 More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mandelbrot set, and Tower of Hanoi, can be found in the `./examples` folder.
 
 ## Features
-- An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
+- An [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
