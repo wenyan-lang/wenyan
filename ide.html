@@ -12,23 +12,22 @@ pre{tab-size: 4;}
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
 <script>var tmpVarCnt = 0;
 var randVarCnt = 0;
-function randVar(){
-	randVarCnt++;
-	return "_rand"+randVarCnt;
+function randVar() {
+  randVarCnt++;
+  return "_rand" + randVarCnt;
 }
-function currTmpVar(){
-	return "_ans"+tmpVarCnt;
+function currTmpVar() {
+  return "_ans" + tmpVarCnt;
 }
-function nextTmpVar(){
-	tmpVarCnt++;
-	return "_ans"+tmpVarCnt;
+function nextTmpVar() {
+  tmpVarCnt++;
+  return "_ans" + tmpVarCnt;
 }
-function prevTmpVar(n){
-	return "_ans"+(tmpVarCnt-n+1);
+function prevTmpVar(n) {
+  return "_ans" + (tmpVarCnt - n + 1);
 }
 
-
-var pylib=`# -*- coding: utf-8 -*-
+var pylib = `# -*- coding: utf-8 -*-
 class Ctnr():
 	def __init__(self):self.dict = dict();self.length = 0;self.it = -1;
 	def push(self,*args):
@@ -88,227 +87,231 @@ class Ctnr():
 		if (self.it >= self.length): raise StopIteration()
 		return self[self.it]
 #####
-`
+`;
 
-function asc2py(asc){
-	var lop = {
-		"||":" or ",
-		"&&":" and "
-	}
+function asc2py(asc) {
+  var lop = {
+    "||": " or ",
+    "&&": " and "
+  };
 
-	var py = pylib;
-	var prevfun="";
-	var curlvl = 0;
-	var strayvar = 0;
-	function getval(x){
-		if (x == undefined){
-			return "";
-		}
-		if (x[0]=="ans"){
-			strayvar = 0;
-			return currTmpVar();
-		}
-		if (x[1]==undefined){
-			return undefined;
-		}
-		if (x[1].toString()=="true"){
-			return "True"
-		}
-		if (x[1].toString()=="false"){
-			return "False"
-		}
-		return x[1]
-	}
+  var py = pylib;
+  var prevfun = "";
+  var curlvl = 0;
+  var strayvar = 0;
+  function getval(x) {
+    if (x == undefined) {
+      return "";
+    }
+    if (x[0] == "ans") {
+      strayvar = 0;
+      return currTmpVar();
+    }
+    if (x[1] == undefined) {
+      return undefined;
+    }
+    if (x[1].toString() == "true") {
+      return "True";
+    }
+    if (x[1].toString() == "false") {
+      return "False";
+    }
+    return x[1];
+  }
 
-	for (var i = 0; i < asc.length; i++){
-		var a = asc[i];
-		if (a.op == 'var'){
-			for (var j = 0; j < a.count; j++){
-				if (a.values[j]==undefined){
-					a.values[j]=[]
-				}
-				var name = a.names[j]
-				var value = getval(a.values[j])
-				if (name==undefined){
-					name = nextTmpVar();
-					strayvar ++;
-				}
-				if (value==undefined){
+  for (var i = 0; i < asc.length; i++) {
+    var a = asc[i];
+    if (a.op == "var") {
+      for (var j = 0; j < a.count; j++) {
+        if (a.values[j] == undefined) {
+          a.values[j] = [];
+        }
+        var name = a.names[j];
+        var value = getval(a.values[j]);
+        if (name == undefined) {
+          name = nextTmpVar();
+          strayvar++;
+        }
+        if (value == undefined) {
+          if (a.type == "arr") {
+            value = "Ctnr()";
+          } else if (a.type == "num") {
+            value = "0";
+          } else if (a.type == "str") {
+            value = `""`;
+          } else if (a.type == "bol") {
+            value = "False";
+          } else if (a.type == "fun") {
+            value = "lambda _:0";
+            prevfun = name;
+          }
+        }
+        py += "\t".repeat(curlvl);
+        py += `${name}=${value}\n`;
+      }
+    } else if (a.op == "print") {
+      py += "\t".repeat(curlvl);
+      py += `print("".join([`;
+      for (var j = 0; j < strayvar; j++) {
+        py += `str(${prevTmpVar(strayvar - j)})`;
+        if (j != strayvar - 1) {
+          py += ",";
+        }
+      }
+      py += "]))\n";
+      strayvar = 0;
+    } else if (a.op == "fun") {
+      py += "\t".repeat(curlvl);
+      py += `def ` + prevfun + `(`;
+      for (var j = 0; j < a.arity; j++) {
+        py += a.args[j].name;
+        if (j != a.arity - 1) {
+          py += ",";
+        }
+      }
+      py += ")";
+    } else if (a.op == "funbody") {
+      py += "\t".repeat(curlvl);
+      if (asc[i - 1].op != "fun") {
+        py += `def ` + prevfun + "()";
+      }
+      py += ":\n";
+      curlvl++;
+    } else if (a.op == "funend") {
+      py += "\n";
+      curlvl--;
+    } else if (a.op == "end") {
+      py += "\n";
+      curlvl--;
+    } else if (a.op == "if") {
+      py += "\t".repeat(curlvl);
+      py += "if ";
+      var j = 0;
+      while (j < a.test.length) {
+        if (a.test[j][0] == "cmp") {
+          py += a.test[j][1];
+        } else if (a.test[j][0] == "ctnr") {
+          if (a.test[j][1] == "subs") {
+            if (a.test[j + 1][1] == "rest") {
+              py += ".slice(1)";
+            } else {
+              if (a.test[j + 1][0] == "lit") {
+                py += "[" + a.test[j + 1][1] + "]";
+              } else {
+                py += "[" + a.test[j + 1][1] + "-1]";
+              }
+            }
+            j++;
+          } else if (a.test[j][1] == "len") {
+            py += ".length";
+          }
+        } else {
+          py += a.test[j][1];
+        }
+        j++;
+      }
+      py += ":\n";
+      curlvl++;
+    } else if (a.op == "else") {
+      py += "\t".repeat(curlvl - 1);
+      py += "else:\n";
+    } else if (a.op == "return") {
+      py += "\t".repeat(curlvl);
+      py += `return ${getval(a.value)}\n`;
+    } else if (a.op.startsWith("op")) {
+      py += "\t".repeat(curlvl);
+      var lhs = getval(a.lhs);
+      var rhs = getval(a.rhs);
 
-					if (a.type=="arr"){
-						value="Ctnr()"
-					}else if (a.type=="num"){
-						value="0"
-					}else if (a.type=="str"){
-						value=`""`
-					}else if (a.type=="bol"){
-						value="False"
-					}else if (a.type=="fun"){
-						value="lambda _:0"
-						prevfun=name;
-					}
-				}
-				py += "\t".repeat(curlvl);
-				py += `${name}=${value}\n`
-			}
-		}else if (a.op == 'print'){
-			py += "\t".repeat(curlvl);
-			py += `print("".join([`;
-			for (var j = 0; j < strayvar; j++){
-				py += `str(${prevTmpVar(strayvar-j)})`
-				if (j != strayvar-1){
-					py += ","
-				}
-			}
-			py+="]))\n";
-			strayvar = 0;
-		}else if (a.op == 'fun'){
-			py += "\t".repeat(curlvl);
-			py += `def `+prevfun+`(`
-			for (var j = 0; j < a.arity; j++){
-				py+=a.args[j].name;
-				if (j != a.arity-1){
-					py+=","
-				}
-			}
-			py+=")"
-		}else if (a.op == "funbody"){
-			py += "\t".repeat(curlvl);
-			if (asc[i-1].op != 'fun'){
-				py += `def `+prevfun+"()"
-			}
-			py += ":\n"
-			curlvl++;
-		}else if (a.op == "funend"){
-			py += "\n"
-			curlvl--;
-		}else if (a.op == "end"){
-			py += "\n"
-			curlvl--;
+      var op = a.op.slice(2);
+      if (op in lop) {
+        op = lop[op];
+      }
+      py += `${nextTmpVar()}=${lhs}${op}${rhs}\n`;
+      strayvar++;
+    } else if (a.op == "name") {
+      for (var j = 0; j < a.names.length; j++) {
+        py += "\t".repeat(curlvl);
+        py += `${a.names[j]}=${prevTmpVar(strayvar - j)}\n`;
+      }
+      strayvar -= a.names.length;
+    } else if (a.op == "call") {
+      py += "\t".repeat(curlvl);
+      py += `${nextTmpVar()}=${a.fun}(${a.args
+        .map(x => getval(x))
+        .join(",")})\n`;
+      strayvar++;
+    } else if (a.op == "subscript") {
+      py += "\t".repeat(curlvl);
+      var idx = getval(a.value);
+      if (idx == "rest") {
+        py += `${nextTmpVar()}=${a.container}.slice(1)\n`;
+        strayvar++;
+      } else {
+        py += `${nextTmpVar()}=${a.container}[${idx}${
+          a.value[0] == "lit" ? "" : "-1"
+        }]\n`;
+        strayvar++;
+      }
+    } else if (a.op == "cat") {
+      py += "\t".repeat(curlvl);
+      py +=
+        `${nextTmpVar()}=${a.containers[0]}.concat(` +
+        a.containers.slice(1).join(").concat(") +
+        ")\n";
+      strayvar++;
+    } else if (a.op == "push") {
+      py += "\t".repeat(curlvl);
+      py += `${a.container}.push(${a.values.map(x => getval(x)).join(",")})\n`;
+    } else if (a.op == "for") {
+      py += "\t".repeat(curlvl);
+      py += `for ${a.iterator} in ${a.container}:\n`;
+      curlvl++;
+    } else if (a.op == "whiletrue") {
+      py += "\t".repeat(curlvl);
+      py += "while (True):\n";
+      curlvl++;
+    } else if (a.op == "whilen") {
+      py += "\t".repeat(curlvl);
+      var v = randVar();
+      py += `for ${v} in range(${getval(a.value)}):\n`;
+      curlvl++;
+    } else if (a.op == "break") {
+      py += "\t".repeat(curlvl);
+      py += "break\n";
+    } else if (a.op == "not") {
+      py += "\t".repeat(curlvl);
+      var v = getval(a.value);
+      py += `${nextTmpVar()}=not ${v}\n`;
 
-		}else if (a.op == "if"){
-			py += "\t".repeat(curlvl);
-			py += "if ";
-			var j = 0;
-			while (j < a.test.length){
-				if (a.test[j][0] == "cmp"){
-					py += a.test[j][1]
-				}else if (a.test[j][0] == "ctnr"){
-					if (a.test[j][1]=="subs"){
-						if (a.test[j+1][1]=="rest"){
-							py += ".slice(1)"
-						}else{
-							if (a.test[j+1][0]=="lit"){
-								py += "["+(a.test[j+1][1])+"]"
-							}else{
-								py += "["+(a.test[j+1][1])+"-1]"
-							}
-						}
-						j++;
-					}else if (a.test[j][1]=="len"){
-						py += ".length"
-					}
-				}else{
-					py+=a.test[j][1]
-				}
-				j++;
-			}
-			py += ":\n"
-			curlvl++;
-		}else if (a.op == "else"){
-			py += "\t".repeat(curlvl-1);
-			py += "else:\n"
-		}else if (a.op == "return"){
-			py += "\t".repeat(curlvl);
-			py += `return ${getval(a.value)}\n`
-		}else if (a.op.startsWith("op")){
-			py += "\t".repeat(curlvl);
-			var lhs = getval(a.lhs);
-			var rhs = getval(a.rhs);
-
-			var op = a.op.slice(2);
-			if (op in lop){
-				op = lop[op]
-			}
-			py += `${nextTmpVar()}=${lhs}${op}${rhs}\n`
-			strayvar ++;
-		}else if (a.op == "name"){
-
-			for (var j = 0; j < a.names.length; j++){
-				py += "\t".repeat(curlvl);
-				py += `${a.names[j]}=${prevTmpVar(strayvar-j)}\n`
-			}
-			strayvar-=a.names.length;
-		}else if (a.op == "call"){
-			py += "\t".repeat(curlvl);
-			py += `${nextTmpVar()}=${a.fun}(${a.args.map(x=>getval(x)).join(",")})\n`
-			strayvar ++;
-		}else if (a.op == "subscript"){
-			py += "\t".repeat(curlvl);
-			var idx =getval(a.value);
-			if (idx=="rest"){
-				py += `${nextTmpVar()}=${a.container}.slice(1)\n`
-				strayvar ++;
-			}else{
-				py += `${nextTmpVar()}=${a.container}[${idx}${a.value[0]=="lit"?"":"-1"}]\n`
-				strayvar ++;
-			}
-		}else if (a.op == "cat"){
-			py += "\t".repeat(curlvl);
-			py += `${nextTmpVar()}=${a.containers[0]}.concat(`+a.containers.slice(1).join(").concat(")+")\n"
-			strayvar ++;
-		}else if (a.op == "push"){
-			py += "\t".repeat(curlvl);
-			py += `${a.container}.push(${a.values.map(x=>getval(x)).join(",")})\n`
-		}else if (a.op == "for"){
-			py += "\t".repeat(curlvl);
-			py += `for ${a.iterator} in ${a.container}:\n`
-			curlvl++;
-		}else if (a.op == "whiletrue"){
-			py += "\t".repeat(curlvl);
-			py += "while (True):\n";
-			curlvl++;
-		}else if (a.op == "whilen"){
-			py += "\t".repeat(curlvl);
-			var v = randVar();
-			py += `for ${v} in range(${getval(a.value)}):\n`;
-			curlvl++;
-		}else if (a.op == "break"){
-			py += "\t".repeat(curlvl);
-			py += "break\n";
-		}else if (a.op == "not"){
-			py += "\t".repeat(curlvl);
-			var v = getval(a.value);
-			py += `${nextTmpVar()}=not ${v}\n`
-
-			strayvar++;
-		}else if (a.op == "reassign"){
-			py += "\t".repeat(curlvl);
-			var rhs = getval(a.rhs);
-			var lhs = getval(a.lhs);
-			if (a.lhssubs){
-				lhs += `[${a.lhssubs[1]}${a.lhssubs[0]=="lit"?"":"-1"}]`
-			}
-			py += `${lhs}=${rhs}\n`
-		}else if (a.op == "discard"){
-			strayvar = 0;
-		}else if (a.op == "length"){
-			py += `${nextTmpVar()}=len(${a.container});`
-			strayvar ++;
-		}else if (a.op == "comment"){
-			py += "\t".repeat(curlvl);
-			py += `# ${getval(a.value)}\n`
-			py += "\t".repeat(curlvl);
-		}else{
-			console.log(a.op)
-		}
-		// py+="\n"
-	}
-	return py;
+      strayvar++;
+    } else if (a.op == "reassign") {
+      py += "\t".repeat(curlvl);
+      var rhs = getval(a.rhs);
+      var lhs = getval(a.lhs);
+      if (a.lhssubs) {
+        lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
+      }
+      py += `${lhs}=${rhs}\n`;
+    } else if (a.op == "discard") {
+      strayvar = 0;
+    } else if (a.op == "length") {
+      py += `${nextTmpVar()}=len(${a.container});`;
+      strayvar++;
+    } else if (a.op == "comment") {
+      py += "\t".repeat(curlvl);
+      py += `# ${getval(a.value)}\n`;
+      py += "\t".repeat(curlvl);
+    } else {
+      console.log(a.op);
+    }
+    // py+="\n"
+  }
+  return py;
 }
-try{
-	module.exports = asc2py
-}catch(e){}
+try {
+  module.exports = asc2py;
+} catch (e) {}
 ;
 var tmpVarCnt = 0;
 var randVarCnt = 0;
@@ -316,8 +319,6 @@ var randVar = () => `_rand${++randVarCnt}`;
 var currTmpVar = () => `_ans${tmpVarCnt}`;
 var nextTmpVar = () => `_ans${++tmpVarCnt}`;
 var prevTmpVar = n => `_ans${tmpVarCnt - n + 1}`;
-
-
 
 var rblib = `# encoding: UTF-8
 require 'forwardable'
@@ -1172,9 +1173,11 @@ var KEYWORDS = {
   物: ["type", "obj"],
   書之: ["print"],
   名之曰: ["name"],
-  施: ["call"],
+  施: ["call", "r"],
+  以施: ["call", "l"],
   曰: ["assgn"],
   噫: ["discard"],
+  取: ["take"],
 
   昔之: ["rassgn", "a"],
   今: ["rassgn", "b"],
@@ -1266,7 +1269,6 @@ function currTmpVar() {
   return "_ans" + tmpVarCnt;
 }
 function nextTmpVar() {
-  console.log(tmpVarCnt)
   tmpVarCnt++;
   return "_ans" + tmpVarCnt;
 }
@@ -1622,7 +1624,7 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
-    } else if (gettok(i, 0) == "call") {
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
       var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
@@ -1631,6 +1633,9 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
+      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
@@ -1648,6 +1653,7 @@ function tokens2asc(
       asc.push(x);
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "subs"
     ) {
@@ -1662,6 +1668,7 @@ function tokens2asc(
       i += 4;
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "len"
     ) {
@@ -1682,6 +1689,9 @@ function tokens2asc(
       };
       asc.push(x);
       i += 4;
+    } else if (gettok(i, 0) == "expr") {
+      asc.push({ op: "temp", iden: tokens[i + 1] });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
       var x = { op: "cat", containers: [gettok(i + 1, 1)], pos };
       i += 2;
@@ -1725,7 +1735,16 @@ function tokens2asc(
           i += 7;
         } else {
           x.rhs = tokens[i + 6];
-          i += 8;
+          if (
+            tokens[i + 7] &&
+            gettok(i + 7, 0) == "ctnr" &&
+            gettok(i + 7, 1) == "subs"
+          ) {
+            x.rhssubs = tokens[i + 8];
+            i += 10;
+          } else {
+            i += 8;
+          }
         }
       } else {
         assert(
@@ -1734,15 +1753,27 @@ function tokens2asc(
           gettok(i + 2, 0) == "ctrl" && gettok(i + 2, 1) == "conj"
         );
         x.rhs = tokens[i + 4];
-        i += 6;
+        if (
+          tokens[i + 5] &&
+          gettok(i + 5, 0) == "ctnr" &&
+          gettok(i + 5, 1) == "subs"
+        ) {
+          x.rhssubs = tokens[i + 6];
+          i += 8;
+        } else {
+          i += 6;
+        }
       }
       asc.push(x);
     } else if (gettok(i, 0) == "discard") {
       asc.push({ op: "discard", pos });
       i++;
+    } else if (gettok(i, 0) == "take") {
+      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
-      var x = { op: "import", file: gettok(i + 1, 1), iden: [] };
+      var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
       i += 3;
       if (tokens[i] && gettok(i, 0) == "import" && gettok(i, 1) == "iden") {
         i++;
@@ -1772,15 +1803,17 @@ function asc2js(asc, imports = []) {
   var prevobj = "";
   var prevobjpublic = false;
   var curlvl = 0;
-  var strayvar = 0;
+  var strayvar = [];
+  var took = 0;
 
   function getval(x) {
     if (x == undefined) {
       return "";
     }
     if (x[0] == "ans") {
-      strayvar = 0;
-      return currTmpVar();
+      var ans = strayvar[strayvar.length - 1];
+      strayvar = [];
+      return ans;
     }
     return x[1];
   }
@@ -1796,7 +1829,7 @@ function asc2js(asc, imports = []) {
         var value = a.values[j][1];
         if (name == undefined) {
           name = nextTmpVar();
-          strayvar++;
+          strayvar.push(name);
         }
         if (value == undefined) {
           if (a.type == "arr") {
@@ -1821,14 +1854,14 @@ function asc2js(asc, imports = []) {
       }
     } else if (a.op == "print") {
       js += `console.log(`;
-      for (var j = 0; j < strayvar; j++) {
-        js += `${prevTmpVar(strayvar - j)}`;
-        if (j != strayvar - 1) {
+      for (var j = 0; j < strayvar.length; j++) {
+        js += `${strayvar[j]}`;
+        if (j != strayvar.length - 1) {
           js += ",";
         }
       }
       js += ");";
-      strayvar = 0;
+      strayvar = [];
     } else if (a.op == "fun") {
       js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
@@ -1879,7 +1912,7 @@ function asc2js(asc, imports = []) {
             js += ".length";
           }
         } else {
-          js += a.test[j][1];
+          js += getval(a.test[j]);
         }
         j++;
       }
@@ -1892,36 +1925,56 @@ function asc2js(asc, imports = []) {
     } else if (a.op.startsWith("op")) {
       var lhs = getval(a.lhs);
       var rhs = getval(a.rhs);
-
-      js += `var ${nextTmpVar()}=${lhs}${a.op.slice(2)}${rhs};`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+      strayvar.push(vname);
     } else if (a.op == "name") {
       for (var j = 0; j < a.names.length; j++) {
-        js += `var ${a.names[j]}=${prevTmpVar(strayvar - j)};`;
+        js += `var ${a.names[j]}=${
+          strayvar[strayvar.length - a.names.length + j]
+        };`;
       }
-      strayvar -= a.names.length;
+      strayvar = strayvar.slice(0, strayvar.length - a.names.length);
     } else if (a.op == "call") {
-      js += `var ${nextTmpVar()}=${a.fun}(${a.args
-        .map(x => getval(x))
-        .join(",")});`;
-      strayvar++;
+      if (a.pop) {
+        console.log(took, strayvar);
+        var jj = "";
+        for (var j = 0; j < took; j++) {
+          jj += `${strayvar[strayvar.length - took + j]}`;
+          if (j != took - 1) {
+            jj += ",";
+          }
+        }
+        strayvar = strayvar.slice(0, strayvar.length - took);
+        took = 0;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}(` + jj + ");";
+        strayvar.push(vname);
+      } else {
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}(${a.args.map(x => getval(x)).join(",")});`;
+        strayvar.push(vname);
+      }
     } else if (a.op == "subscript") {
       var idx = getval(a.value);
       if (idx == "rest") {
-        js += `var ${nextTmpVar()}=${a.container}.slice(1);`;
-        strayvar++;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}.slice(1);`;
+        strayvar.push(vname);
       } else {
-        js += `var ${nextTmpVar()}=${a.container}[${idx}${
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}[${idx}${
           a.value[0] == "lit" ? "" : "-1"
         }];`;
-        strayvar++;
+        strayvar.push(vname);
       }
     } else if (a.op == "cat") {
+      var vname = nextTmpVar();
       js +=
-        `var ${nextTmpVar()}=${a.containers[0]}.concat(` +
+        `var ${vname}=${a.containers[0]}.concat(` +
         a.containers.slice(1).join(").concat(") +
         ");";
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "push") {
       js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
     } else if (a.op == "for") {
@@ -1938,9 +1991,10 @@ function asc2js(asc, imports = []) {
       js += "break;";
     } else if (a.op == "not") {
       var v = getval(a.value);
-      js += `var ${nextTmpVar()}=!${v};`;
+      var vname = nextTmpVar();
+      js += `var ${vname}=!${v};`;
 
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "reassign") {
       if (a.del == true) {
         var lhs = getval(a.lhs);
@@ -1953,13 +2007,23 @@ function asc2js(asc, imports = []) {
         if (a.lhssubs) {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
+        if (a.rhssubs) {
+          rhs += `[${a.rhssubs[1]}${a.rhssubs[0] == "lit" ? "" : "-1"}]`;
+        }
         js += `${lhs}=${rhs};`;
       }
     } else if (a.op == "length") {
-      js += `var ${nextTmpVar()}=${a.container}.length;`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.container}.length;`;
+      strayvar.push(vname);
+    } else if (a.op == "temp") {
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.iden[1]};`;
+      strayvar.push(vname);
     } else if (a.op == "discard") {
-      strayvar = 0;
+      strayvar = [];
+    } else if (a.op == "take") {
+      took = a.count;
     } else if (a.op == "import") {
       var f = a.file.replace(/"/g, "");
       for (var j = 0; j < a.iden.length; j++) {
@@ -2427,8 +2491,8 @@ try{
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
-<script>var STDLIB = {"位經":"今有一術。名之曰「左移」。欲行是術。必先得二數。曰「甲」。曰「乙」。乃行是術曰。\n\t施「((x,y)=>(x<<y))」於「甲」。於「乙」。名之曰「丙」。乃得「丙」。\n是謂「左移」之術也。\n\n今有一術。名之曰「右移」。欲行是術。必先得二數。曰「甲」。曰「乙」。乃行是術曰。\n\t施「((x,y)=>(x>>y))」於「甲」。於「乙」。名之曰「丙」。乃得「丙」。\n是謂「右移」之術也。","易經":"吾有一數。曰四十二。名之曰「運數」。\n\n今有一術。名之曰「運」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t注曰「「運者。隨機種子也」」\n\t昔之「運數」者。今「甲」是矣。\n是謂「運」之術也。\n\n今有一術。名之曰「占」。是術曰。\n\t注曰「「線性同餘方法所得隨機數也」」\n\t有數四十二億九千四百九十六萬七千二百九十六。名之曰「模」。\n\t有數二千二百六十九萬五千四百七十七。名之曰「倍」。\n\t有數一。名之曰「增」。\n\t乘「倍」以「運數」。加其以「增」。除其以「模」。所餘幾何。昔之「運數」者。今其是矣。\n\t除「運數」以「模」。名之曰「卦」。\n\t乃得「卦」。\n是謂「占」之術也。","算經":"今有一數。曰三又一分四釐一毫五絲九忽三微。名之曰「圓周率」。\n今有一數。曰二又七分一釐八毫二絲八忽二微。名之曰「自然常數」。\n今有一數。曰零又五分七釐七毫二絲一忽五微。名之曰「歐拉常數」。\n今有一數。曰一又六分一釐八毫零絲三忽四微。名之曰「黃金分割數」。\n\n\n今有一術。名之曰「正弦」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.sin」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「正弦」之術也。\n\n今有一術。名之曰「反正弦」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.asin」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「反正弦」之術也。\n\n今有一術。名之曰「餘弦」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.cos」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「餘弦」之術也。\n\n今有一術。名之曰「反餘弦」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.acos」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「反餘弦」之術也。\n\n今有一術。名之曰「正切」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.tan」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「正切」之術也。\n\n今有一術。名之曰「反正切」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.atan」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「反正切」之術也。\n\n今有一術。名之曰「對數」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「Math.log」於「甲」。名之曰「乙」。乃得「乙」。\n是謂「對數」之術也。\n\n今有一術。名之曰「絕對」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」大於零者。乃得「甲」也。\n\t減零以「甲」。名之曰「乙」。乃得「乙」。\n是謂「絕對」之術也。\n\n今有一術。名之曰「取頂」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「取底」於「甲」。名之曰「乙」。\n\t若「甲」大於「乙」者。加一於「乙」。名之曰「丙」。乃得「丙」。\n\t若非。乃得「乙」也。\n是謂「取頂」之術也。\n\n今有一術。名之曰「取底」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t除「甲」以一。所餘幾何。減其於「甲」。名之曰「乙」。乃得「乙」。\n是謂「取底」之術也。\n\n今有一術。名之曰「取整」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「取底」於「甲」。名之曰「乙」。\n\t加零又五分於「乙」。名之曰「丙」。\n\t若「甲」小於「丙」者。乃得「乙」。\n\t若非。加一於「乙」。名之曰「丁」。乃得「丁」。云云。\n是謂「取整」之術也。\n\n今有一術。名之曰「正負」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」大於零者。乃得一也。\n\t若「甲」小於零者。乃得負一也。\n\t乃得零。\n是謂「正負」之術也。\n\n"};</script>
-<script>var prgms = {"":"\u0000\u0000\u0000\u0001Bud1\u0000\u0000\u0010\u0000\u0000\u0000\b\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000%\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\b\u0000\u0000\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\b\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000 \u0000\u0000\u0000\u0001\u0000\u0000\u0000@\u0000\u0000\u0000\u0001\u0000\u0000\u0000�\u0000\u0000\u0000\u0001\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0001\u0000\u0000 \u0000\u0000\u0000\u0000\u0001\u0000\u0000@\u0000\u0000\u0000\u0000\u0001\u0000\u0000�\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0001\u0000\b\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0001\u0000 \u0000\u0000\u0000\u0000\u0000\u0001\u0000@\u0000\u0000\u0000\u0000\u0000\u0001\u0000�\u0000\u0000\u0000\u0000\u0000\u0001\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0001\b\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0001 \u0000\u0000\u0000\u0000\u0000\u0000\u0001@\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0010\u000b\u0000\u0000\u0000E\u0000\u0000\u0000%\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004DSDB\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000`\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000�\u0000\u0000\u0000\u0001\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0004\u0000\u0000\u0000\u0000\u0002\u0000\u0000\b\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000 \u0000\u0000\u0000\u0000\u0001\u0000\u0000@\u0000\u0000\u0000\u0000\u0001\u0000\u0000�\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0001\u0000\b\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0001\u0000 \u0000\u0000\u0000\u0000\u0000\u0001\u0000@\u0000\u0000\u0000\u0000\u0000\u0001\u0000�\u0000\u0000\u0000\u0000\u0000\u0001\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0001\b\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0001 \u0000\u0000\u0000\u0000\u0000\u0000\u0001@\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","beer":"吾有一言。曰「「春日宴。」」。書之。\n有數九。名之曰「酒數」。\n\n恆為是。若「酒數」等於零者乃止也。\n\n\t吾有三言。曰「「與君」」。曰「酒數」。\n\t\t曰「「杯酒。可以窮歡宴。綠酒一杯歌一遍。」」。書之。\n\n減「酒數」以一。昔之「酒數」者。今其是矣云云。\n\n吾有一言。曰「「綠酒千杯腸已爛。」」。書之。","collatz":"吾有一術。名之曰「角谷猜想」。\n欲行是術。必先得一數。\n曰「甲」。\n乃行是術曰。\n    吾有一術。名之曰「助手」。\n    欲行是術。必先得一數。\n    曰「乙」。\n    乃行是術曰。\n        除「乙」以二。所餘幾何。名之曰「積」。\n        若「積」不等於零者。乘三以「乙」，名之曰「埃」。加一以「埃」，名之曰「埃」。\n        若非， 除二於「乙」。名之曰「埃」也。\n        乃得「埃」。\n    是謂「助手」之術也。\n\n    吾有一列。名之曰「回」。充「回」以「甲」。\n    恆為是。\n        若「甲」等於一者，乃止。也。\n        施「助手」於「甲」。昔之「甲」者。今其是矣。\n        充「回」以「甲」。\n    云云。\n    充「回」以一。\n    乃得「回」。\n是謂「角谷猜想」之術也。\n\n施「角谷猜想」於十二。書之。\n施「角谷猜想」於十九。書之。\n施「角谷猜想」於二十七。書之。","collatz2":"吾有一術。名之曰「考拉茲」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n        有數零。名之曰「總」。\n        為是九千九百九十九遍。\n                若「甲」等於一者。乃得「總」。\n                若非。\n                        除「甲」以二。所餘幾何。名之曰「丙」。\n                        若「丙」等於零者。除「甲」以二。名之曰「半」。昔之「甲」者。今「半」也。\n                        若非。\n                                乘「甲」以三。名之曰「丁」。加一於「丁」。名之曰「戊」。昔之「甲」者。今「戊」是也。\n                        加「總」以一。名之曰「己」。\n                        昔之「總」者。今「己」是也。\n        云云。\n是謂「考拉茲」之術也。\n\n\n施「考拉茲」於一十八。書之。\n施「考拉茲」於一百二十三。書之。\n施「考拉茲」於九百七十八。書之。\n施「考拉茲」於六。書之。\n","divination":"吾有一術。名之曰「听天由命」。欲行是術。必先得一數。曰「a」。乃行是術曰。\n\t乃得 Math.floor(Math.random()*a);\n是謂「听天由命」之術也。\n\n吾有一術。名之曰「春秋古筮法」。欲行是術。必先得一數。曰「现余策」。乃行是術曰。\n\t吾有一數。曰零。名之曰「左余策」。\n\t吾有一數。曰零。名之曰「左剩策」。\n\t吾有一數。曰零。名之曰「右余策」。\n\t吾有一數。曰零。名之曰「右剩策」。\n\t\n\t減「现余策」以一。名之曰「现余策」。批曰。\n\t\n\t減「现余策」以一。\n\t昔之「现余策」者。今其是矣。\n\t施「听天由命」於「现余策」。\n\t昔之「左余策」者。今其是矣。\n\t加「现余策」以一。\n\t昔之「现余策」者。今其是矣。\n\t加「左余策」以一。\n\t昔之「左余策」者。今其是矣。\n\t\n\t減「现余策」以「左余策」。\n\t昔之「右余策」者。今其是矣。=\n\t批曰。「「分而为二以象两」」\n\t\n\t除「左余策」以四。所餘幾何。批曰。「「揲之以四象四时」」 \n\t昔之「左剩策」者。今其是矣。\n\t若「左剩策」等於零者。\n\t\t昔之「左剩策」者。今四是矣。\n\t云云。\n\t除「右余策」以四。所餘幾何。\n\t昔之「右剩策」者。今其是矣。\n\t若「右剩策」等於零者。\n\t\t昔之「右剩策」者。今四是矣。\n\t云云。\n\t\n\t減「现余策」以「左剩策」。\n\t昔之「现余策」者。今其是矣。\n\t減「现余策」以「右剩策」。\n\t昔之「现余策」者。今其是矣。\n\t乃得 「现余策」。\n\t\n是謂「春秋古筮法」之術也。\n\n吾有一列。名之曰「爻基」。\n吾有一數。曰六。名之曰「甲」。\n恆為是。\n\t若「甲」等於零者。乃止。云云。\n\t吾有一數。曰五十。名之曰「余策」。批曰。「「大衍之数五十」」\n\t減「余策」以一。昔之「余策」者。今其是矣。批曰。「「其用四十有九」」\n\t為是三遍。批曰。「「三变成一爻」」 \n\t\t施「春秋古筮法」於「余策」\n\t\t昔之「余策」者。今其是矣。\n\t云云。\n\t充「爻基」以「余策」。\n\t減「甲」以一。\n\t昔之「甲」者。今其是矣。\n云云。\n\n昔之「甲」者。今六是矣。\n吾有一數。曰零。名之曰「判據」。\n恆為是。\n\t若「甲」等於零者。乃止。云云。\n\t\n\t夫「爻基」之「甲」。除其以四。\n\t除其以二。所餘幾何。\n\t昔之「判據」者。今其是矣。\n\t\n\t若「判據」等於零者。\n\t\t吾有一言。曰「「-- --」」。書之。\n\t若非\n\t\t吾有一言。曰「「-----」」。書之。\n\t云云。\n\t\n\t減「甲」以一。\n\t昔之「甲」者。今其是矣。\n云云。","euclidean":"吾有一術。名之曰「歐幾里得法」。\n欲行是術。必先得二數。\n曰「甲」。曰「乙」。\n乃行是術曰。\n    吾有一數。名之曰「回」。\n    若「乙」等於零者，乃得「甲」是矣。\n    若非，\n      吾有一數。名之曰「削除」。\n      除「甲」以「乙」所餘幾何。昔之「削除」者。今其是矣。\n      施「歐幾里得法」於「乙」。於「削除」。昔之「回」者。今其是矣。\n    也。\n    乃得「回」。\n是謂「歐幾里得法」之術也。\n\n吾有一術。名之曰「互質」。\n欲行是術。必先得二數。\n曰「甲」。曰「乙」。\n乃行是術曰。\n    吾有一數。名之曰「回」。\n    施「歐幾里得法」於「甲」。於「乙」。昔之「回」者。今其是矣。\n    若「回」等於一者，乃得陽。若非，乃得陰。也。\n是謂「互質」之術也。\n\n吾有一術。名之曰「歐拉餘數」。\n欲行是術。必先得一數。\n曰「甲」。\n乃行是術曰。\n  注曰。「非最優解矣。吾算術及數論廢也」\n  吾有二數。曰二。曰一。名之曰「埃」。曰「積」。注曰。「曰「畸」」\n  恆為是。\n    若「甲」不大於「埃」者。乃止。也。\n    吾有一爻。名之曰「回」。\n    施「互質」於「甲」。於「埃」。昔之「回」者。今其是矣。\n    若「回」者，加「積」以一。名之曰「積」。也。\n    加「埃」以一。名之曰「埃」。\n  云云。\n  乃得「積」。\n是謂「歐拉餘數」之術也。\n\n施「歐幾里得法」於一千零七十一於四百六十二。書之。\n施「歐幾里得法」於一百二十三於四。書之。\n\n施「互質」於一百二十三於四。書之。\n施「互質」於四於二。書之。\n\n施「歐拉餘數」於二。書之。\n施「歐拉餘數」於十二。書之。\n施「歐拉餘數」於十三。書之。\n施「歐拉餘數」於十六。書之。\n施「歐拉餘數」於二百五十五。書之。","factorial":"吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n施「階乘」於五。書之。","fibonacci":"吾有一術。名之曰「斐波那契」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於零者乃得零也\n\t若「甲」等於一者乃得一也\n\t減「甲」以一。減「甲」以二。名之曰「乙」。曰「丙」。\n\t施「斐波那契」於「乙」。名之曰「丁」。\n\t施「斐波那契」於「丙」。名之曰「戊」。\n\t加「丁」以「戊」。名之曰「己」。\n\t乃得「己」。\n是謂「斐波那契」之術也。\n\n施「斐波那契」於十二。書之。","fibonacci2":"吾有一術。名之曰「斐氏列」。\n\n欲行是術。必先得一數。曰「因」。乃行是術曰。\n    有數零。名之曰「頭」。\n\t有數一。名之曰「尾」。\n    有數一。名之曰「計」。\n\t有數零。名之曰「果」。\n\n\t若「因」等於零者。昔之「果」者。今「因」是矣云云。\n\t若「因」等於一者。昔之「果」者。今「因」是矣云云。\n\t\n    恆為是。若「計」不小於「因」者乃止也。\n        加「頭」以「尾」。昔之「果」者。今其是矣。\n        昔之「頭」者。今「尾」是矣。\n        昔之「尾」者。今「果」是矣。\n        加「計」以一。昔之「計」者。今其是矣。\n    云云。\n\n    乃得「果」\n是謂「斐氏列」之術也。\n\n施「斐氏列」於十。書之。\n","fizzbuzz":"有數一。名之曰「戊」。恆為是。\n\t\n\t除「戊」以三。所餘幾何。變其。名之曰「三餘」。\n\t除「戊」以五。所餘幾何。變其。名之曰「五餘」。\n\n\t夫「三餘」「五餘」中有陽乎。變其。名之曰「寂」。\n\t若「寂」者。吾有一言。曰「戊」。書之。\n\t若非。\n\t\t吾有一言。名之曰「聲」。\n\t\t若「三餘」者。加「聲」以「「黃河流水鳴濺濺。」」。昔之「聲」者。今其是矣。云云。\n\t\t若「五餘」者。加「聲」以「「燕山胡騎鳴啾啾。」」。昔之「聲」者。今其是矣。云云。\n\t\t吾有一言。曰「聲」。書之。\n\t云云。\n\n\t若「戊」等於一百者乃止也。\n加一以「戊」。昔之「戊」者。今其是矣云云。","hanoi":"吾有一術。名之曰「漢諾塔」。欲行是術。必先得四數。曰「盤數」。曰「甲塔」。曰「乙塔」。曰「丙塔」。\n乃行是術曰。\n\t若「盤數」等於零者。吾有一列。乃得其也。\n\t減「盤數」以一。昔之「盤數」者。今其是矣。\n\t施「漢諾塔」於「盤數」。於「甲塔」。於「丙塔」。於「乙塔」。名之曰「古」。\n\t施「漢諾塔」於「盤數」。於「丙塔」。於「乙塔」。於「甲塔」。名之曰「後」。\n\t吾有一列。名之曰「步」。充「步」以「甲塔」。以「乙塔」。\n\t吾有一列。名之曰「今」。充「今」以「步」。\n\t銜「古」以「今」以「後」。名之曰「史」。乃得「史」。\n是謂「漢諾塔」之術也。\n\n吾有一術。名之曰「畫塔法」。欲行是術。必先得一數。曰「盤數」。一列。曰「史」。\n乃行是術曰。\n\t吾有一言。曰「「甲乙丙」」。名之曰「諸名」。\n\t吾有一列。名之曰「三塔」。充「三塔」以「盤數」。以零。以零。\n\n\t吾有一術。名之曰「畫」。是術曰。\n\t\t有數一。名之曰「戌」。恆為是。若「戌」大於三者乃止也。\n\t\t\t夫「三塔」之「戌」。名之曰「碟」。\n\t\t\t減「盤數」以「碟」。名之曰「柱」。\n\t\t\t吾有一言。名之曰「行」。\n\t\t\t為是「碟」遍。加「行」以「「盤」」。昔之「行」者。今其是矣。云云。\n\t\t\t為是「柱」遍。加「行」以「「一」」。昔之「行」者。今其是矣。云云。\n\t\t\t夫「諸名」之「戌」。名之曰「名」。\n\t\t\t吾有四言。曰「「〔」」。曰「名」。曰「「〕」」。曰「行」。書之。\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t\t書之。\n\t是謂「畫」之術也。\n\n\t凡「史」中之「步」\n\t\t施「畫」噫。\n\t\t夫「步」之一。名之曰「起」\n\t\t夫「步」之二。名之曰「訖」\n\t\t夫「三塔」之「起」。減其以一。昔之「三塔」之「起」者。今其是矣。\n\t\t夫「三塔」之「訖」。加其以一。昔之「三塔」之「訖」者。今其是矣。\n\t\t書之。\n\t云云。\n\t施「畫」噫。\n\t吾有一言。曰「「畢」」。書之。\n是謂「畫塔法」之術也。\n\n\n有數四。名之曰「盤數」\n施「漢諾塔」於「盤數」。於一。於二。於三。名之曰「史」。\n施「畫塔法」於「盤數」。於「史」。","helloworld+":"吾有一數。曰三。名之曰「甲」。\n為是「甲」遍。\n\t吾有一言。曰「「問天地好在。」」。書之。\n云云。","helloworld":"吾有一言。曰「「問天地好在。」」。書之。","import":"吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」「圓周率」「取底」「取整」「取頂」「正負」「絕對」之義。\n吾嘗觀「「易經」」之書。方悟「占」之義。\n吾嘗觀「「helloworld」」之書。\n\n施「餘弦」於「圓周率」。書之。\n\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n\n施「取底」於「圓周率」。書之。\n施「取整」於「圓周率」。書之。\n施「取頂」於「圓周率」。書之。\n施「絕對」於「圓周率」。書之。\n施「正負」於「圓周率」。書之。","mandelbrot":"吾有一術。名之曰「曼德博」。欲行是術。必先得二數。曰「寬」。曰「高」。乃行是術曰。\n\t批曰。「「曼德博集。亦稱曼德布洛特复数集合。复平面上组成分形之点之集合也。」」\n\n\t吾有一言。曰「「丁龘蠹臺龜畫龍淼蔑高五三二」」。名之曰「皴法」。\n\t批曰。「「皴法者。圖畫之法也」」。\n\n\t減零以一。名之曰「上」。加零以一。名之曰「下」。\n\t減零以二。名之曰「左」。加零以二。名之曰「右」。\n\n\t減「右」以「左」。除其以「寬」。名之曰「橫步」。\n\t減「下」以「上」。除其以「高」。名之曰「縱步」。\n\n\t有數零。名之曰「戊」。恆為是。若「戊」等於「高」者乃止也。\n\n\t\t乘「縱步」以「戊」。加其以「上」。以名之曰「虛」。\n\n\t\t吾有一言。名之曰「行」。\n\n\t\t有數零。名之曰「戌」。恆為是。若「戌」等於「寬」者乃止也。\n\n\t\t\t乘「橫步」以「戌」。加其以「左」。名之曰「實」。\n\n\t\t\t有數「虛」。名之曰「虛虛」。\n\t\t\t有數「實」。名之曰「實實」。\n\n\t\t\t批曰。「「凡每一像素。皆算令其收斂之最大疊代數」」。\n\n\t\t\t有數零。名之曰「己」。恆為是。若「己」等於十二者乃止也。\n\t\t\t\t\n\t\t\t\t乘「實實」以「實實」。乘「虛虛」以「虛虛」。名之曰「甲」。曰「乙」。\n\t\t\t\t加「甲」以「乙」。名之曰「丙」。\n\t\t\t\t若「丙」大於四者乃止也。\n\n\t\t\t\t乘「虛虛」以「實實」。乘其以二。加其以「虛」。昔之「虛虛」者。今其是矣。\n\t\t\t\t減「甲」以「乙」。加其以「實」。昔之「實實」者。今其是矣。\n\n\t\t\t加一以「己」。昔之「己」者。今其是矣云云。\n\n\t\t\t批曰。「「既得疊代數。乃以皴法圖之」」。\n\n\t\t\t減十三以「己」。名之曰「巳」。\n\t\t\t夫「皴法」之「巳」。名之曰「墨」。\n\t\t\t加「行」以「墨」。昔之「行」者。今其是矣。\n\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t\t\n\t\t吾有一言。曰「行」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n是謂「曼德博」之術也。\n\n批曰。「「畫曼德博集合之法。至是盡矣。乃一試之」」。\n\n施「曼德博」於五十九。於二十四。\n\n","mergesort":"吾有一術。名之曰「歸併」。欲行是術。必先得二列。曰「甲」。曰「乙」。\n乃行是術曰。\n    若「甲」之長等於零者。乃得「乙」也。\n    若「乙」之長等於零者。乃得「甲」也。\n\n    吾有二數。曰一。曰一。名之曰「甲引」。曰「乙引」。\n    吾有一列。名之曰「果」。\n    恆為是。\n        若「甲」之長小於「甲引」者。乃止也。\n        若「乙」之長小於「乙引」者。乃止也。\n        夫「甲」之「甲引」。名之曰「甲一」。\n        夫「乙」之「乙引」。名之曰「乙一」。\n        若「甲一」不大於「乙一」者。\n            充「果」以「甲一」。\n            加「甲引」以一。名之曰「甲引」。\n        若非。\n            充「果」以「乙一」。\n            加「乙引」以一。名之曰「乙引」。\n        也。\n    云云。\n\n    若「甲」之長小於「甲引」者。\n        恆為是。\n            若「乙」之長小於「乙引」者。乃止也。\n            夫「乙」之「乙引」。名之曰「乙餘」。\n            充「果」以「乙餘」。\n            加「乙引」以一。名之曰「乙引」。\n        云云。\n        乃得「果」\n    也。\n    若「乙」之長小於「乙引」者。\n        恆為是。\n            若「甲」之長小於「甲引」者。乃止也。\n            夫「甲」之「甲引」。名之曰「甲餘」。\n            充「果」以「甲餘」。\n            加「甲引」以一。名之曰「甲引」。\n        云云。\n        乃得「果」\n    也。\n是謂「歸併」之術也。\n\n吾有一術。名之曰「並排」。欲行是術。必先得一列。曰「甲」。\n乃行是術曰。\n    若「甲」之長不大於一者。乃得「甲」也。\n    夫「甲」之長。名之曰「甲長」。\n    除其以二。所餘幾何。名之曰「甲餘」。\n    減「甲長」以「甲餘」。除其以二。名之曰「甲中」。\n    吾有二列。名之曰「甲前」。曰「甲後」。\n    吾有一數。曰一。名之曰「甲引」。\n    恆為是。\n        若「甲引」大於「甲」之長者。乃止也。\n        夫「甲」之「甲引」。名之曰「甲一」。\n        若「甲引」不大於「甲中」者。\n            充「甲前」以「甲一」。\n        若非。\n            充「甲後」以「甲一」。\n        也。\n        加「甲引」以一。名之曰「甲引」。\n    云云。\n    施「並排」於「甲前」。昔之「甲前」者。今其是矣。\n    施「並排」於「甲後」。昔之「甲後」者。今其是矣。\n    施「歸併」於「甲前」。於「甲後」。名之曰「果」。\n    乃得「果」。\n是謂「並排」之術也。\n\n吾有一列。名之曰「測排」。充「測排」以一。以三。以二。以十八。以十四。\n施「並排」於「測排」。書之。\n","misc":"吾有一言。曰「「問天地好在。」」。書之。\n有數三十。名之曰「甲」。\n吾有三言。曰「「甲之數」」。曰「甲」。曰「「也」」。書之。\n\n批曰。「「文氣淋灕。字句切實」」。\n\n吾有二爻。曰陽。曰陰。名之曰「天」。曰「地」。\n夫「天」「地」中無陰乎。夫「天」「地」中有陽乎。噫。\n變「天」。名之曰「人」。\n\n減「甲」以一。加「甲」以二。名之曰「乙」。曰「丙」。\n\n吾有一列。名之曰「丁」。\n充「丁」以一。以二。以三。以四。\n\n有數一。名之曰「戊」。\n恆為是。\n\t若「戊」等於「甲」者。\n\t\t乃止\n\t也。\n\t吾有一言。曰「戊」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣。\n云云。\n\n吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n吾有一術。名之曰「異或」。欲行是術。必先得二爻。曰「甲」。曰「乙」。乃行是術曰。\n\t若「甲」等於「乙」者。\n\t\t乃得陰。\n\t若非。\n\t\t乃得陽\n\t也。\n是謂「異或」之術也。\n\n吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長不大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。\n","modinv":"吾有一術。名之曰「大衍求一」。欲行是術。必先得二數。曰「奇數」。曰「定母」。乃行是術曰。\n\t注曰。「「大衍求一術云︰置奇右上。定居右下。立天元一於左上。先以右上除右下。\n\t所得商數與左上一相生。入左下。然後乃以右行上下。以少除多。遞互除之。\n\t所得商數隨即遞互累乘。歸左行上下。須使右上末後奇一而止。乃驗左上所得。以為乘率。」」\n\n\t有數一。名之曰「天元」。\n\n\t昔之「右上」者。今「奇數」是矣。\n\t昔之「右下」者。今「定母」是矣。\n\t昔之「左上」者。今「天元」是矣。\n\t昔之「左下」者。今零是矣。\n\n\t恆為是。\n\t\t若「右上」等於一者。乃得「左上」也。\n\n\t\t除「右下」以「右上」。所餘幾何。名之曰「餘數」。\n\t\t減「右下」以「餘數」。除其以「右上」。名之曰「商數」。\n\t\t乘「商數」以「左上」。加「左下」以其。昔之「左下」者。今其是矣。\n\t\t昔之「右下」者。今「餘數」是矣。\n\n\t\t注曰。「「若右下等於零者。曰奇數與定母不互素。無乘率也。」」\n\t\t若「右下」等於零者。乃得零也。\n\n\t\t減「右上」以一，除其以「右下」。所餘幾何。加其以一。名之曰「餘數」。\n\t\t減「右上」以「餘數」。除其以「右下」。名之曰「商數」。\n\t\t乘「商數」以「左下」。加「左上」以其。昔之「左上」者。今其是矣。\n\t\t昔之「右上」者。今「餘數」是矣。\t\t\n\t云云。\n\n是謂「大衍求一」之術也。\n\n\n施「大衍求一」於四十九。於十四萬二千八百五十七。名之曰「乘率」。\n乘四十九以「乘率」。除其以十四萬二千八百五十七。所餘幾何。書之。\n","multiplication_table":"吾有一術名之曰「乘算口訣」。是術曰。\n  有數一名之曰「甲」。\n  恆為是。若「甲」不小於十者乃止也。\n    有數一名之曰「乙」。\n    加「甲」以「乙」名之曰「丙」。\n    恆為是。若「乙」不小於「丙」者乃止也。\n        乘「甲」以「乙」名之曰「果」。\n        若「果」不小於十者吾有三言。曰「乙」曰「甲」曰「果」書之。\n        若非吾有四言。曰「乙」曰「甲」曰「「得」」曰「果」書之也。\n        加「乙」以一。昔之「乙」者今其是矣。\n    云云。\n    加「甲」以一。昔之「甲」者今其是矣。\n  云云。\n是謂「乘算口訣」之術也。\n施「乘算口訣」。\n","obj":"吾有一物。名之曰「精衛」。其物如是。\n\t物之「「名」」者。言曰「「女娃」」。\n\t物之「「足數」」者。數曰二。\n\t物之「「喙數」」者。數曰一。\n是謂「精衛」之物也。\n\n吾有一術。名之曰「造物之術」。欲行是術。必先得一言。曰「甲」。乃行是術曰。\n\t吾有一物。名之曰「乙」。其物如是。\n\t\t物之「「丙」」者。言曰「甲」。\n\t\t物之「「丁」」者。數曰四。\n\t是謂「乙」之物也。\n\t乃得「乙」。\n是謂「造物之術」之物也。\n\n施「造物之術」於「「某甲」」。名之曰「戊」。\n昔之「戊」之「「丁」」者。今五是矣。\n施「JSON.stringify」於「戊」。書之。\n昔之「戊」之「「丁」」者。今不復存矣。\n施「JSON.stringify」於「戊」。書之。","pi_leibniz":"吾有一術。名之曰「萊布尼茲圓周率估算」。\n欲行是術。必先得一數。\n曰「頂」。\n乃行是術曰。\n    吾有三數。名之曰「埃」曰「積」曰「畸」。\n    有數一。名之曰「符」。\n    恆為是。\n        若「埃」大於「頂」者，乃止也。\n        乘二於「埃」，名之曰「畸」。\n\t\t加一於「畸」，名之曰「畸」。\n\t\t除「符」以「畸」，名之曰「畸」。\n\t\t乘四於「畸」，名之曰「畸」。\n        加「畸」於「積」，名之曰「積」。\n        乘負一於「符」，名之曰「符」。\n        加一於「埃」，名之曰「埃」。\n    云云。\n    乃得「積」。\n是謂「萊布尼茲圓周率估算」之術也。\n\n施「萊布尼茲圓周率估算」於十。書之。\n施「萊布尼茲圓周率估算」於六十九。書之。\n施「萊布尼茲圓周率估算」於四百二十。書之。\n施「萊布尼茲圓周率估算」於一千三百三十七。書之。\n施「萊布尼茲圓周率估算」於十一萬四千五百一十四。書之。","quicksort":"吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長不大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。","quicksort_inplace":"吾有一術。名之曰「降龍十八掌」。欲行是術。必先得二數。曰「少陽」。曰「老陽」。一列。曰「陰」。\n是術曰。\n\t若「少陽」不小於「老陽」者。\n\t\t乃得陰。\n\t也。\n\t吾有一數。名之曰「太極」。\n\t施「一陽指」於「少陽」。於「老陽」。於「陰」。昔之「太極」者。今其是矣。\n\t減一於「太極」。名之曰「少陰」。\n\t加一以「太極」。名之曰「老陰」。\n\t施「降龍十八掌」於「少陽」。於「少陰」。於「陰」。\n\t施「降龍十八掌」於「老陰」。於「老陽」。於「陰」。\n\t乃得陽。\n是謂「降龍十八掌」之術也。\n\n\n吾有一術。名之曰「一陽指」。欲行是術。必先得二數。曰「少陽」。曰「老陽」。一列。曰「陰」。\n是術曰。\n\t吾有一數。曰「少陽」。名之曰「乾」。\n\t吾有一數。曰「少陽」。名之曰「坤」。\n\t恆為是。若「乾」不小於「老陽」者乃止也。\n\t\t若「陰」之「乾」小於「陰」之「老陽」者。\n\t \t\t施「乾坤大挪移」於「坤」。於「乾」。於「陰」。\n\t\t\t加一以「坤」。昔之「坤」者。今其是矣。\n\t\t也。\n\t\t加一以「乾」。昔之「乾」者。今其是矣。\n\t云云。\n\n\t批曰。「「若再施乾坤大挪移。则走火入魔。何故。是行便宜之法以达同之功。」」。\n   \t夫「陰」之「老陽」。名之曰「陰乾」。\n\t夫「陰」之「坤」。名之曰「陰坤」。\n\t昔之「陰」之「乾」者。今「陰坤」是矣。\n\t昔之「陰」之「坤」者。今「陰乾」是矣。\n\t乃得「坤」。\n是謂「一陽指」之術也。\n\n\n吾有一術。名之曰「乾坤大挪移」。欲行是術。必先得二數。曰「乾」。曰「坤」。一列。曰「陰」。\n是術曰。\n\t夫「陰」之「乾」。名之曰「陰乾」。\n\t夫「陰」之「坤」。名之曰「陰坤」。\n\t昔之「陰」之「乾」者。今「陰坤」是矣。\n\t昔之「陰」之「坤」者。今「陰乾」是矣。\n是謂「乾坤大挪移」之術也。\n\n\n有數一。名之曰「少陽」。\n吾有一列。名之曰「陰」。充「陰」以四。以二。以五。以三。以一。\n夫「陰」之長。名之曰「老陽」。\n施「降龍十八掌」於「少陽」。於「老陽」。於「陰」。\n吾有一列。曰「陰」。名之曰「陽」。\n吾有一言。曰「陽」。書之。\n","quine":"注曰Reference: 注曰https://qiita.com/amoO_O/items/5d0c4edfc99f64bea6fb\n吾有一術。名之曰「自己複製」。欲行是術。必先得零數。是術曰。吾有一術。名之曰「置換」。欲行是術。必先得三數。曰「文字列」。曰「置換対象」。曰「置換先」是術曰。吾有一言。曰「「」」。名之曰「返品」。吾有一數。曰二。名之曰「未来」。吾有一爻。曰陽。名之曰「実行条件」。凡「文字列」中之「文字」。若「実行条件」者。若「文字」等於「「星」」中無陰乎「文字列」之「未来」等於「置換対象」者。昔之「文字」者。今「置換先」是。昔之「実行条件」者。今陰是。也。加「返品」以「文字」。昔之「返品」者。今其是矣。若非。昔之「実行条件」者。今陽是。也。加「未来」以一。昔之「未来」者。今其是矣。云云。乃得「返品」。是謂「置換」之術也。吾有一言。曰String.fromCharCode名之曰「函数」。施「函数」於一萬二千三百。昔之「始」者。今其是矣。施「函数」於一萬二千三百零一。昔之「終」者。今其是矣。吾有二言。曰「「吾有一術。名之曰星甲自己複製星乙。欲行是術。必先得零數。是術曰。吾有一術。名之曰星甲置換星乙。欲行是術。必先得三數。曰星甲文字列星乙。曰星甲置換対象星乙。曰星甲置換先星乙是術曰。吾有一言。曰星甲星甲星乙星乙。名之曰星甲返品星乙。吾有一數。曰二。名之曰星甲未来星乙。吾有一爻。曰陽。名之曰星甲実行条件星乙。凡星甲文字列星乙中之星甲文字星乙。若星甲実行条件星乙者。若星甲文字星乙等於星甲星甲星星乙星乙中無陰乎星甲文字列星乙之星甲未来星乙等於星甲置換対象星乙者。昔之星甲文字星乙者。今星甲置換先星乙是。昔之星甲実行条件星乙者。今陰是。也。加星甲返品星乙以星甲文字星乙。昔之星甲返品星乙者。今其是矣。若非。昔之星甲実行条件星乙者。今陽是。也。加星甲未来星乙以一。昔之星甲未来星乙者。今其是矣。云云。乃得星甲返品星乙。是謂星甲置換星乙之術也。吾有一言。曰String.fromCharCode名之曰星甲函数星乙。施星甲函数星乙於一萬二千三百。昔之星甲始星乙者。今其是矣。施星甲函数星乙於一萬二千三百零一。昔之星甲終星乙者。今其是矣。吾有二言。曰星甲星甲星丙星乙星乙。星甲星甲星乙星乙。名之曰星甲原文星乙曰星甲結果星乙。施星甲置換星乙於星甲原文星乙。於星甲星甲甲星乙星乙。於星甲始星乙。昔之星甲結果星乙者。今其是矣。施星甲置換星乙於星甲結果星乙。於星甲星甲乙星乙星乙。於星甲終星乙。昔之星甲結果星乙者。今其是矣。施星甲置換星乙於星甲結果星乙。於星甲星甲丙星乙星乙。於星甲原文星乙。昔之星甲結果星乙者。今其是矣。吾有一言。曰星甲結果星乙。書之。是謂星甲自己複製星乙之術也。施星甲自己複製星乙。」」。「「」」。名之曰「原文」曰「結果」。施「置換」於「原文」。於「「甲」」。於「始」。昔之「結果」者。今其是矣。施「置換」於「結果」。於「「乙」」。於「終」。昔之「結果」者。今其是矣。施「置換」於「結果」。於「「丙」」。於「原文」。昔之「結果」者。今其是矣。吾有一言。曰「結果」。書之。是謂「自己複製」之術也。施「自己複製」。","quine2":"注曰Reference: 注曰https://qiita.com/amoO_O/items/5d0c4edfc99f64bea6fb\n吾有一術。名之曰「自己複製」。\n欲行是術。必先得零數。是術曰。\n\n吾有一術。名之曰「置換」。\n欲行是術。必先得三數。\n曰「文字列」。曰「置換対象」。曰「置換先」是術曰。\n  吾有一言。曰「「」」。名之曰「返品」。\n  吾有一數。曰二。名之曰「未来」。\n  吾有一數。曰陽。名之曰「実行条件」。\n  凡「文字列」中之「文字」。\n      若「実行条件」者。\n        若「文字」等於「「星」」」中無陰乎「文字列」之「未来」等於「置換対象」者。\n          加「返品」以「置換先」。昔之「返品」者。今其是矣。\n          昔之「実行条件」者。今陰是。\n        若非。\n          加「返品」以「文字」。昔之「返品」者。今其是矣。\n        也。\n      若非。\n        昔之「実行条件」者。今陽是。\n      也。\n    加「未来」以一。昔之「未来」者。今其是矣。\n  云云。\n  乃得「返品」。\n是謂「置換」之術也。\n\n吾有一言。曰String.fromCharCode名之曰「函数」。\n施「函数」於一萬二千三百。昔之「始括弧」者。今其是矣。\n施「函数」於一萬二千三百零一。昔之「終括弧」者。今其是矣。\n施「函数」於三十二。昔之「空白」者。今其是矣。\n加「空白」以「空白」。昔之「空白」者。今其是矣。\n施「函数」於十。昔之「改行」者。今其是矣。\n吾有一言。曰「「吾有一術。名之曰星甲自己複製星乙。星丁欲行是術。必先得零數。是術曰。星丁星丁吾有一術。名之曰星甲置換星乙。星丁欲行是術。必先得三數。星丁曰星甲文字列星乙。曰星甲置換対象星乙。曰星甲置換先星乙是術曰。星丁星丙吾有一言。曰星甲星甲星乙星乙。名之曰星甲返品星乙。星丁星丙吾有一數。曰二。名之曰星甲未来星乙。星丁星丙吾有一數。曰陽。名之曰星甲実行条件星乙。星丁星丙凡星甲文字列星乙中之星甲文字星乙。星丁星丙星丙星丙若星甲実行条件星乙者。星丁星丙星丙星丙星丙若星甲文字星乙等於星甲星甲星星乙星乙星乙中無陰乎星甲文字列星乙之未来等於星甲置換対象星乙者。星丁星丙星丙星丙星丙星丙加星甲返品星乙以星甲置換先星乙。昔之星甲返品星乙者。今其是矣。星丁星丙星丙星丙星丙星丙昔之星甲実行条件星乙者。今陰是。星丁星丙星丙星丙星丙若非。星丁星丙星丙星丙星丙星丙加星甲返品星乙以星甲文字星乙。昔之星甲返品星乙者。今其是矣。星丁星丙星丙星丙星丙也。星丁星丙星丙星丙若非。星丁星丙星丙星丙星丙昔之星甲実行条件星乙者。今陽是。星丁星丙星丙星丙也。星丁星丙星丙加星甲未来星乙以一。昔之星甲未来星乙者。今其是矣。星丁星丙云云。星丁星丙乃得星甲返品星乙。星丁是謂星甲置換星乙之術也。星丁星丁吾有一言。曰String.fromCharCode名之曰星甲函数星乙。星丁施星甲函数星乙於一萬二千三百。昔之星甲始括弧星乙者。今其是矣。星丁施星甲函数星乙於一萬二千三百零一。昔之星甲終括弧星乙者。今其是矣。星丁施星甲函数星乙於三十二。昔之星甲空白星乙者。今其是矣。星丁加星甲空白星乙以星甲空白星乙。昔之星甲空白星乙者。今其是矣。星丁施星甲函数星乙於十。昔之星甲改行星乙者。今其是矣。星丁吾有一言。曰星甲星甲星戊星乙星乙。名之曰星甲原文星乙。星丁吾有一言。曰星甲星甲星乙星乙。名之曰星甲結果星乙。星丁施星甲置換星乙於星甲原文星乙。於星甲星甲甲星乙星乙。於星甲始括弧星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲乙星乙星乙。於星甲終括弧星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲丙星乙星乙。於星甲空白星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲丁星乙星乙。於星甲改行星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲戊星乙星乙。於星甲原文星乙。昔之星甲結果星乙者。今其是矣。星丁吾有一言。曰星甲結果星乙。書之。星丁星丁是謂星甲自己複製星乙之術也。星丁施星甲自己複製星乙。」」。名之曰「原文」。\n吾有一言。曰「「」」。名之曰「結果」。\n施「置換」於「原文」。於「「甲」」。於「始括弧」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「乙」」。於「終括弧」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「丙」」。於「空白」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「丁」」。於「改行」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「戊」」。於「原文」。昔之「結果」者。今其是矣。\n吾有一言。曰「結果」。書之。\n\n是謂「自己複製」之術也。\n施「自己複製」。","selectionsort":"吾有一術。名之曰「擇排」。欲行是術。必先得一列。曰「數列」。乃行是術曰。\n    吾有一列。名之曰「答列」。\n    夫「數列」之長。名之曰「度」。\n    為是「度」遍。\n        夫「數列」之一。名之曰「若者」。\n        吾有一數。曰一。名之曰「若者之位」。\n        吾有一數。曰一。名之曰「位」。\n        凡「數列」中之「員」。\n            若「員」小於「若者」者。 \n                昔之「若者」者。今「員」是矣。\n                昔之「若者之位」者。今「位」是矣。\n            也。\n            加一於「位」。名之曰「位」。\n\n        云云。\n        充「答列」以「若者」。\n\n        吾有一列。名之曰「數列新世」。\n        吾有一數。曰一。名之曰「新位」。\n        凡「數列」中之「員」。\n            若「新位」小於「若者之位」者。 \n                充「數列新世」以「員」。\n            也。\n            若「新位」大於「若者之位」者。 \n                充「數列新世」以「員」。\n            也。\n            加一於「新位」。名之曰「新位」。\n\n        云云。\n        昔之「數列」者。今「數列新世」是矣。\n\n    云云。\n\n    乃得「答列」。\n是謂「擇排」之術也。\n\n\n吾有一列。名之曰「測排」。\n充「測排」以八。以千。以十。以五。以五十五。以三百。以九。\n施「擇排」於「測排」。書之。\n","sieve":"吾有一術。名之曰「埃氏篩」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t吾有一列。名之曰「掩」。為是「甲」遍。充「掩」以陽也。\n\t除「甲」以二。名之曰「甲半」。\n\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「甲半」者乃止也。\n\t\t有數二。名之曰「戌」。恆為是。若「戌」等於「甲半」者乃止也。\n\n\t\t\t乘「戊」以「戌」。名之曰「合」\n\t\t\t若「合」不大於「甲」者。\n\t\t\t\t昔之「掩」之「合」者。今陰是矣。\n\t\t\t若非乃止也。\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\n\t吾有一列。名之曰「諸素」。\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「掩」之長者乃止也。\n\t\t夫「掩」之「戊」。名之曰「素耶」。\n\t\t若「素耶」者充「諸素」以「戊」也。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\t乃得「諸素」。\n是謂「埃氏篩」之術也。\n\n施「埃氏篩」於一百。書之。","sqrt_newton":"吾有一術。名之曰「牛頓求根法」。\n欲行是術。必先得一數。\n曰「試」。\n乃行是術曰。\n    有數一。名之曰「甲」。\n\t有數一。名之曰「乙」。\n\t為是「試」遍。\n\t\t乘「甲」於「甲」，名之曰「乙」。減「乙」以二，名之曰「乙」\n\t\t乘二於「甲」，名之曰「丙」。\n\t\t除「乙」以「丙」，名之曰「茂」。\n\t\t減「甲」以「茂」，名之曰「甲」。\n\t云云。\n\t乃得「甲」。\n是謂「牛頓求根法」之術也。\n\n施「牛頓求根法」於二。書之。\n施「牛頓求根法」於三。書之。\n施「牛頓求根法」於五。書之。\n施「牛頓求根法」於七。書之。\n施「牛頓求根法」於十三。書之。\n施「牛頓求根法」於一百三十一。書之。\n施「牛頓求根法」於一千零一十三。書之。","turing":"吾有一術。名之曰「圖靈機」。欲行是術。必先得一列。曰「諸律」。二言。曰「始態」。曰「終態」。\n乃行是術曰。\n\t吾有一列。名之曰「帶」。充「帶」以「「白」」。\n\t有數一。名之曰「針」。\n\n\t吾有二數。曰一。曰一。名之曰「左疆」。曰「右疆」。\n\t吾有一言。曰「始態」。名之曰「態」。\n\n\t吾有一術。名之曰「圖靈機畫法」。是術曰。\n\t\t吾有一言。名之曰「畫帶」。\n\t\t有數「左疆」。名之曰「筆」。恆為是。若「筆」大於「右疆」者乃止也。\n\t\t\t夫「帶」之「筆」。名之曰「符」。\n\t\t\t若「針」等於「筆」者。\n\t\t\t\t加「符」於「「〔」」。加其以「「〕」」昔之「符」者。今其是矣\n\t\t\t若非。\n\t\t\t\t加「符」於「「、」」。加其以「「、」」昔之「符」者。今其是矣\n\t\t\t云云。\n\t\t\t加「畫帶」以「符」。昔之「畫帶」者。今其是矣。\n\n\t\t加一以「筆」。昔之「筆」者。今其是矣云云。\n\t\t吾有四言。曰「態」。曰「「《」」。曰「畫帶」。曰「「》」」書之。\n\t是謂「圖靈機畫法」之術也。\n\n\t施「圖靈機畫法」。噫。\n\n\t恆為是。\n\t\t凡「諸律」中之「律」\n\t\t\t夫「律」之一。名之曰「甲態」。\n\t\t\t夫「律」之二。名之曰「讀符」。\n\t\t\t夫「律」之三。名之曰「乙態」。\n\t\t\t夫「律」之四。名之曰「畫符」。\n\t\t\t夫「律」之五。名之曰「移」。\n\n\t\t\t若「態」等於「甲態」者。若「帶」之「針」等於「讀符」者。\n\t\t\t\t昔之「帶」之「針」者。今「畫符」是矣。\n\t\t\t\t昔之「態」者。今「乙態」是矣。\n\t\t\t\t若「移」等於「「左」」者。減一於「針」。昔之「針」者。今其是矣。云云。\n\t\t\t\t若「移」等於「「右」」者。加一於「針」。昔之「針」者。今其是矣。云云。\n\t\t\t\t乃止。\n\t\t\t云云云云\n\t\t云云。\n\n\t\t若「針」小於「左疆」者。\n\t\t\t昔之「帶」之「針」者。今「「白」」是矣。\n\t\t\t昔之「左疆」者。今「針」是矣。\n\t\t云云\n\t\t若「針」大於「右疆」者。\n\t\t\t昔之「帶」之「針」者。今「「白」」是矣。\n\t\t\t昔之「右疆」者。今「針」是矣。\n\t\t云云\n\n\t\t施「圖靈機畫法」。噫。\n\t\t若「態」等於「終態」者乃止也。\n\t云云。\n是謂「圖靈機」之術也。\n\n\n吾有一術。名之曰「製律」。欲行是術。必先得一列。曰「諸律」。\n\t五言。曰「甲態」。曰「讀符」。曰「乙態」。曰「畫符」。曰「移」。乃行是術曰。\n\t吾有一列。名之曰「律」。\n\t充「律」以「甲態」。以「讀符」。以「乙態」。以「畫符」。以「移」。\n\t充「諸律」以「律」。\n是謂「製律」之術也。\n\n吾有一言。曰「「營營河狸。止于樊。」」。書之。\n\n吾有一列。名之曰「諸律」。\n吾有一言。曰「「墨」」。名之曰「陽符」。\n吾有一言。曰「「白」」。名之曰「陰符」。\n施「製律」於「諸律」於「「甲」」於「陰符」於「「乙」」於「陽符」於「「右」」\n施「製律」於「諸律」於「「甲」」於「陽符」於「「丙」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「乙」」於「陰符」於「「甲」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「乙」」於「陽符」於「「乙」」於「陽符」於「「右」」\n施「製律」於「諸律」於「「丙」」於「陰符」於「「乙」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「丙」」於「陽符」於「「樊」」於「陽符」於「「中」」\n\n施「圖靈機」於「諸律」於「「甲」」於「「樊」」。\n\n\n"};</script>
+<script>var STDLIB = {"位經":"今有一術。名之曰「左移」。欲行是術。必先得二數。曰「甲」。曰「乙」。乃行是術曰。\n\t施「((x,y)=>(x<<y))」於「甲」。於「乙」。名之曰「丙」。乃得「丙」。\n是謂「左移」之術也。\n\n今有一術。名之曰「右移」。欲行是術。必先得二數。曰「甲」。曰「乙」。乃行是術曰。\n\t施「((x,y)=>(x>>y))」於「甲」。於「乙」。名之曰「丙」。乃得「丙」。\n是謂「右移」之術也。","易經":"吾有一數。曰四十二。名之曰「運數」。\n\n今有一術。名之曰「運」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t注曰「「運者。隨機種子也」」\n\t昔之「運數」者。今「甲」是矣。\n是謂「運」之術也。\n\n今有一術。名之曰「占」。是術曰。\n\t注曰「「線性同餘方法所得隨機數也」」\n\t有數四十二億九千四百九十六萬七千二百九十六。名之曰「模」。\n\t注曰「「有數二千二百六十九萬五千四百七十七。名之曰「倍」。」」\n\t有數二千二百六十七萬五千四百五十六。名之曰「上倍」。有數二萬零二十一。名之曰「下倍」。\n\t有數一。名之曰「增」。\n\t乘「上倍」於「運數」。除其以「模」。所餘幾何。名之曰「上餘」。\n\t乘「下倍」於「運數」。加其於「上餘」。加其以「增」。除其以「模」。所餘幾何。昔之「運數」者。今其是矣。\n\t除「運數」以「模」。名之曰「卦」。\n\t乃得「卦」。\n是謂「占」之術也。\n","算經":"今有一數。曰三又一分四釐一毫五絲九忽三微。名之曰「圓周率」。\n今有一數。曰二又七分一釐八毫二絲八忽二微。名之曰「自然常數」。\n今有一數。曰零又五分七釐七毫二絲一忽五微。名之曰「歐拉常數」。\n今有一數。曰一又六分一釐八毫零絲三忽四微。名之曰「黃金分割數」。\n\n今有一術。曰「Math.sin」。名之曰「正弦」之術也。\n\n今有一術。曰「Math.asin」。名之曰「反正弦」之術也。\n\n今有一術。曰「Math.cos」。名之曰「餘弦」之術也。\n\n今有一術。曰「Math.acos」。名之曰「反餘弦」之術也。\n\n今有一術。曰「Math.tan」。名之曰「正切」之術也。\n\n今有一術。曰「Math.atan」。名之曰「反正切」之術也。\n\n今有一術。曰「Math.log」。名之曰「對數」之術也。\n\n今有一術。名之曰「絕對」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」大於零者。乃得「甲」也。\n\t減零以「甲」。名之曰「乙」。乃得「乙」。\n是謂「絕對」之術也。\n\n今有一術。名之曰「取頂」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「取底」於「甲」。名之曰「乙」。\n\t若「甲」大於「乙」者。加一於「乙」。名之曰「丙」。乃得「丙」。\n\t若非。乃得「乙」也。\n是謂「取頂」之術也。\n\n今有一術。名之曰「取底」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t除「甲」以一。所餘幾何。減其於「甲」。名之曰「乙」。乃得「乙」。\n是謂「取底」之術也。\n\n今有一術。名之曰「取整」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t施「取底」於「甲」。名之曰「乙」。\n\t加零又五分於「乙」。名之曰「丙」。\n\t若「甲」小於「丙」者。乃得「乙」。\n\t若非。加一於「乙」。名之曰「丁」。乃得「丁」。云云。\n是謂「取整」之術也。\n\n今有一術。名之曰「正負」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」大於零者。乃得一也。\n\t若「甲」小於零者。乃得負一也。\n\t乃得零。\n是謂「正負」之術也。\n\n"};</script>
+<script>var prgms = {"":"\u0000\u0000\u0000\u0001Bud1\u0000\u0000\u0010\u0000\u0000\u0000\b\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000%\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\b\u0000\u0000\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\b\u000b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000 \u0000\u0000\u0000\u0001\u0000\u0000\u0000@\u0000\u0000\u0000\u0001\u0000\u0000\u0000�\u0000\u0000\u0000\u0001\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0001\u0000\u0000 \u0000\u0000\u0000\u0000\u0001\u0000\u0000@\u0000\u0000\u0000\u0000\u0001\u0000\u0000�\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0001\u0000\b\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0001\u0000 \u0000\u0000\u0000\u0000\u0000\u0001\u0000@\u0000\u0000\u0000\u0000\u0000\u0001\u0000�\u0000\u0000\u0000\u0000\u0000\u0001\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0001\b\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0001 \u0000\u0000\u0000\u0000\u0000\u0000\u0001@\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0010\u000b\u0000\u0000\u0000E\u0000\u0000\u0000%\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004DSDB\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000`\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000�\u0000\u0000\u0000\u0001\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0004\u0000\u0000\u0000\u0000\u0002\u0000\u0000\b\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000 \u0000\u0000\u0000\u0000\u0001\u0000\u0000@\u0000\u0000\u0000\u0000\u0001\u0000\u0000�\u0000\u0000\u0000\u0000\u0001\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0004\u0000\u0000\u0000\u0000\u0000\u0001\u0000\b\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0001\u0000 \u0000\u0000\u0000\u0000\u0000\u0001\u0000@\u0000\u0000\u0000\u0000\u0000\u0001\u0000�\u0000\u0000\u0000\u0000\u0000\u0001\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0001\b\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0001 \u0000\u0000\u0000\u0000\u0000\u0000\u0001@\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","beer":"吾有一言。曰「「春日宴。」」。書之。\n有數九。名之曰「酒數」。\n\n恆為是。若「酒數」等於零者乃止也。\n\n\t吾有三言。曰「「與君」」。曰「酒數」。\n\t\t曰「「杯酒。可以窮歡宴。綠酒一杯歌一遍。」」。書之。\n\n減「酒數」以一。昔之「酒數」者。今其是矣云云。\n\n吾有一言。曰「「綠酒千杯腸已爛。」」。書之。","collatz":"吾有一術。名之曰「角谷猜想」。\n欲行是術。必先得一數。\n曰「甲」。\n乃行是術曰。\n    吾有一術。名之曰「助手」。\n    欲行是術。必先得一數。\n    曰「乙」。\n    乃行是術曰。\n        除「乙」以二。所餘幾何。名之曰「積」。\n        若「積」不等於零者。乘三以「乙」，名之曰「埃」。加一以「埃」，名之曰「埃」。\n        若非， 除二於「乙」。名之曰「埃」也。\n        乃得「埃」。\n    是謂「助手」之術也。\n\n    吾有一列。名之曰「回」。充「回」以「甲」。\n    恆為是。\n        若「甲」等於一者，乃止。也。\n        施「助手」於「甲」。昔之「甲」者。今其是矣。\n        充「回」以「甲」。\n    云云。\n    充「回」以一。\n    乃得「回」。\n是謂「角谷猜想」之術也。\n\n施「角谷猜想」於十二。書之。\n施「角谷猜想」於十九。書之。\n施「角谷猜想」於二十七。書之。","collatz2":"吾有一術。名之曰「考拉茲」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n        有數零。名之曰「總」。\n        為是九千九百九十九遍。\n                若「甲」等於一者。乃得「總」。\n                若非。\n                        除「甲」以二。所餘幾何。名之曰「丙」。\n                        若「丙」等於零者。除「甲」以二。名之曰「半」。昔之「甲」者。今「半」也。\n                        若非。\n                                乘「甲」以三。名之曰「丁」。加一於「丁」。名之曰「戊」。昔之「甲」者。今「戊」是也。\n                        加「總」以一。名之曰「己」。\n                        昔之「總」者。今「己」是也。\n        云云。\n是謂「考拉茲」之術也。\n\n\n施「考拉茲」於一十八。書之。\n施「考拉茲」於一百二十三。書之。\n施「考拉茲」於九百七十八。書之。\n施「考拉茲」於六。書之。\n","divination":"吾有一術。名之曰「听天由命」。欲行是術。必先得一數。曰「a」。乃行是術曰。\n\t乃得 Math.floor(Math.random()*a);\n是謂「听天由命」之術也。\n\n吾有一術。名之曰「春秋古筮法」。欲行是術。必先得一數。曰「现余策」。乃行是術曰。\n\t吾有一數。曰零。名之曰「左余策」。\n\t吾有一數。曰零。名之曰「左剩策」。\n\t吾有一數。曰零。名之曰「右余策」。\n\t吾有一數。曰零。名之曰「右剩策」。\n\t\n\t減「现余策」以一。名之曰「现余策」。批曰。\n\t\n\t減「现余策」以一。\n\t昔之「现余策」者。今其是矣。\n\t施「听天由命」於「现余策」。\n\t昔之「左余策」者。今其是矣。\n\t加「现余策」以一。\n\t昔之「现余策」者。今其是矣。\n\t加「左余策」以一。\n\t昔之「左余策」者。今其是矣。\n\t\n\t減「现余策」以「左余策」。\n\t昔之「右余策」者。今其是矣。=\n\t批曰。「「分而为二以象两」」\n\t\n\t除「左余策」以四。所餘幾何。批曰。「「揲之以四象四时」」 \n\t昔之「左剩策」者。今其是矣。\n\t若「左剩策」等於零者。\n\t\t昔之「左剩策」者。今四是矣。\n\t云云。\n\t除「右余策」以四。所餘幾何。\n\t昔之「右剩策」者。今其是矣。\n\t若「右剩策」等於零者。\n\t\t昔之「右剩策」者。今四是矣。\n\t云云。\n\t\n\t減「现余策」以「左剩策」。\n\t昔之「现余策」者。今其是矣。\n\t減「现余策」以「右剩策」。\n\t昔之「现余策」者。今其是矣。\n\t乃得 「现余策」。\n\t\n是謂「春秋古筮法」之術也。\n\n吾有一列。名之曰「爻基」。\n吾有一數。曰六。名之曰「甲」。\n恆為是。\n\t若「甲」等於零者。乃止。云云。\n\t吾有一數。曰五十。名之曰「余策」。批曰。「「大衍之数五十」」\n\t減「余策」以一。昔之「余策」者。今其是矣。批曰。「「其用四十有九」」\n\t為是三遍。批曰。「「三变成一爻」」 \n\t\t施「春秋古筮法」於「余策」\n\t\t昔之「余策」者。今其是矣。\n\t云云。\n\t充「爻基」以「余策」。\n\t減「甲」以一。\n\t昔之「甲」者。今其是矣。\n云云。\n\n昔之「甲」者。今六是矣。\n吾有一數。曰零。名之曰「判據」。\n恆為是。\n\t若「甲」等於零者。乃止。云云。\n\t\n\t夫「爻基」之「甲」。除其以四。\n\t除其以二。所餘幾何。\n\t昔之「判據」者。今其是矣。\n\t\n\t若「判據」等於零者。\n\t\t吾有一言。曰「「-- --」」。書之。\n\t若非\n\t\t吾有一言。曰「「-----」」。書之。\n\t云云。\n\t\n\t減「甲」以一。\n\t昔之「甲」者。今其是矣。\n云云。","euclidean":"吾有一術。名之曰「歐幾里得法」。\n欲行是術。必先得二數。\n曰「甲」。曰「乙」。\n乃行是術曰。\n    吾有一數。名之曰「回」。\n    若「乙」等於零者，乃得「甲」是矣。\n    若非，\n      吾有一數。名之曰「削除」。\n      除「甲」以「乙」所餘幾何。昔之「削除」者。今其是矣。\n      施「歐幾里得法」於「乙」。於「削除」。昔之「回」者。今其是矣。\n    也。\n    乃得「回」。\n是謂「歐幾里得法」之術也。\n\n吾有一術。名之曰「互質」。\n欲行是術。必先得二數。\n曰「甲」。曰「乙」。\n乃行是術曰。\n    吾有一數。名之曰「回」。\n    施「歐幾里得法」於「甲」。於「乙」。昔之「回」者。今其是矣。\n    若「回」等於一者，乃得陽。若非，乃得陰。也。\n是謂「互質」之術也。\n\n吾有一術。名之曰「歐拉餘數」。\n欲行是術。必先得一數。\n曰「甲」。\n乃行是術曰。\n  注曰。「非最優解矣。吾算術及數論廢也」\n  吾有二數。曰二。曰一。名之曰「埃」。曰「積」。注曰。「曰「畸」」\n  恆為是。\n    若「甲」不大於「埃」者。乃止。也。\n    吾有一爻。名之曰「回」。\n    施「互質」於「甲」。於「埃」。昔之「回」者。今其是矣。\n    若「回」者，加「積」以一。名之曰「積」。也。\n    加「埃」以一。名之曰「埃」。\n  云云。\n  乃得「積」。\n是謂「歐拉餘數」之術也。\n\n施「歐幾里得法」於一千零七十一於四百六十二。書之。\n施「歐幾里得法」於一百二十三於四。書之。\n\n施「互質」於一百二十三於四。書之。\n施「互質」於四於二。書之。\n\n施「歐拉餘數」於二。書之。\n施「歐拉餘數」於十二。書之。\n施「歐拉餘數」於十三。書之。\n施「歐拉餘數」於十六。書之。\n施「歐拉餘數」於二百五十五。書之。","factorial":"吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n施「階乘」於五。書之。","fibonacci":"吾有一術。名之曰「斐波那契」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於零者乃得零也\n\t若「甲」等於一者乃得一也\n\t減「甲」以一。減「甲」以二。名之曰「乙」。曰「丙」。\n\t施「斐波那契」於「乙」。名之曰「丁」。\n\t施「斐波那契」於「丙」。名之曰「戊」。\n\t加「丁」以「戊」。名之曰「己」。\n\t乃得「己」。\n是謂「斐波那契」之術也。\n\n施「斐波那契」於十二。書之。","fibonacci2":"吾有一術。名之曰「斐氏列」。\n\n欲行是術。必先得一數。曰「因」。乃行是術曰。\n    有數零。名之曰「頭」。\n\t有數一。名之曰「尾」。\n    有數一。名之曰「計」。\n\t有數零。名之曰「果」。\n\n\t若「因」等於零者。昔之「果」者。今「因」是矣云云。\n\t若「因」等於一者。昔之「果」者。今「因」是矣云云。\n\t\n    恆為是。若「計」不小於「因」者乃止也。\n        加「頭」以「尾」。昔之「果」者。今其是矣。\n        昔之「頭」者。今「尾」是矣。\n        昔之「尾」者。今「果」是矣。\n        加「計」以一。昔之「計」者。今其是矣。\n    云云。\n\n    乃得「果」\n是謂「斐氏列」之術也。\n\n施「斐氏列」於十。書之。\n","fizzbuzz":"有數一。名之曰「戊」。恆為是。\n\t\n\t除「戊」以三。所餘幾何。變其。名之曰「三餘」。\n\t除「戊」以五。所餘幾何。變其。名之曰「五餘」。\n\n\t夫「三餘」「五餘」中有陽乎。變其。名之曰「寂」。\n\t若「寂」者。吾有一言。曰「戊」。書之。\n\t若非。\n\t\t吾有一言。名之曰「聲」。\n\t\t若「三餘」者。加「聲」以「「黃河流水鳴濺濺。」」。昔之「聲」者。今其是矣。云云。\n\t\t若「五餘」者。加「聲」以「「燕山胡騎鳴啾啾。」」。昔之「聲」者。今其是矣。云云。\n\t\t吾有一言。曰「聲」。書之。\n\t云云。\n\n\t若「戊」等於一百者乃止也。\n加一以「戊」。昔之「戊」者。今其是矣云云。","hanoi":"吾有一術。名之曰「漢諾塔」。欲行是術。必先得四數。曰「盤數」。曰「甲塔」。曰「乙塔」。曰「丙塔」。\n乃行是術曰。\n\t若「盤數」等於零者。吾有一列。乃得其也。\n\t減「盤數」以一。昔之「盤數」者。今其是矣。\n\t施「漢諾塔」於「盤數」。於「甲塔」。於「丙塔」。於「乙塔」。名之曰「古」。\n\t施「漢諾塔」於「盤數」。於「丙塔」。於「乙塔」。於「甲塔」。名之曰「後」。\n\t吾有一列。名之曰「步」。充「步」以「甲塔」。以「乙塔」。\n\t吾有一列。名之曰「今」。充「今」以「步」。\n\t銜「古」以「今」以「後」。名之曰「史」。乃得「史」。\n是謂「漢諾塔」之術也。\n\n吾有一術。名之曰「畫塔法」。欲行是術。必先得一數。曰「盤數」。一列。曰「史」。\n乃行是術曰。\n\t吾有一言。曰「「甲乙丙」」。名之曰「諸名」。\n\t吾有一列。名之曰「三塔」。充「三塔」以「盤數」。以零。以零。\n\n\t吾有一術。名之曰「畫」。是術曰。\n\t\t有數一。名之曰「戌」。恆為是。若「戌」大於三者乃止也。\n\t\t\t夫「三塔」之「戌」。名之曰「碟」。\n\t\t\t減「盤數」以「碟」。名之曰「柱」。\n\t\t\t吾有一言。名之曰「行」。\n\t\t\t為是「碟」遍。加「行」以「「盤」」。昔之「行」者。今其是矣。云云。\n\t\t\t為是「柱」遍。加「行」以「「一」」。昔之「行」者。今其是矣。云云。\n\t\t\t夫「諸名」之「戌」。名之曰「名」。\n\t\t\t吾有四言。曰「「〔」」。曰「名」。曰「「〕」」。曰「行」。書之。\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t\t書之。\n\t是謂「畫」之術也。\n\n\t凡「史」中之「步」\n\t\t施「畫」噫。\n\t\t夫「步」之一。名之曰「起」\n\t\t夫「步」之二。名之曰「訖」\n\t\t夫「三塔」之「起」。減其以一。昔之「三塔」之「起」者。今其是矣。\n\t\t夫「三塔」之「訖」。加其以一。昔之「三塔」之「訖」者。今其是矣。\n\t\t書之。\n\t云云。\n\t施「畫」噫。\n\t吾有一言。曰「「畢」」。書之。\n是謂「畫塔法」之術也。\n\n\n有數四。名之曰「盤數」\n施「漢諾塔」於「盤數」。於一。於二。於三。名之曰「史」。\n施「畫塔法」於「盤數」。於「史」。","helloworld+":"吾有一數。曰三。名之曰「甲」。\n為是「甲」遍。\n\t吾有一言。曰「「問天地好在。」」。書之。\n云云。","helloworld":"吾有一言。曰「「問天地好在。」」。書之。","import":"吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」「圓周率」「取底」「取整」「取頂」「正負」「絕對」之義。\n吾嘗觀「「易經」」之書。方悟「占」之義。\n吾嘗觀「「helloworld」」之書。\n\n施「餘弦」於「圓周率」。書之。\n\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n施「占」。書之。\n\n施「取底」於「圓周率」。書之。\n施「取整」於「圓周率」。書之。\n施「取頂」於「圓周率」。書之。\n施「絕對」於「圓周率」。書之。\n施「正負」於「圓周率」。書之。","mandelbrot":"吾有一術。名之曰「曼德博」。欲行是術。必先得二數。曰「寬」。曰「高」。乃行是術曰。\n\t批曰。「「曼德博集。亦稱曼德布洛特复数集合。复平面上组成分形之点之集合也。」」\n\n\t吾有一言。曰「「丁龘蠹臺龜畫龍淼蔑高五三二」」。名之曰「皴法」。\n\t批曰。「「皴法者。圖畫之法也」」。\n\n\t減零以一。名之曰「上」。加零以一。名之曰「下」。\n\t減零以二。名之曰「左」。加零以二。名之曰「右」。\n\n\t減「右」以「左」。除其以「寬」。名之曰「橫步」。\n\t減「下」以「上」。除其以「高」。名之曰「縱步」。\n\n\t有數零。名之曰「戊」。恆為是。若「戊」等於「高」者乃止也。\n\n\t\t乘「縱步」以「戊」。加其以「上」。以名之曰「虛」。\n\n\t\t吾有一言。名之曰「行」。\n\n\t\t有數零。名之曰「戌」。恆為是。若「戌」等於「寬」者乃止也。\n\n\t\t\t乘「橫步」以「戌」。加其以「左」。名之曰「實」。\n\n\t\t\t有數「虛」。名之曰「虛虛」。\n\t\t\t有數「實」。名之曰「實實」。\n\n\t\t\t批曰。「「凡每一像素。皆算令其收斂之最大疊代數」」。\n\n\t\t\t有數零。名之曰「己」。恆為是。若「己」等於十二者乃止也。\n\t\t\t\t\n\t\t\t\t乘「實實」以「實實」。乘「虛虛」以「虛虛」。名之曰「甲」。曰「乙」。\n\t\t\t\t加「甲」以「乙」。名之曰「丙」。\n\t\t\t\t若「丙」大於四者乃止也。\n\n\t\t\t\t乘「虛虛」以「實實」。乘其以二。加其以「虛」。昔之「虛虛」者。今其是矣。\n\t\t\t\t減「甲」以「乙」。加其以「實」。昔之「實實」者。今其是矣。\n\n\t\t\t加一以「己」。昔之「己」者。今其是矣云云。\n\n\t\t\t批曰。「「既得疊代數。乃以皴法圖之」」。\n\n\t\t\t減十三以「己」。名之曰「巳」。\n\t\t\t夫「皴法」之「巳」。名之曰「墨」。\n\t\t\t加「行」以「墨」。昔之「行」者。今其是矣。\n\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t\t\n\t\t吾有一言。曰「行」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n是謂「曼德博」之術也。\n\n批曰。「「畫曼德博集合之法。至是盡矣。乃一試之」」。\n\n施「曼德博」於五十九。於二十四。\n\n","mergesort":"吾有一術。名之曰「歸併」。欲行是術。必先得二列。曰「甲」。曰「乙」。\n乃行是術曰。\n    若「甲」之長等於零者。乃得「乙」也。\n    若「乙」之長等於零者。乃得「甲」也。\n\n    吾有二數。曰一。曰一。名之曰「甲引」。曰「乙引」。\n    吾有一列。名之曰「果」。\n    恆為是。\n        若「甲」之長小於「甲引」者。乃止也。\n        若「乙」之長小於「乙引」者。乃止也。\n        夫「甲」之「甲引」。名之曰「甲一」。\n        夫「乙」之「乙引」。名之曰「乙一」。\n        若「甲一」不大於「乙一」者。\n            充「果」以「甲一」。\n            加「甲引」以一。名之曰「甲引」。\n        若非。\n            充「果」以「乙一」。\n            加「乙引」以一。名之曰「乙引」。\n        也。\n    云云。\n\n    若「甲」之長小於「甲引」者。\n        恆為是。\n            若「乙」之長小於「乙引」者。乃止也。\n            夫「乙」之「乙引」。名之曰「乙餘」。\n            充「果」以「乙餘」。\n            加「乙引」以一。名之曰「乙引」。\n        云云。\n        乃得「果」\n    也。\n    若「乙」之長小於「乙引」者。\n        恆為是。\n            若「甲」之長小於「甲引」者。乃止也。\n            夫「甲」之「甲引」。名之曰「甲餘」。\n            充「果」以「甲餘」。\n            加「甲引」以一。名之曰「甲引」。\n        云云。\n        乃得「果」\n    也。\n是謂「歸併」之術也。\n\n吾有一術。名之曰「並排」。欲行是術。必先得一列。曰「甲」。\n乃行是術曰。\n    若「甲」之長不大於一者。乃得「甲」也。\n    夫「甲」之長。名之曰「甲長」。\n    除「甲長」以二。所餘幾何。名之曰「甲餘」。\n    減「甲長」以「甲餘」。除其以二。名之曰「甲中」。\n    吾有二列。名之曰「甲前」。曰「甲後」。\n    吾有一數。曰一。名之曰「甲引」。\n    恆為是。\n        若「甲引」大於「甲」之長者。乃止也。\n        夫「甲」之「甲引」。名之曰「甲一」。\n        若「甲引」不大於「甲中」者。\n            充「甲前」以「甲一」。\n        若非。\n            充「甲後」以「甲一」。\n        也。\n        加「甲引」以一。名之曰「甲引」。\n    云云。\n    施「並排」於「甲前」。昔之「甲前」者。今其是矣。\n    施「並排」於「甲後」。昔之「甲後」者。今其是矣。\n    施「歸併」於「甲前」。於「甲後」。名之曰「果」。\n    乃得「果」。\n是謂「並排」之術也。\n\n吾有一列。名之曰「測排」。充「測排」以一。以三。以二。以十八。以十四。\n施「並排」於「測排」。書之。\n","misc":"吾有一言。曰「「問天地好在。」」。書之。\n有數三十。名之曰「甲」。\n吾有三言。曰「「甲之數」」。曰「甲」。曰「「也」」。書之。\n\n批曰。「「文氣淋灕。字句切實」」。\n\n吾有二爻。曰陽。曰陰。名之曰「天」。曰「地」。\n夫「天」「地」中無陰乎。夫「天」「地」中有陽乎。噫。\n變「天」。名之曰「人」。\n\n減「甲」以一。加「甲」以二。名之曰「乙」。曰「丙」。\n\n吾有一列。名之曰「丁」。\n充「丁」以一。以二。以三。以四。\n\n有數一。名之曰「戊」。\n恆為是。\n\t若「戊」等於「甲」者。\n\t\t乃止\n\t也。\n\t吾有一言。曰「戊」。書之。\n\t加一以「戊」。昔之「戊」者。今其是矣。\n云云。\n\n吾有一術。名之曰「階乘」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t若「甲」等於一者。\n\t\t乃得「甲」。\n\t若非。\n\t\t減「甲」以一。名之曰「乙」。\n\t\t施「階乘」於「乙」。名之曰「丙」。\n\t\t乘「丙」以「甲」。名之曰「丁」。\n\t\t乃得「丁」\n\t也。\n是謂「階乘」之術也。\n\n吾有一術。名之曰「異或」。欲行是術。必先得二爻。曰「甲」。曰「乙」。乃行是術曰。\n\t若「甲」等於「乙」者。\n\t\t乃得陰。\n\t若非。\n\t\t乃得陽\n\t也。\n是謂「異或」之術也。\n\n吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長不大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。\n","modinv":"吾有一術。名之曰「大衍求一」。欲行是術。必先得二數。曰「奇數」。曰「定母」。乃行是術曰。\n\t注曰。「「大衍求一術云︰置奇右上。定居右下。立天元一於左上。先以右上除右下。\n\t所得商數與左上一相生。入左下。然後乃以右行上下。以少除多。遞互除之。\n\t所得商數隨即遞互累乘。歸左行上下。須使右上末後奇一而止。乃驗左上所得。以為乘率。」」\n\n\t有數一。名之曰「天元」。\n\n\t昔之「右上」者。今「奇數」是矣。\n\t昔之「右下」者。今「定母」是矣。\n\t昔之「左上」者。今「天元」是矣。\n\t昔之「左下」者。今零是矣。\n\n\t恆為是。\n\t\t若「右上」等於一者。乃得「左上」也。\n\n\t\t除「右下」以「右上」。所餘幾何。名之曰「餘數」。\n\t\t減「右下」以「餘數」。除其以「右上」。名之曰「商數」。\n\t\t乘「商數」以「左上」。加「左下」以其。昔之「左下」者。今其是矣。\n\t\t昔之「右下」者。今「餘數」是矣。\n\n\t\t注曰。「「若右下等於零者。曰奇數與定母不互素。無乘率也。」」\n\t\t若「右下」等於零者。乃得零也。\n\n\t\t減「右上」以一，除其以「右下」。所餘幾何。加其以一。名之曰「餘數」。\n\t\t減「右上」以「餘數」。除其以「右下」。名之曰「商數」。\n\t\t乘「商數」以「左下」。加「左上」以其。昔之「左上」者。今其是矣。\n\t\t昔之「右上」者。今「餘數」是矣。\t\t\n\t云云。\n\n是謂「大衍求一」之術也。\n\n\n施「大衍求一」於四十九。於十四萬二千八百五十七。名之曰「乘率」。\n乘四十九以「乘率」。除其以十四萬二千八百五十七。所餘幾何。書之。\n","multiplication_table":"吾有一術名之曰「乘算口訣」。是術曰。\n  有數一名之曰「甲」。\n  恆為是。若「甲」不小於十者乃止也。\n    有數一名之曰「乙」。\n    加「甲」以「乙」名之曰「丙」。\n    恆為是。若「乙」不小於「丙」者乃止也。\n        乘「甲」以「乙」名之曰「果」。\n        若「果」不小於十者吾有三言。曰「乙」曰「甲」曰「果」書之。\n        若非吾有四言。曰「乙」曰「甲」曰「「得」」曰「果」書之也。\n        加「乙」以一。昔之「乙」者今其是矣。\n    云云。\n    加「甲」以一。昔之「甲」者今其是矣。\n  云云。\n是謂「乘算口訣」之術也。\n施「乘算口訣」。\n","nested_fun":"有數三。名之曰「甲」。\n有數四。名之曰「乙」。\n有數五。名之曰「丙」。\n吾有一列。名之曰「癸」。充「癸」以一以二以三。\n\n吾有三術。名之曰「丁」。曰「戊」。曰「己」。\n\n注曰「「庚 = 丁(甲,乙)」」\n夫「甲」。夫「乙」。取二以施「丁」。名之曰「庚」。\n\n注曰「「子 = 丁(甲+乙,丙)」」\n加「甲」以「乙」。夫「丙」。取二以施「丁」。名之曰「子」。\n\n注曰「「丑 = 丁(癸[3],癸.length)」」\n夫「癸」之三。夫「癸」之長。取二以施「丁」。名之曰「丑」。\n\n注曰「「辛 = 戊(甲,丁(乙,丙))」」\n夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。名之曰「辛」。\n\n注曰「「壬 = 丁(己(戊(甲,丁(乙,丙))),甲,乙)」」\n夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。取一以施「己」。夫「甲」。夫「乙」。取三以施「丁」。名之曰「壬」。","obj":"吾有一物。名之曰「精衛」。其物如是。\n\t物之「「名」」者。言曰「「女娃」」。\n\t物之「「足數」」者。數曰二。\n\t物之「「喙數」」者。數曰一。\n是謂「精衛」之物也。\n\n吾有一術。名之曰「造物之術」。欲行是術。必先得一言。曰「甲」。乃行是術曰。\n\t吾有一物。名之曰「乙」。其物如是。\n\t\t物之「「丙」」者。言曰「甲」。\n\t\t物之「「丁」」者。數曰四。\n\t是謂「乙」之物也。\n\t乃得「乙」。\n是謂「造物之術」之物也。\n\n施「造物之術」於「「某甲」」。名之曰「戊」。\n昔之「戊」之「「丁」」者。今五是矣。\n施「JSON.stringify」於「戊」。書之。\n昔之「戊」之「「丁」」者。今不復存矣。\n施「JSON.stringify」於「戊」。書之。","pi_leibniz":"吾有一術。名之曰「萊布尼茲圓周率估算」。\n欲行是術。必先得一數。\n曰「頂」。\n乃行是術曰。\n    吾有三數。名之曰「埃」曰「積」曰「畸」。\n    有數一。名之曰「符」。\n    恆為是。\n        若「埃」大於「頂」者，乃止也。\n        乘二於「埃」，名之曰「畸」。\n\t\t加一於「畸」，名之曰「畸」。\n\t\t除「符」以「畸」，名之曰「畸」。\n\t\t乘四於「畸」，名之曰「畸」。\n        加「畸」於「積」，名之曰「積」。\n        乘負一於「符」，名之曰「符」。\n        加一於「埃」，名之曰「埃」。\n    云云。\n    乃得「積」。\n是謂「萊布尼茲圓周率估算」之術也。\n\n施「萊布尼茲圓周率估算」於十。書之。\n施「萊布尼茲圓周率估算」於六十九。書之。\n施「萊布尼茲圓周率估算」於四百二十。書之。\n施「萊布尼茲圓周率估算」於一千三百三十七。書之。\n施「萊布尼茲圓周率估算」於十一萬四千五百一十四。書之。","quicksort":"吾有一術。名之曰「快排」。欲行是術。必先得一列。曰「甲」。乃行是術曰。\n\t若「甲」之長不大於一者。\n\t\t乃得「甲」\n\t也。\n\t吾有三列。名之曰「首」。曰「頷」。曰「尾」。\n\n\t夫「甲」之一。名之曰「甲一」。\n\t充「頷」以「甲一」。\n\t夫「甲」之其餘。名之曰「甲餘」。\n\n\t凡「甲餘」中之「丁」。\n\t\t若「丁」小於「甲一」者。\n\t\t\t充「首」以「丁」。\n\t\t若非。\n\t\t\t充「尾」以「丁」\n\t\t也。\n\t云云。\n\t施「快排」於「首」。昔之「首」者。今其是矣。\n\t施「快排」於「尾」。昔之「尾」者。今其是矣。\n\n\t銜「首」以「頷」以「尾」。名之曰「乙」。\n\t乃得「乙」。\n\n是謂「快排」之術也。\n\n吾有一列。名之曰「己」。\n充「己」以五。以三。以二十。以八。以三十五。以七百。\n施「快排」於「己」。書之。","quicksort_inplace":"吾有一術。名之曰「降龍十八掌」。欲行是術。必先得二數。曰「少陽」。曰「老陽」。一列。曰「陰」。\n是術曰。\n\t若「少陽」不小於「老陽」者。\n\t\t乃得陰。\n\t也。\n\t吾有一數。名之曰「太極」。\n\t施「一陽指」於「少陽」。於「老陽」。於「陰」。昔之「太極」者。今其是矣。\n\t減一於「太極」。名之曰「少陰」。\n\t加一以「太極」。名之曰「老陰」。\n\t施「降龍十八掌」於「少陽」。於「少陰」。於「陰」。\n\t施「降龍十八掌」於「老陰」。於「老陽」。於「陰」。\n\t乃得陽。\n是謂「降龍十八掌」之術也。\n\n\n吾有一術。名之曰「一陽指」。欲行是術。必先得二數。曰「少陽」。曰「老陽」。一列。曰「陰」。\n是術曰。\n\t吾有一數。曰「少陽」。名之曰「乾」。\n\t吾有一數。曰「少陽」。名之曰「坤」。\n\t恆為是。若「乾」不小於「老陽」者乃止也。\n\t\t若「陰」之「乾」小於「陰」之「老陽」者。\n\t \t\t施「乾坤大挪移」於「坤」。於「乾」。於「陰」。\n\t\t\t加一以「坤」。昔之「坤」者。今其是矣。\n\t\t也。\n\t\t加一以「乾」。昔之「乾」者。今其是矣。\n\t云云。\n\n\t批曰。「「若再施乾坤大挪移。则走火入魔。何故。是行便宜之法以达同之功。」」。\n   \t夫「陰」之「老陽」。名之曰「陰乾」。\n\t夫「陰」之「坤」。名之曰「陰坤」。\n\t昔之「陰」之「乾」者。今「陰坤」是矣。\n\t昔之「陰」之「坤」者。今「陰乾」是矣。\n\t乃得「坤」。\n是謂「一陽指」之術也。\n\n\n吾有一術。名之曰「乾坤大挪移」。欲行是術。必先得二數。曰「乾」。曰「坤」。一列。曰「陰」。\n是術曰。\n\t夫「陰」之「乾」。名之曰「陰乾」。\n\t夫「陰」之「坤」。名之曰「陰坤」。\n\t昔之「陰」之「乾」者。今「陰坤」是矣。\n\t昔之「陰」之「坤」者。今「陰乾」是矣。\n是謂「乾坤大挪移」之術也。\n\n\n有數一。名之曰「少陽」。\n吾有一列。名之曰「陰」。充「陰」以四。以二。以五。以三。以一。\n夫「陰」之長。名之曰「老陽」。\n施「降龍十八掌」於「少陽」。於「老陽」。於「陰」。\n吾有一列。曰「陰」。名之曰「陽」。\n吾有一言。曰「陽」。書之。\n","quine":"注曰Reference: 注曰https://qiita.com/amoO_O/items/5d0c4edfc99f64bea6fb\n吾有一術。名之曰「自己複製」。欲行是術。必先得零數。是術曰。吾有一術。名之曰「置換」。欲行是術。必先得三數。曰「文字列」。曰「置換対象」。曰「置換先」是術曰。吾有一言。曰「「」」。名之曰「返品」。吾有一數。曰二。名之曰「未来」。吾有一爻。曰陽。名之曰「実行条件」。凡「文字列」中之「文字」。若「実行条件」者。若「文字」等於「「星」」中無陰乎「文字列」之「未来」等於「置換対象」者。昔之「文字」者。今「置換先」是。昔之「実行条件」者。今陰是。也。加「返品」以「文字」。昔之「返品」者。今其是矣。若非。昔之「実行条件」者。今陽是。也。加「未来」以一。昔之「未来」者。今其是矣。云云。乃得「返品」。是謂「置換」之術也。吾有一言。曰String.fromCharCode名之曰「函数」。施「函数」於一萬二千三百。昔之「始」者。今其是矣。施「函数」於一萬二千三百零一。昔之「終」者。今其是矣。吾有二言。曰「「吾有一術。名之曰星甲自己複製星乙。欲行是術。必先得零數。是術曰。吾有一術。名之曰星甲置換星乙。欲行是術。必先得三數。曰星甲文字列星乙。曰星甲置換対象星乙。曰星甲置換先星乙是術曰。吾有一言。曰星甲星甲星乙星乙。名之曰星甲返品星乙。吾有一數。曰二。名之曰星甲未来星乙。吾有一爻。曰陽。名之曰星甲実行条件星乙。凡星甲文字列星乙中之星甲文字星乙。若星甲実行条件星乙者。若星甲文字星乙等於星甲星甲星星乙星乙中無陰乎星甲文字列星乙之星甲未来星乙等於星甲置換対象星乙者。昔之星甲文字星乙者。今星甲置換先星乙是。昔之星甲実行条件星乙者。今陰是。也。加星甲返品星乙以星甲文字星乙。昔之星甲返品星乙者。今其是矣。若非。昔之星甲実行条件星乙者。今陽是。也。加星甲未来星乙以一。昔之星甲未来星乙者。今其是矣。云云。乃得星甲返品星乙。是謂星甲置換星乙之術也。吾有一言。曰String.fromCharCode名之曰星甲函数星乙。施星甲函数星乙於一萬二千三百。昔之星甲始星乙者。今其是矣。施星甲函数星乙於一萬二千三百零一。昔之星甲終星乙者。今其是矣。吾有二言。曰星甲星甲星丙星乙星乙。星甲星甲星乙星乙。名之曰星甲原文星乙曰星甲結果星乙。施星甲置換星乙於星甲原文星乙。於星甲星甲甲星乙星乙。於星甲始星乙。昔之星甲結果星乙者。今其是矣。施星甲置換星乙於星甲結果星乙。於星甲星甲乙星乙星乙。於星甲終星乙。昔之星甲結果星乙者。今其是矣。施星甲置換星乙於星甲結果星乙。於星甲星甲丙星乙星乙。於星甲原文星乙。昔之星甲結果星乙者。今其是矣。吾有一言。曰星甲結果星乙。書之。是謂星甲自己複製星乙之術也。施星甲自己複製星乙。」」。「「」」。名之曰「原文」曰「結果」。施「置換」於「原文」。於「「甲」」。於「始」。昔之「結果」者。今其是矣。施「置換」於「結果」。於「「乙」」。於「終」。昔之「結果」者。今其是矣。施「置換」於「結果」。於「「丙」」。於「原文」。昔之「結果」者。今其是矣。吾有一言。曰「結果」。書之。是謂「自己複製」之術也。施「自己複製」。","quine2":"注曰Reference: 注曰https://qiita.com/amoO_O/items/5d0c4edfc99f64bea6fb\n吾有一術。名之曰「自己複製」。\n欲行是術。必先得零數。是術曰。\n\n吾有一術。名之曰「置換」。\n欲行是術。必先得三數。\n曰「文字列」。曰「置換対象」。曰「置換先」是術曰。\n  吾有一言。曰「「」」。名之曰「返品」。\n  吾有一數。曰二。名之曰「未来」。\n  吾有一數。曰陽。名之曰「実行条件」。\n  凡「文字列」中之「文字」。\n      若「実行条件」者。\n        若「文字」等於「「星」」」中無陰乎「文字列」之「未来」等於「置換対象」者。\n          加「返品」以「置換先」。昔之「返品」者。今其是矣。\n          昔之「実行条件」者。今陰是。\n        若非。\n          加「返品」以「文字」。昔之「返品」者。今其是矣。\n        也。\n      若非。\n        昔之「実行条件」者。今陽是。\n      也。\n    加「未来」以一。昔之「未来」者。今其是矣。\n  云云。\n  乃得「返品」。\n是謂「置換」之術也。\n\n吾有一言。曰String.fromCharCode名之曰「函数」。\n施「函数」於一萬二千三百。昔之「始括弧」者。今其是矣。\n施「函数」於一萬二千三百零一。昔之「終括弧」者。今其是矣。\n施「函数」於三十二。昔之「空白」者。今其是矣。\n加「空白」以「空白」。昔之「空白」者。今其是矣。\n施「函数」於十。昔之「改行」者。今其是矣。\n吾有一言。曰「「吾有一術。名之曰星甲自己複製星乙。星丁欲行是術。必先得零數。是術曰。星丁星丁吾有一術。名之曰星甲置換星乙。星丁欲行是術。必先得三數。星丁曰星甲文字列星乙。曰星甲置換対象星乙。曰星甲置換先星乙是術曰。星丁星丙吾有一言。曰星甲星甲星乙星乙。名之曰星甲返品星乙。星丁星丙吾有一數。曰二。名之曰星甲未来星乙。星丁星丙吾有一數。曰陽。名之曰星甲実行条件星乙。星丁星丙凡星甲文字列星乙中之星甲文字星乙。星丁星丙星丙星丙若星甲実行条件星乙者。星丁星丙星丙星丙星丙若星甲文字星乙等於星甲星甲星星乙星乙星乙中無陰乎星甲文字列星乙之未来等於星甲置換対象星乙者。星丁星丙星丙星丙星丙星丙加星甲返品星乙以星甲置換先星乙。昔之星甲返品星乙者。今其是矣。星丁星丙星丙星丙星丙星丙昔之星甲実行条件星乙者。今陰是。星丁星丙星丙星丙星丙若非。星丁星丙星丙星丙星丙星丙加星甲返品星乙以星甲文字星乙。昔之星甲返品星乙者。今其是矣。星丁星丙星丙星丙星丙也。星丁星丙星丙星丙若非。星丁星丙星丙星丙星丙昔之星甲実行条件星乙者。今陽是。星丁星丙星丙星丙也。星丁星丙星丙加星甲未来星乙以一。昔之星甲未来星乙者。今其是矣。星丁星丙云云。星丁星丙乃得星甲返品星乙。星丁是謂星甲置換星乙之術也。星丁星丁吾有一言。曰String.fromCharCode名之曰星甲函数星乙。星丁施星甲函数星乙於一萬二千三百。昔之星甲始括弧星乙者。今其是矣。星丁施星甲函数星乙於一萬二千三百零一。昔之星甲終括弧星乙者。今其是矣。星丁施星甲函数星乙於三十二。昔之星甲空白星乙者。今其是矣。星丁加星甲空白星乙以星甲空白星乙。昔之星甲空白星乙者。今其是矣。星丁施星甲函数星乙於十。昔之星甲改行星乙者。今其是矣。星丁吾有一言。曰星甲星甲星戊星乙星乙。名之曰星甲原文星乙。星丁吾有一言。曰星甲星甲星乙星乙。名之曰星甲結果星乙。星丁施星甲置換星乙於星甲原文星乙。於星甲星甲甲星乙星乙。於星甲始括弧星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲乙星乙星乙。於星甲終括弧星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲丙星乙星乙。於星甲空白星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲丁星乙星乙。於星甲改行星乙。昔之星甲結果星乙者。今其是矣。星丁施星甲置換星乙於星甲結果星乙。於星甲星甲戊星乙星乙。於星甲原文星乙。昔之星甲結果星乙者。今其是矣。星丁吾有一言。曰星甲結果星乙。書之。星丁星丁是謂星甲自己複製星乙之術也。星丁施星甲自己複製星乙。」」。名之曰「原文」。\n吾有一言。曰「「」」。名之曰「結果」。\n施「置換」於「原文」。於「「甲」」。於「始括弧」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「乙」」。於「終括弧」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「丙」」。於「空白」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「丁」」。於「改行」。昔之「結果」者。今其是矣。\n施「置換」於「結果」。於「「戊」」。於「原文」。昔之「結果」者。今其是矣。\n吾有一言。曰「結果」。書之。\n\n是謂「自己複製」之術也。\n施「自己複製」。","selectionsort":"吾有一術。名之曰「擇排」。欲行是術。必先得一列。曰「數列」。乃行是術曰。\n    吾有一列。名之曰「答列」。\n    夫「數列」之長。名之曰「度」。\n    為是「度」遍。\n        夫「數列」之一。名之曰「若者」。\n        吾有一數。曰一。名之曰「若者之位」。\n        吾有一數。曰一。名之曰「位」。\n        凡「數列」中之「員」。\n            若「員」小於「若者」者。 \n                昔之「若者」者。今「員」是矣。\n                昔之「若者之位」者。今「位」是矣。\n            也。\n            加一於「位」。名之曰「位」。\n\n        云云。\n        充「答列」以「若者」。\n\n        吾有一列。名之曰「數列新世」。\n        吾有一數。曰一。名之曰「新位」。\n        凡「數列」中之「員」。\n            若「新位」小於「若者之位」者。 \n                充「數列新世」以「員」。\n            也。\n            若「新位」大於「若者之位」者。 \n                充「數列新世」以「員」。\n            也。\n            加一於「新位」。名之曰「新位」。\n\n        云云。\n        昔之「數列」者。今「數列新世」是矣。\n\n    云云。\n\n    乃得「答列」。\n是謂「擇排」之術也。\n\n\n吾有一列。名之曰「測排」。\n充「測排」以八。以千。以十。以五。以五十五。以三百。以九。\n施「擇排」於「測排」。書之。\n","sieve":"吾有一術。名之曰「埃氏篩」。欲行是術。必先得一數。曰「甲」。乃行是術曰。\n\t吾有一列。名之曰「掩」。為是「甲」遍。充「掩」以陽也。\n\t除「甲」以二。名之曰「甲半」。\n\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「甲半」者乃止也。\n\t\t有數二。名之曰「戌」。恆為是。若「戌」等於「甲半」者乃止也。\n\n\t\t\t乘「戊」以「戌」。名之曰「合」\n\t\t\t若「合」不大於「甲」者。\n\t\t\t\t昔之「掩」之「合」者。今陰是矣。\n\t\t\t若非乃止也。\n\t\t加一以「戌」。昔之「戌」者。今其是矣云云。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\n\t吾有一列。名之曰「諸素」。\n\t有數二。名之曰「戊」。恆為是。若「戊」等於「掩」之長者乃止也。\n\t\t夫「掩」之「戊」。名之曰「素耶」。\n\t\t若「素耶」者充「諸素」以「戊」也。\n\t加一以「戊」。昔之「戊」者。今其是矣云云。\n\t乃得「諸素」。\n是謂「埃氏篩」之術也。\n\n施「埃氏篩」於一百。書之。","sqrt_newton":"吾有一術。名之曰「牛頓求根法」。\n欲行是術。必先得一數。\n曰「試」。\n乃行是術曰。\n    有數一。名之曰「甲」。\n\t有數一。名之曰「乙」。\n\t為是「試」遍。\n\t\t乘「甲」於「甲」，名之曰「乙」。減「乙」以二，名之曰「乙」\n\t\t乘二於「甲」，名之曰「丙」。\n\t\t除「乙」以「丙」，名之曰「茂」。\n\t\t減「甲」以「茂」，名之曰「甲」。\n\t云云。\n\t乃得「甲」。\n是謂「牛頓求根法」之術也。\n\n施「牛頓求根法」於二。書之。\n施「牛頓求根法」於三。書之。\n施「牛頓求根法」於五。書之。\n施「牛頓求根法」於七。書之。\n施「牛頓求根法」於十三。書之。\n施「牛頓求根法」於一百三十一。書之。\n施「牛頓求根法」於一千零一十三。書之。","turing":"吾有一術。名之曰「圖靈機」。欲行是術。必先得一列。曰「諸律」。二言。曰「始態」。曰「終態」。\n乃行是術曰。\n\t吾有一列。名之曰「帶」。充「帶」以「「白」」。\n\t有數一。名之曰「針」。\n\n\t吾有二數。曰一。曰一。名之曰「左疆」。曰「右疆」。\n\t吾有一言。曰「始態」。名之曰「態」。\n\n\t吾有一術。名之曰「圖靈機畫法」。是術曰。\n\t\t吾有一言。名之曰「畫帶」。\n\t\t有數「左疆」。名之曰「筆」。恆為是。若「筆」大於「右疆」者乃止也。\n\t\t\t夫「帶」之「筆」。名之曰「符」。\n\t\t\t若「針」等於「筆」者。\n\t\t\t\t加「符」於「「〔」」。加其以「「〕」」昔之「符」者。今其是矣\n\t\t\t若非。\n\t\t\t\t加「符」於「「、」」。加其以「「、」」昔之「符」者。今其是矣\n\t\t\t云云。\n\t\t\t加「畫帶」以「符」。昔之「畫帶」者。今其是矣。\n\n\t\t加一以「筆」。昔之「筆」者。今其是矣云云。\n\t\t吾有四言。曰「態」。曰「「《」」。曰「畫帶」。曰「「》」」書之。\n\t是謂「圖靈機畫法」之術也。\n\n\t施「圖靈機畫法」。噫。\n\n\t恆為是。\n\t\t凡「諸律」中之「律」\n\t\t\t夫「律」之一。名之曰「甲態」。\n\t\t\t夫「律」之二。名之曰「讀符」。\n\t\t\t夫「律」之三。名之曰「乙態」。\n\t\t\t夫「律」之四。名之曰「畫符」。\n\t\t\t夫「律」之五。名之曰「移」。\n\n\t\t\t若「態」等於「甲態」者。若「帶」之「針」等於「讀符」者。\n\t\t\t\t昔之「帶」之「針」者。今「畫符」是矣。\n\t\t\t\t昔之「態」者。今「乙態」是矣。\n\t\t\t\t若「移」等於「「左」」者。減一於「針」。昔之「針」者。今其是矣。云云。\n\t\t\t\t若「移」等於「「右」」者。加一於「針」。昔之「針」者。今其是矣。云云。\n\t\t\t\t乃止。\n\t\t\t云云云云\n\t\t云云。\n\n\t\t若「針」小於「左疆」者。\n\t\t\t昔之「帶」之「針」者。今「「白」」是矣。\n\t\t\t昔之「左疆」者。今「針」是矣。\n\t\t云云\n\t\t若「針」大於「右疆」者。\n\t\t\t昔之「帶」之「針」者。今「「白」」是矣。\n\t\t\t昔之「右疆」者。今「針」是矣。\n\t\t云云\n\n\t\t施「圖靈機畫法」。噫。\n\t\t若「態」等於「終態」者乃止也。\n\t云云。\n是謂「圖靈機」之術也。\n\n\n吾有一術。名之曰「製律」。欲行是術。必先得一列。曰「諸律」。\n\t五言。曰「甲態」。曰「讀符」。曰「乙態」。曰「畫符」。曰「移」。乃行是術曰。\n\t吾有一列。名之曰「律」。\n\t充「律」以「甲態」。以「讀符」。以「乙態」。以「畫符」。以「移」。\n\t充「諸律」以「律」。\n是謂「製律」之術也。\n\n吾有一言。曰「「營營河狸。止于樊。」」。書之。\n\n吾有一列。名之曰「諸律」。\n吾有一言。曰「「墨」」。名之曰「陽符」。\n吾有一言。曰「「白」」。名之曰「陰符」。\n施「製律」於「諸律」於「「甲」」於「陰符」於「「乙」」於「陽符」於「「右」」\n施「製律」於「諸律」於「「甲」」於「陽符」於「「丙」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「乙」」於「陰符」於「「甲」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「乙」」於「陽符」於「「乙」」於「陽符」於「「右」」\n施「製律」於「諸律」於「「丙」」於「陰符」於「「乙」」於「陽符」於「「左」」\n施「製律」於「諸律」於「「丙」」於「陽符」於「「樊」」於「陽符」於「「中」」\n\n施「圖靈機」於「諸律」於「「甲」」於「「樊」」。\n\n\n"};</script>
 <script>function main() {
   var ed = newEditor(prgms["mandelbrot"]);
   // var ln = newLineNo(ed);
