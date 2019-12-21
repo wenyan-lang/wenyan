@@ -3,22 +3,10 @@ try {
 } catch (e) {} //make sure we're in tools directory
 
 const fs = require("fs");
-const utils = require("./utils");
 const meta = require("../src/meta");
 
 const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString();
 const sieve = fs.readFileSync("../examples/sieve.wy").toString();
-
-function base64_encode(file) {
-  var bitmap = fs.readFileSync(file);
-  var h;
-  if (file.endsWith(".png")) {
-    h = "data:image/png;base64, ";
-  } else {
-    h = "data:image/jpeg;base64, ";
-  }
-  return h + Buffer.from(bitmap).toString("base64");
-}
 
 function load_svg(pth) {
   var svg = fs.readFileSync(pth).toString();
