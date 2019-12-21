@@ -2,6 +2,7 @@ const { hanzi2num, num2hanzi } = require("./hanzi2num");
 const hanzi2pinyin = require("./hanzi2pinyin");
 const STDLIB = require("./stdlib");
 const { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS } = require("./meta");
+const version = require("./version");
 
 var tmpVarCnt = 0;
 var randVarCnt = 0;
@@ -847,6 +848,7 @@ function compile(
 
 var parser = {
   compile,
+  version,
   wy2tokens,
   tokens2asc,
   hanzi2num,

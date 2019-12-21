@@ -1,5 +1,5 @@
 const fs = require("fs");
-const package = require("../package.json");
+const version = require("./version");
 const buildDate = `${new Date().toLocaleDateString("en-US")}`;
 const { compile } = require("./parser");
 const { render, unrender } = require("./render");
@@ -22,9 +22,7 @@ function cmdlinecode() {
   function printhelp() {
     ARGS.sort();
     console.log(ART);
-    console.log(
-      `\nWENYAN LANG 文言 Compiler v${package.version} (${buildDate})`
-    );
+    console.log(`\nWENYAN LANG 文言 Compiler v${version} (${buildDate})`);
     console.log("\nUsage: wenyan [options] [input files]");
     console.log("\nOptions:");
     var ret = "";
@@ -87,7 +85,7 @@ function cmdlinecode() {
       }
     }
 
-    if (args["--version"]) return package.version;
+    if (args["--version"]) return version;
 
     return { files, args };
   }
@@ -193,7 +191,8 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      }
+      },
+      reader: fsReader
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {
