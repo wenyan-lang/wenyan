@@ -2,7 +2,7 @@ const NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆�
   ""
 );
 
-const KEYWORDS_DEFINE = {
+var KEYWORDS_DEFINE = {
   吾有: ["decl", "uninit"],
   今有: ["decl", "public"],
   物之: ["decl", "prop"],
@@ -15,9 +15,11 @@ const KEYWORDS_DEFINE = {
   物: ["type", "obj"],
   書之: ["print"],
   名之曰: ["name"],
-  施: ["call"],
+  施: ["call", "r"],
+  以施: ["call", "l"],
   曰: ["assgn"],
   噫: ["discard"],
+  取: ["take"],
 
   昔之: ["rassgn", "a"],
   今: ["rassgn", "b"],

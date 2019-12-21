@@ -369,7 +369,7 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
-    } else if (gettok(i, 0) == "call") {
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
       var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
@@ -378,6 +378,9 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
+      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
@@ -395,6 +398,7 @@ function tokens2asc(
       asc.push(x);
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "subs"
     ) {
@@ -409,6 +413,7 @@ function tokens2asc(
       i += 4;
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "len"
     ) {
@@ -429,6 +434,9 @@ function tokens2asc(
       };
       asc.push(x);
       i += 4;
+    } else if (gettok(i, 0) == "expr") {
+      asc.push({ op: "temp", iden: tokens[i + 1] });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
       var x = { op: "cat", containers: [gettok(i + 1, 1)], pos };
       i += 2;
@@ -472,7 +480,16 @@ function tokens2asc(
           i += 7;
         } else {
           x.rhs = tokens[i + 6];
-          i += 8;
+          if (
+            tokens[i + 7] &&
+            gettok(i + 7, 0) == "ctnr" &&
+            gettok(i + 7, 1) == "subs"
+          ) {
+            x.rhssubs = tokens[i + 8];
+            i += 10;
+          } else {
+            i += 8;
+          }
         }
       } else {
         assert(
@@ -481,15 +498,27 @@ function tokens2asc(
           gettok(i + 2, 0) == "ctrl" && gettok(i + 2, 1) == "conj"
         );
         x.rhs = tokens[i + 4];
-        i += 6;
+        if (
+          tokens[i + 5] &&
+          gettok(i + 5, 0) == "ctnr" &&
+          gettok(i + 5, 1) == "subs"
+        ) {
+          x.rhssubs = tokens[i + 6];
+          i += 8;
+        } else {
+          i += 6;
+        }
       }
       asc.push(x);
     } else if (gettok(i, 0) == "discard") {
       asc.push({ op: "discard", pos });
       i++;
+    } else if (gettok(i, 0) == "take") {
+      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
-      var x = { op: "import", file: gettok(i + 1, 1), iden: [] };
+      var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
       i += 3;
       if (tokens[i] && gettok(i, 0) == "import" && gettok(i, 1) == "iden") {
         i++;
@@ -519,15 +548,17 @@ function asc2js(asc, imports = []) {
   var prevobj = "";
   var prevobjpublic = false;
   var curlvl = 0;
-  var strayvar = 0;
+  var strayvar = [];
+  var took = 0;
 
   function getval(x) {
     if (x == undefined) {
       return "";
     }
     if (x[0] == "ans") {
-      strayvar = 0;
-      return currTmpVar();
+      var ans = strayvar[strayvar.length - 1];
+      strayvar = [];
+      return ans;
     }
     return x[1];
   }
@@ -543,7 +574,7 @@ function asc2js(asc, imports = []) {
         var value = a.values[j][1];
         if (name == undefined) {
           name = nextTmpVar();
-          strayvar++;
+          strayvar.push(name);
         }
         if (value == undefined) {
           if (a.type == "arr") {
@@ -568,14 +599,14 @@ function asc2js(asc, imports = []) {
       }
     } else if (a.op == "print") {
       js += `console.log(`;
-      for (var j = 0; j < strayvar; j++) {
-        js += `${prevTmpVar(strayvar - j)}`;
-        if (j != strayvar - 1) {
+      for (var j = 0; j < strayvar.length; j++) {
+        js += `${strayvar[j]}`;
+        if (j != strayvar.length - 1) {
           js += ",";
         }
       }
       js += ");";
-      strayvar = 0;
+      strayvar = [];
     } else if (a.op == "fun") {
       js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
@@ -626,7 +657,7 @@ function asc2js(asc, imports = []) {
             js += ".length";
           }
         } else {
-          js += a.test[j][1];
+          js += getval(a.test[j]);
         }
         j++;
       }
@@ -639,36 +670,56 @@ function asc2js(asc, imports = []) {
     } else if (a.op.startsWith("op")) {
       var lhs = getval(a.lhs);
       var rhs = getval(a.rhs);
-
-      js += `var ${nextTmpVar()}=${lhs}${a.op.slice(2)}${rhs};`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+      strayvar.push(vname);
     } else if (a.op == "name") {
       for (var j = 0; j < a.names.length; j++) {
-        js += `var ${a.names[j]}=${prevTmpVar(strayvar - j)};`;
+        js += `var ${a.names[j]}=${
+          strayvar[strayvar.length - a.names.length + j]
+        };`;
       }
-      strayvar -= a.names.length;
+      strayvar = strayvar.slice(0, strayvar.length - a.names.length);
     } else if (a.op == "call") {
-      js += `var ${nextTmpVar()}=${a.fun}(${a.args
-        .map(x => getval(x))
-        .join(",")});`;
-      strayvar++;
+      if (a.pop) {
+        console.log(took, strayvar);
+        var jj = "";
+        for (var j = 0; j < took; j++) {
+          jj += `${strayvar[strayvar.length - took + j]}`;
+          if (j != took - 1) {
+            jj += ",";
+          }
+        }
+        strayvar = strayvar.slice(0, strayvar.length - took);
+        took = 0;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}(` + jj + ");";
+        strayvar.push(vname);
+      } else {
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}(${a.args.map(x => getval(x)).join(",")});`;
+        strayvar.push(vname);
+      }
     } else if (a.op == "subscript") {
       var idx = getval(a.value);
       if (idx == "rest") {
-        js += `var ${nextTmpVar()}=${a.container}.slice(1);`;
-        strayvar++;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}.slice(1);`;
+        strayvar.push(vname);
       } else {
-        js += `var ${nextTmpVar()}=${a.container}[${idx}${
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}[${idx}${
           a.value[0] == "lit" ? "" : "-1"
         }];`;
-        strayvar++;
+        strayvar.push(vname);
       }
     } else if (a.op == "cat") {
+      var vname = nextTmpVar();
       js +=
-        `var ${nextTmpVar()}=${a.containers[0]}.concat(` +
+        `var ${vname}=${a.containers[0]}.concat(` +
         a.containers.slice(1).join(").concat(") +
         ");";
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "push") {
       js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
     } else if (a.op == "for") {
@@ -685,9 +736,10 @@ function asc2js(asc, imports = []) {
       js += "break;";
     } else if (a.op == "not") {
       var v = getval(a.value);
-      js += `var ${nextTmpVar()}=!${v};`;
+      var vname = nextTmpVar();
+      js += `var ${vname}=!${v};`;
 
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "reassign") {
       if (a.del == true) {
         var lhs = getval(a.lhs);
@@ -700,13 +752,23 @@ function asc2js(asc, imports = []) {
         if (a.lhssubs) {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
+        if (a.rhssubs) {
+          rhs += `[${a.rhssubs[1]}${a.rhssubs[0] == "lit" ? "" : "-1"}]`;
+        }
         js += `${lhs}=${rhs};`;
       }
     } else if (a.op == "length") {
-      js += `var ${nextTmpVar()}=${a.container}.length;`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.container}.length;`;
+      strayvar.push(vname);
+    } else if (a.op == "temp") {
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.iden[1]};`;
+      strayvar.push(vname);
     } else if (a.op == "discard") {
-      strayvar = 0;
+      strayvar = [];
+    } else if (a.op == "take") {
+      took = a.count;
     } else if (a.op == "import") {
       var f = a.file.replace(/"/g, "");
       for (var j = 0; j < a.iden.length; j++) {
