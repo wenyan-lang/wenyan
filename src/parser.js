@@ -550,6 +550,7 @@ function asc2js(asc, imports = []) {
   var curlvl = 0;
   var strayvar = [];
   var took = 0;
+  var funcurlvls = [];
 
   function getval(x) {
     if (x == undefined) {
@@ -608,23 +609,29 @@ function asc2js(asc, imports = []) {
       js += ");";
       strayvar = [];
     } else if (a.op == "fun") {
+      funcurlvls.push(curlvl);
       js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
         js += a.args[j].name;
         if (j != a.arity - 1) {
-          js += ",";
+          js += "){return function(";
         }
+        curlvl++;
       }
       js += ")";
+      curlvl--;
     } else if (a.op == "funbody") {
       if (asc[i - 1].op != "fun") {
+        funcurlvls.push(curlvl);
         js += `${prevfunpublic ? "this." : ""}${prevfun} =function()`;
       }
       js += "{";
       curlvl++;
     } else if (a.op == "funend") {
-      js += "};";
-      curlvl--;
+      console.log(funcurlvls, curlvl);
+      var cl = funcurlvls.pop();
+      js += "};".repeat(curlvl - cl);
+      curlvl = cl;
     } else if (a.op == "objend") {
       js += "};";
     } else if (a.op == "objbody") {
@@ -684,19 +691,18 @@ function asc2js(asc, imports = []) {
       if (a.pop) {
         var jj = "";
         for (var j = 0; j < took; j++) {
-          jj += `${strayvar[strayvar.length - took + j]}`;
-          if (j != took - 1) {
-            jj += ",";
-          }
+          jj += `(${strayvar[strayvar.length - took + j]})`;
         }
         strayvar = strayvar.slice(0, strayvar.length - took);
         took = 0;
         var vname = nextTmpVar();
-        js += `var ${vname}=${a.fun}(` + jj + ");";
+        js += `var ${vname}=${a.fun}` + jj + ";";
         strayvar.push(vname);
       } else {
         var vname = nextTmpVar();
-        js += `var ${vname}=${a.fun}(${a.args.map(x => getval(x)).join(",")});`;
+        js += `var ${vname}=${a.fun}(${a.args
+          .map(x => getval(x))
+          .join(")(")});`;
         strayvar.push(vname);
       }
     } else if (a.op == "subscript") {

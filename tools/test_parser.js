@@ -44,6 +44,6 @@ function runAll(lang) {
   }
 }
 
-runExample("js", "nested_fun");
+// runExample("js", "turing");
 // runAll("js");
-// runExample("js", "mergesort");
+runExample("js", "mergesort");
