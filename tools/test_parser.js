@@ -14,7 +14,7 @@ function readOtherExample(x) {
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
   var js = parser.compile(lang, txt, {
-    romanizeIdentifiers: true,
+    romanizeIdentifiers: "none",
     lib: utils.loadlib(),
     reader: readOtherExample
   });
@@ -44,5 +44,6 @@ function runAll(lang) {
   }
 }
 
-runExample("js", "import");
+runExample("js", "nested_fun");
 // runAll("js");
+// runExample("js", "mergesort");
