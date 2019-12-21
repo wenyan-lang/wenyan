@@ -1,23 +1,26 @@
 {
-  "name": "wenyan-lang",
-  "version": "0.0.1",
-  "author": "LingDong<lingdong0618@hotmail.com>",
+  "name": "wenyanlang",
+  "version": "0.0.1-beta.1",
+  "author": "LingDong <lingdong0618@hotmail.com>",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/LingDong-/wenyan-lang.git"
   },
   "license": "MIT",
-  "bin": {
-    "wenyan": "./dist/cli.js"
-  },
-  "main": "./dist/core.js",
-  "files": [
-    "dist"
+  "keywords": [
+    "wenyan",
+    "wenyan-lang",
+    "compiler",
+    "ancient-chinese",
+    "classical-chinese"
   ],
+  "homepage": "https://github.com/LingDong-/wenyan-lang",
   "scripts": {
-    "build": "npm run clear && webpack --mode production && chmod -x ./dist/cli.js",
+    "build": "npm run clear && webpack --mode production",
     "dev": "npm run clear && webpack --mode development --watch",
     "clear": "rimraf ./dist",
+    "publish": "node ./tools/publish.js",
     "release": "bump --commit --tag && git push --follow-tags",
     "make_cmdline": "node ./tools/make_cmdline.js && pkg ./build/wenyan.js --out-path ./build",
     "make_ide": "node ./tools/make_ide.js",
