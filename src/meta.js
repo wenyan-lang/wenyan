@@ -102,36 +102,4 @@ if (!Object.fromEntries) {
 }
 const KEYWORDS = Object.fromEntries(ke);
 
-const RED = "#E53";
-const BLACK = "#222";
-
-const BOOK_COLORS = {
-  ctrl: RED,
-  lop: BLACK,
-  name: BLACK,
-  cmp: BLACK,
-  decl: BLACK,
-  print: BLACK,
-  rassgn: BLACK,
-  ctnr: BLACK,
-  comment: RED,
-  type: BLACK,
-  call: BLACK,
-  assgn: BLACK,
-  discard: BLACK,
-  endl: BLACK,
-  ans: BLACK,
-  expr: BLACK,
-  op: BLACK,
-  not: BLACK,
-  operand: BLACK,
-  bool: BLACK,
-  data: "#666",
-  iden: "#248",
-  quot: BLACK,
-  num: "#872"
-};
-
-try {
-  module.exports = { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS, RED, BLACK };
-} catch (e) {}
+module.exports = { NUMBER_KEYWORDS, KEYWORDS };

@@ -17,7 +17,7 @@ function load_svg(pth) {
 }
 
 function main() {
-  DEFAULT_COLORS = Wenyan.BOOK_COLORS;
+  Wenyan.highlighter.setTheme(Wenyan.render.BOOK_COLORS);
 
   var eds = [];
   var outs = [];
@@ -281,6 +281,7 @@ h2{
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
 <script src="https://unpkg.com/@wenyanlang/core/index.min.js"></script>
 <script src="https://unpkg.com/@wenyanlang/highlighter/index.min.js"></script>
+<script src="https://unpkg.com/@wenyanlang/render/index.min.js"></script>
 
 <div id="bg"><div id="bg-inner">${load_svg("../renders/turing.svg")}</div></div>
 

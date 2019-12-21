@@ -28,6 +28,10 @@ var DEFAULT_COLORS = {
   num: "#AE81FF"
 };
 
+var setTheme = function(theme) {
+  DEFAULT_COLORS = theme;
+};
+
 var semantic = function(txt) {
   var off = false;
   var out = [];
@@ -222,6 +226,7 @@ try {
     highlight,
     newLineNo,
     DEFAULT_COLORS,
-    newEditor
+    newEditor,
+    setTheme
   };
 } catch (e) {}

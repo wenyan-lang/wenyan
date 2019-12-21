@@ -1,7 +1,7 @@
 const { hanzi2num, num2hanzi } = require("./hanzi2num");
 const hanzi2pinyin = require("./hanzi2pinyin");
 const STDLIB = require("./stdlib");
-const { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS } = require("./meta");
+const { NUMBER_KEYWORDS, KEYWORDS } = require("./meta");
 const version = require("./version");
 
 var tmpVarCnt = 0;
