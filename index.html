@@ -1347,6 +1347,10 @@ var KEYWORDS = {
   陰: ["bool", false],
   陽: ["bool", true],
 
+  吾嘗觀: ["import","file"],
+  方悟: ["import","iden"],
+  之義: ["import","end"],
+
   注曰: ["comment"],
   疏曰: ["comment"],
   批曰: ["comment"]
@@ -1840,6 +1844,19 @@ function tokens2asc(
     } else if (gettok(i, 0) == "discard") {
       asc.push({ op: "discard", pos });
       i++;
+    } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
+      var x = {op: "import", file: gettok(i+1, 1), iden: []}
+      i+=2;
+      if (tokens[i] && gettok(i,0) == "import" && gettok(i,1)=="iden"){
+        i++;
+        while (!(gettok(i,0) == "import" && gettok(i,1) == "end")){
+          typeassert(i,["iden"])
+          x.iden.push(gettok(i,1));
+          i++;
+        }
+        i++;
+      }
+      asc.push(x);
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
       i += 2;
@@ -1851,7 +1868,7 @@ function tokens2asc(
   return asc;
 }
 
-function asc2js(asc) {
+function asc2js(asc,imports=[]) {
   var js = ``; //`"use strict";`;
   var prevfun = "";
   var prevobj = "";
@@ -2042,6 +2059,8 @@ function asc2js(asc) {
       strayvar++;
     } else if (a.op == "discard") {
       strayvar = 0;
+    } else if (a.op == "import"){
+      imports.push(a.file.replace(/"/g,''));
     } else if (a.op == "comment") {
       js += `/*${getval(a.value)}*/`;
     } else {
@@ -2062,7 +2081,9 @@ function compile(
       typeof x == "string"
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
-    errorCallback = process.exit
+    errorCallback = process.exit,
+    lib = {},
+    imported = [],
   } = {}
 ) {
   if (resetVarCnt) {
@@ -2113,22 +2134,42 @@ function compile(
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var targ;
+  var imports = []
 	switch(lang) {
 		case "js":
-			targ = asc2js(asc);
+			targ = asc2js(asc,imports);
 			break;
 		case "py":
 			try{asc2py = require('./asc2py.js')}catch(e){};
-			targ = asc2py(asc);
+			targ = asc2py(asc,imports);
 			break;
 		case "rb":
 			try{asc2rb = require('./asc2rb.js')}catch(e){};
-			targ = asc2rb(asc);
+			targ = asc2rb(asc,imports);
 			break;
 		default:
 			logCallback("Target language not supported.");
 	}
   logCallback(targ);
+  imports = Array.from(new Set(imports)).filter(x=>!imported.includes(x));
+  console.log(imports)
+  for (var i = 0; i < imports.length; i++){
+    var isrc; 
+    if (imports[i] in lib){
+      isrc = lib[imports[i]]
+    }else{
+      isrc = reader(imports[i])
+    }
+    targ = compile(lang,isrc,{
+        romanizeIdentifiers,
+        resetVarCnt:false,
+        logCallback,
+        errorCallback,
+        lib,
+        imported: imports.concat(imported),
+      })+targ;
+  }
+
   return targ;
 }
 
