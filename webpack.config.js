@@ -5,6 +5,7 @@ const Default = () => {
   return {
     devtool: 'source-map',
     output: {
+      globalObject: '(typeof self !== "undefined" ? self : this)', // make it works for both node and browser
       libraryTarget: 'umd',
       library: ["Wenyan", "[name]"],
       path: path.resolve(__dirname, 'dist'),
@@ -12,6 +13,14 @@ const Default = () => {
     },
     resolve: {
       extensions: ['.ts', '.js'],
+    },
+    module: {
+      rules: [
+        {
+          test: /\.wy$/i,
+          use: 'raw-loader',
+        },
+      ],
     },
   }
 };

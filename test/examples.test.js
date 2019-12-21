@@ -1,10 +1,12 @@
 var fs = require("fs-extra");
-var parser = require("../src/parser");
+var path = require("path");
+var parser = require("../dist/core/index.min.js");
+var fsReader = require("../src/fsReader");
 var execSync = require("child_process").execSync;
 var { expect } = require("chai");
 
-const exampleDir = "./examples/";
-const outputDir = "./test/temp/examples/";
+const exampleDir = path.resolve(__dirname, "../examples/");
+const outputDir = path.resolve(__dirname, "../test/temp/examples/");
 const python = getPythonExecutable();
 
 const examplesContainsRandom = ["divination"];
@@ -22,9 +24,10 @@ function getPythonExecutable() {
 }
 
 function runExample(lang, name, options = {}) {
-  var txt = fs.readFileSync(exampleDir + name + ".wy").toString();
+  var txt = fs.readFileSync(path.join(exampleDir, name + ".wy")).toString();
   var compiled = parser.compile(lang, txt, {
     logCallback: () => {},
+    reader: fsReader,
     ...options
   });
   // expect(compiled).to.matchSnapshot();

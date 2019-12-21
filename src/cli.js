@@ -3,6 +3,7 @@ const package = require("../package.json");
 const buildDate = `${new Date().toLocaleDateString("en-US")}`;
 const { compile } = require("./parser");
 const { render, unrender } = require("./render");
+const fsReader = require("./fsReader");
 
 function cmdlinecode() {
   var ARGS = [
@@ -127,7 +128,8 @@ function cmdlinecode() {
         errorCallback: function(x) {
           console.error(x);
           global.haserr = true;
-        }
+        },
+        reader: fsReader
       });
       if (global.haserr) {
         // console.log("Not evaulated.")
@@ -157,14 +159,14 @@ function cmdlinecode() {
     } else if (mode == "a") {
       return function(x) {
         fs.appendFileSync(
-          f,
+          path.resolve(f),
           (typeof x == "object" ? JSON.stringify(x) : x.toString()) + "\n"
         );
       };
     } else if (mode == "w") {
       return function(x) {
         fs.writeFileSync(
-          f,
+          path.resolve(f),
           (typeof x == "object" ? JSON.stringify(x) : x.toString()) + "\n"
         );
       };
@@ -178,8 +180,8 @@ function cmdlinecode() {
       files
         .map(x =>
           x.endsWith(".svg")
-            ? unrender([fs.readFileSync(x).toString()])
-            : fs.readFileSync(x).toString()
+            ? unrender([fs.readFileSync(path.resolve(x)).toString()])
+            : fs.readFileSync(path.resolve(x)).toString()
         )
         .join("\n") +
       "\n" +
@@ -190,8 +192,7 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      },
-      lib: STDLIB
+      }
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {
@@ -225,18 +226,20 @@ function cmdlinecode() {
       // only one page rendered
       if (svgs.length === 1) {
         if (!outputEndsWithSvg) args["--output"] += ".svg";
-        fs.writeFileSync(args["--output"], svgs[0]);
-        console.log(args["--output"]); // Outputs generated filename
+        var filepath = path.reslove(args["--output"]);
+        fs.writeFileSync(filepath, svgs[0]);
+        console.log(filepath); // Outputs generated filename
       }
       // multiple pages rendered, output file as `filename.001.svg` etc
       else {
         if (outputEndsWithSvg) args["--output"] = args["--output"].slice(0, -4); // remove .svg suffix
 
         for (var i = 0; i < svgs.length; i++) {
-          var filename =
-            args["--output"] + "." + i.toString().padStart(3, "0") + ".svg";
-          fs.writeFileSync(filename, svgs[i]);
-          console.log(filename); // Outputs generated filename
+          var filepath = path.reslove(
+            args["--output"] + "." + i.toString().padStart(3, "0") + ".svg"
+          );
+          fs.writeFileSync(filepath, svgs[i]);
+          console.log(filepath); // Outputs generated filename
         }
       }
     } else if (args["--exec"]) {

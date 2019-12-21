@@ -1,9 +1,6 @@
-try {
-  var fs = require("fs");
-} catch (e) {}
-
 const { hanzi2num, num2hanzi } = require("./hanzi2num");
 const hanzi2pinyin = require("./hanzi2pinyin");
+const STDLIB = require("./stdlib");
 const { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS } = require("./meta");
 
 var tmpVarCnt = 0;
@@ -729,20 +726,10 @@ function jsWrapModule(name, src) {
   return `var ${name} = new function(){ ${src} };`;
 }
 
-function lvl1(x) {
-  try {
-    return fs.readFileSync(x + ".wy").toString();
-  } catch (e) {
-    var files = fs.readdirSync("./");
-    for (var i = 0; i < files.length; i++) {
-      if (fs.lstatSync(files[i]).isDirectory()) {
-        try {
-          return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
-        } catch (e) {}
-      }
-    }
-  }
-  console.log("Cannot import ", x);
+function undefinedReader(x) {
+  console.error(
+    `Cannot import ${x}, please specify the "reader" option in compile.`
+  );
 }
 
 function compile(
@@ -756,8 +743,8 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = {},
-    reader = lvl1
+    lib = STDLIB,
+    reader = undefinedReader
   } = {}
 ) {
   if (resetVarCnt) {
@@ -867,7 +854,8 @@ var parser = {
   hanzi2pinyin,
   KEYWORDS,
   NUMBER_KEYWORDS,
-  BOOK_COLORS
+  BOOK_COLORS,
+  STDLIB
 };
 try {
   module.exports = parser;
