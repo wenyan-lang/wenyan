@@ -186,14 +186,14 @@ Before opening an Issue, please check if it belongs to the below categories:
 |---|---|---|---|
 |[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
 |[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
-|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | Import statements are added |
-|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | In porgress |
+|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | | Import statements are added |
+|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | √ | In porgress |
 |[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
 |Stricter compiler |  **** | |
 |Compiler for other languages |  ** | √ |
-|[Plugins for editors](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ |
+|[Plugins for editors](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ | VSCode, Vim, Sublime added |
 |Convert [js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/[anything](https://github.com/LingDong-/wenyan-lang/issues/73) back to wenyan |  * | √ |
 |[Escaping](https://github.com/LingDong-/wenyan-lang/issues/84)/[generating](https://github.com/LingDong-/wenyan-lang/issues/128) special characters |  *** | |
 |[Alternative syntax for 「「」」](https://github.com/LingDong-/wenyan-lang/issues/81)|  ** | |
