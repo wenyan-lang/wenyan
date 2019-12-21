@@ -9,20 +9,15 @@ function remotelib(urls) {
   (1, eval)(src);
 }
 
-function catsrc() {
-  var s = "";
-  var srcs = fs.readdirSync("../src/");
-  for (var i = 0; i < srcs.length; i++) {
-    if (srcs[i].endsWith(".js") && !srcs[i].includes("cli")) {
-      s +=
-        fs
-          .readFileSync("../src/" + srcs[i])
-          .toString()
-          .replace(/const/g, "var") + ";\n";
-    }
-  }
-  return s;
-}
+const catsrc = ({ only2js = false } = {}) => fs.readdirSync("../src/")
+  .filter(file => file.endsWith(".js"))
+  .filter(file => !file.includes("cli"))
+  .filter(file => !file.includes("2rb") || !only2js)
+  .filter(file => !file.includes("2py") || !only2js)
+  .map(file => fs.readFileSync("../src/" + file))
+  .map(String)
+  .map(txt => txt.replace(/const/g, "var"))
+  .join(";\n")
 
 function loadlib() {
   var lib = {};

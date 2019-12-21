@@ -114,7 +114,7 @@ pre{tab-size: 4;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-<script>${utils.catsrc()}</script>
+<script>${utils.catsrc({only2js: true})}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
