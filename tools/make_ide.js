@@ -15,6 +15,8 @@ for (var i = 0; i < files.length; i++) {
     .toString();
 }
 
+var lib = utils.loadlib();
+
 function main() {
   var ed = newEditor(prgms["mandelbrot"]);
   // var ln = newLineNo(ed);
@@ -63,7 +65,9 @@ function main() {
     var code = compile("js", ed.innerText, {
       romanizeIdentifiers: "none",
       resetVarCnt: true,
-      errorCallback: log2div
+      errorCallback: log2div,
+      lib: STDLIB,
+      reader: x => prgms[x]
     });
     document.getElementById("js").innerText = js_beautify(code);
     hljs.highlightBlock(document.getElementById("js"));
@@ -105,7 +109,8 @@ pre{tab-size: 4;}
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
-<script>var prgms = ${JSON.stringify(prgms)}</script>
+<script>var STDLIB = ${JSON.stringify(lib)};</script>
+<script>var prgms = ${JSON.stringify(prgms)};</script>
 <script>${main.toString()};main();</script>
 </body>
 `;

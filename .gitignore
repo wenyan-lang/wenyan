@@ -1,5 +1,4 @@
 .DS_Store
-package-lock.json
 node_modules/
 build/wenyan-linux
 build/wenyan-macos

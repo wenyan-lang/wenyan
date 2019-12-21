@@ -10,7 +10,7 @@ const NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆�
 
 var KEYWORDS = {
   吾有: ["decl", "uninit"],
-  今有: ["decl", "uninit"],
+  今有: ["decl", "public"],
   物之: ["decl", "prop"],
   有: ["decl", "init"],
   數: ["type", "num"],
@@ -84,6 +84,11 @@ var KEYWORDS = {
 
   陰: ["bool", false],
   陽: ["bool", true],
+
+  吾嘗觀: ["import", "file"],
+  之書: ["import", "fileend"],
+  方悟: ["import", "iden"],
+  之義: ["import", "idenend"],
 
   注曰: ["comment"],
   疏曰: ["comment"],
@@ -307,7 +312,10 @@ function tokens2asc(
       );
     }
 
-    if (gettok(i, 0) == "decl" && gettok(i, 1) == "uninit") {
+    if (
+      gettok(i, 0) == "decl" &&
+      (gettok(i, 1) == "uninit" || gettok(i, 1) == "public")
+    ) {
       typeassert(i + 1, ["num", "iden"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
 
@@ -317,6 +325,7 @@ function tokens2asc(
         type: gettok(i + 2, 1),
         values: [],
         names: [],
+        public: gettok(i, 1) == "public",
         pos
       };
       i += 3;
@@ -346,6 +355,7 @@ function tokens2asc(
         count: 1,
         type: gettok(i + 1, 1),
         values: [tokens[i + 2]],
+        public: false,
         pos
       };
       i += 3;
@@ -578,6 +588,20 @@ function tokens2asc(
     } else if (gettok(i, 0) == "discard") {
       asc.push({ op: "discard", pos });
       i++;
+    } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
+      typeassert(i + 2, ["import"]);
+      var x = { op: "import", file: gettok(i + 1, 1), iden: [] };
+      i += 3;
+      if (tokens[i] && gettok(i, 0) == "import" && gettok(i, 1) == "iden") {
+        i++;
+        while (!(gettok(i, 0) == "import" && gettok(i, 1) == "idenend")) {
+          typeassert(i, ["iden"]);
+          x.iden.push(gettok(i, 1));
+          i++;
+        }
+        i++;
+      }
+      asc.push(x);
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
       i += 2;
@@ -589,10 +613,12 @@ function tokens2asc(
   return asc;
 }
 
-function asc2js(asc) {
+function asc2js(asc, imports = []) {
   var js = ``; //`"use strict";`;
   var prevfun = "";
+  var prevfunpublic = false;
   var prevobj = "";
+  var prevobjpublic = false;
   var curlvl = 0;
   var strayvar = 0;
 
@@ -632,12 +658,14 @@ function asc2js(asc) {
           } else if (a.type == "fun") {
             value = "()=>0";
             prevfun = name;
+            prevfunpublic = a.public;
           } else if (a.type == "obj") {
             value = "{}";
             prevobj = name;
+            prevobjpublic = a.public;
           }
         }
-        js += `var ${name}=${value};`;
+        js += `${a.public ? "this." : "var "}${name}=${value};`;
       }
     } else if (a.op == "print") {
       js += `console.log(`;
@@ -650,7 +678,7 @@ function asc2js(asc) {
       js += ");";
       strayvar = 0;
     } else if (a.op == "fun") {
-      js += prevfun + `=function(`;
+      js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
         js += a.args[j].name;
         if (j != a.arity - 1) {
@@ -660,7 +688,7 @@ function asc2js(asc) {
       js += ")";
     } else if (a.op == "funbody") {
       if (asc[i - 1].op != "fun") {
-        js += prevfun + "=function()";
+        js += `${prevfunpublic ? "this." : ""}${prevfun} =function()`;
       }
       js += "{";
       curlvl++;
@@ -670,7 +698,7 @@ function asc2js(asc) {
     } else if (a.op == "objend") {
       js += "};";
     } else if (a.op == "objbody") {
-      js += `${prevobj}={`;
+      js += `${prevobjpublic ? "this." : ""}${prevobj}={`;
     } else if (a.op == "prop") {
       js += `${a.name}:${a.value[1]},`;
     } else if (a.op == "end") {
@@ -780,6 +808,12 @@ function asc2js(asc) {
       strayvar++;
     } else if (a.op == "discard") {
       strayvar = 0;
+    } else if (a.op == "import") {
+      var f = a.file.replace(/"/g, "");
+      for (var j = 0; j < a.iden.length; j++) {
+        js += `var ${a.iden[j]}=${f}.${a.iden[j]};`;
+      }
+      imports.push(f);
     } else if (a.op == "comment") {
       js += `/*${getval(a.value)}*/`;
     } else {
@@ -788,6 +822,26 @@ function asc2js(asc) {
     // js+="\n"
   }
   return js;
+}
+
+function jsWrapModule(name, src) {
+  return `var ${name} = new function(){ ${src} };`;
+}
+
+function lvl1(x) {
+  try {
+    return fs.readFileSync(x + ".wy").toString();
+  } catch (e) {
+    var files = fs.readdirSync("./");
+    for (var i = 0; i < files.length; i++) {
+      if (fs.lstatSync(files[i]).isDirectory()) {
+        try {
+          return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
+        } catch (e) {}
+      }
+    }
+  }
+  console.log("Cannot import ", x);
 }
 
 function compile(
@@ -800,7 +854,9 @@ function compile(
       typeof x == "string"
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
-    errorCallback = process.exit
+    errorCallback = process.exit,
+    lib = {},
+    reader = lvl1
   } = {}
 ) {
   if (resetVarCnt) {
@@ -851,22 +907,53 @@ function compile(
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var targ;
-	switch(lang) {
-		case "js":
-			targ = asc2js(asc);
-			break;
-		case "py":
-			try{asc2py = require('./asc2py.js')}catch(e){};
-			targ = asc2py(asc);
-			break;
-		case "rb":
-			try{asc2rb = require('./asc2rb.js')}catch(e){};
-			targ = asc2rb(asc);
-			break;
-		default:
-			logCallback("Target language not supported.");
-	}
+  var imports = [];
+  var mwrapper;
+  switch (lang) {
+    case "js":
+      targ = asc2js(asc, imports);
+      mwrapper = jsWrapModule;
+      break;
+    case "py":
+      try {
+        asc2py = require("./asc2py.js");
+      } catch (e) {}
+      targ = asc2py(asc, imports);
+      mwrapper = x => x;
+      break;
+    case "rb":
+      try {
+        asc2rb = require("./asc2rb.js");
+      } catch (e) {}
+      targ = asc2rb(asc, imports);
+      mwrapper = x => x;
+      break;
+    default:
+      logCallback("Target language not supported.");
+  }
   logCallback(targ);
+  imports = Array.from(new Set(imports));
+  console.log(imports);
+  for (var i = 0; i < imports.length; i++) {
+    var isrc;
+    if (imports[i] in lib) {
+      isrc = lib[imports[i]];
+    } else {
+      isrc = reader(imports[i]);
+    }
+    targ =
+      mwrapper(
+        imports[i],
+        compile(lang, isrc, {
+          romanizeIdentifiers,
+          resetVarCnt: false,
+          logCallback,
+          errorCallback,
+          lib
+        })
+      ) + targ;
+  }
+
   return targ;
 }
 
