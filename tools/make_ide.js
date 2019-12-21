@@ -42,20 +42,29 @@ function main() {
     ed.innerText = prgms[sel.value];
     run();
   };
-
-  ed.oninput = e => {
-    if (e.inputType !== "insertParagraph") {
-      if (ed.innerText.length < 1500) {
-        highlightCode();
-        highlighted = true;
-      } else {
-        if (!highlighted) {
-          clearTimeout(currentHighlightTimeout);
+  var autohl = document.getElementById("auto-hl");
+  autohl.onchange = function() {
+    if (autohl.checked) {
+      alert(
+        "[WARN] Auto highlight might conflict with system input method on certian browsers."
+      );
+      ed.oninput = e => {
+        if (e.inputType !== "insertParagraph") {
+          if (ed.innerText.length < 1500) {
+            highlightCode();
+            highlighted = true;
+          } else {
+            if (!highlighted) {
+              clearTimeout(currentHighlightTimeout);
+            }
+            const wait = ed.innerText.length / 2;
+            currentHighlightTimeout = setTimeout(highlightCode, wait);
+            highlighted = false;
+          }
         }
-        const wait = ed.innerText.length / 2;
-        currentHighlightTimeout = setTimeout(highlightCode, wait);
-        highlighted = false;
-      }
+      };
+    } else {
+      ed.oninput = () => 0;
     }
   };
 
@@ -108,7 +117,7 @@ pre{tab-size: 4;}
 <script>${utils.catsrc()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
 	<h2><i>wenyan-lang</i></h2>
-<table><tr><td><select id="pick-example"></select><button id="run">Run</button></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
 <script>${main.toString()};main();</script>
