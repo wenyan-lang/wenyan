@@ -1,7 +1,6 @@
 var fs = require("fs-extra");
 var path = require("path");
 var parser = require("../dist/core/index.min.js");
-var fsReader = require("../src/fsReader");
 var execSync = require("child_process").execSync;
 var { expect } = require("chai");
 
@@ -27,7 +26,6 @@ function runExample(lang, name, options = {}) {
   var txt = fs.readFileSync(path.join(exampleDir, name + ".wy")).toString();
   var compiled = parser.compile(lang, txt, {
     logCallback: () => {},
-    reader: fsReader,
     ...options
   });
   // expect(compiled).to.matchSnapshot();

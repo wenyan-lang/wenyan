@@ -6,7 +6,7 @@ const Default = () => {
     devtool: 'source-map',
     output: {
       globalObject: '(typeof self !== "undefined" ? self : this)', // make it works for both node and browser
-      libraryTarget: 'umd',
+      libraryTarget: 'umd2',
       library: ["Wenyan", "[name]"],
       path: path.resolve(__dirname, 'dist'),
       filename: '[name]/index.min.js',

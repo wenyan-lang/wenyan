@@ -3,7 +3,6 @@ const version = require("./version");
 const buildDate = `${new Date().toLocaleDateString("en-US")}`;
 const { compile } = require("./parser");
 const { render, unrender } = require("./render");
-const fsReader = require("./fsReader");
 const path = require("path");
 
 function cmdlinecode() {
@@ -130,8 +129,7 @@ function cmdlinecode() {
         errorCallback: function(x) {
           console.error(x);
           global.haserr = true;
-        },
-        reader: fsReader
+        }
       });
       if (global.haserr) {
         // console.log("Not evaulated.")
@@ -194,8 +192,7 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      },
-      reader: fsReader
+      }
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {

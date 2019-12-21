@@ -3,7 +3,7 @@ try {
 } catch (e) {} //make sure we're in tools directory
 
 const fs = require("fs");
-const meta = require("../src/meta");
+const render = require("../src/render");
 
 const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString();
 const sieve = fs.readFileSync("../examples/sieve.wy").toString();
@@ -224,7 +224,7 @@ h2{
 	cursor: pointer;
 }
 .play-btn:hover{
-	color: ${meta.BOOK_COLORS.ctrl}
+	color: ${render.BOOK_COLORS.ctrl}
 }
 .compile-out{
 	border-left: 3px solid;	

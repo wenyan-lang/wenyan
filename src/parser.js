@@ -682,7 +682,6 @@ function asc2js(asc, imports = []) {
       strayvar = strayvar.slice(0, strayvar.length - a.names.length);
     } else if (a.op == "call") {
       if (a.pop) {
-        console.log(took, strayvar);
         var jj = "";
         for (var j = 0; j < took; j++) {
           jj += `${strayvar[strayvar.length - took + j]}`;
@@ -789,10 +788,27 @@ function jsWrapModule(name, src) {
   return `var ${name} = new function(){ ${src} };`;
 }
 
-function undefinedReader(x) {
-  console.error(
-    `Cannot import ${x}, please specify the "reader" option in compile.`
-  );
+function defaultReader(x) {
+  try {
+    const fs = eval("require")("fs");
+    try {
+      return fs.readFileSync(x + ".wy").toString();
+    } catch (e) {
+      var files = fs.readdirSync("./");
+      for (var i = 0; i < files.length; i++) {
+        if (fs.lstatSync(files[i]).isDirectory()) {
+          try {
+            return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
+          } catch (e) {}
+        }
+      }
+    }
+    console.log("Cannot import ", x);
+  } catch (e) {
+    console.error(
+      `Cannot import ${x}, please specify the "reader" option in compile.`
+    );
+  }
 }
 
 function compile(
@@ -807,7 +823,7 @@ function compile(
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
     lib = STDLIB,
-    reader = undefinedReader
+    reader = defaultReader
   } = {}
 ) {
   if (resetVarCnt) {
@@ -918,7 +934,6 @@ var parser = {
   hanzi2pinyin,
   KEYWORDS,
   NUMBER_KEYWORDS,
-  BOOK_COLORS,
   STDLIB
 };
 try {
