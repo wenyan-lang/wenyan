@@ -106,7 +106,7 @@ function_arg                := 必先得 num type [assign identifier] 是術曰|
 function_end                := 是謂 identifier 之術也
 function_define_statement   := function_start function_arg [statement]+ function_end
 function_plain_call         := 施 identifier 於 identifier
-function_nested_call        := ((夫 identifier)* 取 int_num 以施 identifier)+ reference_single_statement
+function_nested_call        := ((夫 identifier)+ (取 int_num 以施 identifier)+)+ reference_single_statement
 function_call_statement     := function_plain_call|function_nested_call
 function_statement          := function_define_statement|function_call_statement
 
