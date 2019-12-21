@@ -37,6 +37,10 @@ const Cli = {
       raw: true,
     }),
   ],
+  mode: "development",
+  optimization: {
+		minimize: false,
+	},
 }
 
 const Core = {

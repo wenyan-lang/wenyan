@@ -19,6 +19,7 @@
   "homepage": "https://github.com/LingDong-/wenyan-lang",
   "scripts": {
     "build": "npm run clear && webpack --mode production",
+    "build:dev": "npm run clear && webpack --mode development",
     "dev": "npm run clear && webpack --mode development --watch",
     "clear": "rimraf ./dist",
     "publish": "node ./tools/publish.js",

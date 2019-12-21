@@ -28,6 +28,6 @@ jobs:
 
     - name: Test
       run: |
-        npm run build
+        npm run build:dev
         npm test
 
