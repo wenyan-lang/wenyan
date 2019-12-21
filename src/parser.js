@@ -933,7 +933,7 @@ function compile(
   }
   logCallback(targ);
   imports = Array.from(new Set(imports));
-  console.log(imports);
+  // console.log(imports);
   for (var i = 0; i < imports.length; i++) {
     var isrc;
     if (imports[i] in lib) {
