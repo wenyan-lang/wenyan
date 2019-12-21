@@ -52,7 +52,7 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 
 ## Features
 - An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
-- Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) or [Python](https://python.org)
+- Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
@@ -76,20 +76,12 @@ Options:
 --output  -o <string>  : Output file (default: `/dev/stdout')
 --roman   -r <boolean> : Romanize identifiers (default: `true')
 ```
+
 Try building the included examples first, e.g.:
 
 ```
-./build/wenyan.js examples/helloworld.wy -o helloworld.js
+wenyan examples/helloworld.wy -o helloworld.js
 ```
-
-#### Building platform-specific binaries
-
-- Clone the repo
-- `npm install`
-- `npm run make_cmdline`
-
-The macOS, Windows and Linux binaries will be in the `./build` folder.
-
 
 ### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
 
@@ -151,6 +143,14 @@ Arrays are 1-indexed.
 |`夫「寶劍」之長。` | `sword.length;` |
 
 
+### Objects
+
+| wenyan | JavaScript |
+|---|---|
+|`吾有一物。名之曰「甲」。` | `var a = {};` |
+|`吾有一物。名之曰「甲」。其物如是。物之「「乙」」者。數曰三。物之「「丙」」者。言曰「「丁」」。是謂「甲」之物也。` | `var a = {b:3, c:"d"}` |
+
+
 ### Functions
 | wenyan | JavaScript |
 |---|---|
@@ -171,34 +171,19 @@ Arrays are 1-indexed.
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
 - [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
-
-## Test
-
-Install Mochajs
-
-```Shell
-npm install --global mocha
-```
-
-Go to src/test folder, run
-
-```Shell
-mocha
-```
-
-
+- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
 ## Feature Requests
 
 Before opening an Issue, please check if it belongs to the below categories:
 
-|Name|Priority|Help needed|
-|---|---|---|
-|[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  |
-|[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | |
+|Name|Priority|Help needed|Status|
+|---|---|---|---|
+|[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
+|[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
 |[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
 |Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
-|[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  |
+|[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
 |Stricter compiler |  **** | |
@@ -216,9 +201,10 @@ If you could help implement a feature with a `√` under `help needed`, please f
 
 
 ## Known bugs
-|Name|Priority|Help needed|
-|---|---|---|
-|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | |
-|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | |
+|Name|Priority|Help needed|Status|
+|---|---|---|---|
+|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
+|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
+
 
 

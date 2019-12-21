@@ -1,18 +1,15 @@
-try {
-  process.chdir("./tools");
-} catch (e) {} //make sure we're in tools directory
-
 const fs = require("fs");
-var execSync = require("child_process").execSync;
-var utils = require("./utils");
-var compileinfo = `${new Date().toLocaleDateString("en-US")}`;
+const package = require("../package.json");
+const buildDate = `${new Date().toLocaleDateString("en-US")}`;
+const { compile } = require("./parser");
 
 function cmdlinecode() {
   var ARGS = [
+    ["--version", "-v", String, "", "Current version"],
     ["--lang", "-l", String, "js", "Language: js/py"],
     ["--roman", "-r", String, "none", "Romanize identifiers"],
     ["--output", "-o", String, "/dev/stdout", "Output file"],
-    ["--exec", "-x", Boolean, false, "Execute ouput"],
+    ["--exec", "-x", Boolean, false, "Execute output"],
     ["--eval", "-e", String, "", "Give a string instead of a file"],
     ["--log", null, String, "/dev/null", "Log file"],
     ["--inspect", "-i", Boolean, false, "Interactive REPL"],
@@ -22,7 +19,9 @@ function cmdlinecode() {
   function printhelp() {
     ARGS.sort();
     console.log(ART);
-    console.log("\nWENYAN LANG 文言 Compiler 0.01 (" + compileinfo + ")");
+    console.log(
+      `\nWENYAN LANG 文言 Compiler v${package.version} (${buildDate})`
+    );
     console.log("\nUsage: wenyan [options] [input files]");
     console.log("\nOptions:");
     var ret = "";
@@ -35,7 +34,7 @@ function cmdlinecode() {
       }
       ret += ("<" + typeof ARGS[i][2]() + ">").padEnd(9);
       ret += " : ";
-      var s = ARGS[i][4] + " (default: `" + ARGS[i][3] + "')";
+      var s = ARGS[i][4] + " (default: `" + ARGS[i][3] + "`)";
       var n = 50;
       if (s.length < n) {
         ret += s;
@@ -84,6 +83,9 @@ function cmdlinecode() {
         }
       }
     }
+
+    if (args["--version"]) return package.version;
+
     return { files, args };
   }
   function replscope() {
@@ -124,8 +126,7 @@ function cmdlinecode() {
         errorCallback: function(x) {
           console.error(x);
           global.haserr = true;
-        },
-        lib: STDLIB
+        }
       });
       if (global.haserr) {
         // console.log("Not evaulated.")
@@ -188,8 +189,7 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      },
-      lib: STDLIB
+      }
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {
@@ -271,30 +271,5 @@ function cmdlinecode() {
 
   main();
 }
-var minify;
-try {
-  // delibrateError();
-  minify = utils.uglifier();
-} catch (e) {
-  //no wifi?
-  minify = x => ({ code: x });
-}
-var exe = ``;
-try {
-  //on unix and linux this will work:
-  const nodepath = execSync("which node", { encoding: "utf-8" });
-  exe += `#!${nodepath}\n`;
-} catch (e) {}
-exe += utils.catsrc();
-exe += "var STDLIB=" + JSON.stringify(utils.loadlib()) + ";";
-exe +=
-  "\n" +
-  cmdlinecode.toString() +
-  "\nvar compileinfo=`" +
-  compileinfo +
-  "`\ncmdlinecode();";
-fs.writeFileSync("../build/wenyan.js", minify(exe).code);
 
-try {
-  execSync("chmod +x ../build/wenyan.js");
-} catch (e) {}
+cmdlinecode();

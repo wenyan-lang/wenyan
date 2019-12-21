@@ -13,7 +13,7 @@ function catsrc() {
   var s = "";
   var srcs = fs.readdirSync("../src/");
   for (var i = 0; i < srcs.length; i++) {
-    if (srcs[i].endsWith(".js")) {
+    if (srcs[i].endsWith(".js") && !srcs[i].includes("cli")) {
       s +=
         fs
           .readFileSync("../src/" + srcs[i])
@@ -22,6 +22,19 @@ function catsrc() {
     }
   }
   return s;
+}
+
+function loadlib() {
+  var lib = {};
+  var srcs = fs.readdirSync("../lib/");
+  for (var i = 0; i < srcs.length; i++) {
+    if (srcs[i].endsWith(".wy")) {
+      lib[srcs[i].split(".")[0]] = fs
+        .readFileSync("../lib/" + srcs[i])
+        .toString();
+    }
+  }
+  return lib;
 }
 
 function uglifier() {
@@ -39,6 +52,22 @@ function uglifier() {
   return minify;
 }
 
+function pyeval(py) {
+  fs.writeFileSync("tmp.py", py);
+  var ret = execSync(
+    "which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi;",
+    { encoding: "utf-8" }
+  );
+  return ret;
+}
+
+function rbeval(rb) {
+  fs.writeFileSync("tmp.rb", rb);
+  let ret = execSync("ruby tmp.rb", { encoding: "utf-8" });
+  execSync("rm tmp.rb");
+  return ret;
+}
+
 function beautifier() {
   remotelib([
     "https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"
@@ -46,13 +75,12 @@ function beautifier() {
   return js_beautify;
 }
 
-function pyeval(py) {
-  fs.writeFileSync("tmp.py", py);
-  var ret = execSync(
-    "which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi; rm tmp.py",
-    { encoding: "utf-8" }
-  );
-  return ret;
-}
-
-module.exports = { uglifier, beautifier, catsrc, remotelib, pyeval };
+module.exports = {
+  uglifier,
+  beautifier,
+  catsrc,
+  loadlib,
+  remotelib,
+  pyeval,
+  rbeval
+};

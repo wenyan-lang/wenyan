@@ -7,7 +7,7 @@ try{
 
 const RED = "#E53"
 const BLACK = "#222"
-const FONT = "serif"//"Source Han Serif TC"
+const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"//"Source Han Serif TC"
 const BOOK_COLORS = {
   'ctrl':RED,
   'lop':BLACK,

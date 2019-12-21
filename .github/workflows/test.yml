@@ -1,4 +1,4 @@
-name: Node CI
+name: Build & Test
 
 on: [push, pull_request]
 
@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node-version: [8.x, 10.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -17,9 +17,20 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, run
-      run: |
-        npm install
-        npm run make_cmdline
+
+    - name: Install
+      run: npm install
       env:
         CI: true
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Build
+      run: |
+        npm run make_cmdline
+        npm run make_ide
+
+    - name: Test
+      run: npm test
+
