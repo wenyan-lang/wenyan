@@ -88,7 +88,7 @@ function asc2py(asc, _imports, { resetVarCnt } = {}) {
 	var curlvl = 0;
 	var strayvar = 0;
 
-  if (resetVarCnt) {
+	if (resetVarCnt) {
 		tmpVarCnt = 0;
 		randVarCnt = 0;
 	}
