@@ -4,7 +4,7 @@ try {
 
 const fs = require("fs");
 const utils = require("./utils");
-const render = require("../src/render");
+const meta = require("../src/meta");
 
 const helloworld = fs.readFileSync("../examples/helloworld+.wy").toString();
 const sieve = fs.readFileSync("../examples/sieve.wy").toString();
@@ -25,12 +25,11 @@ function load_svg(pth) {
   svg = svg.replace(/(\d+)\.(\d)\d*/g, `$1.$2`);
   svg = svg.replace(/width=".+?"/, `width="100%"`);
   svg = svg.replace(/height=".+?"/, ``);
-  console.log(svg);
   return svg;
 }
 
 function main() {
-  DEFAULT_COLORS = BOOK_COLORS;
+  DEFAULT_COLORS = Wenyan.BOOK_COLORS;
 
   var eds = [];
   var outs = [];
@@ -38,10 +37,10 @@ function main() {
   function run(i) {
     var ed = eds[i];
     var out = outs[i];
-    highlight([ed]);
+    Wenyan.highlighter.highlight([ed]);
     out.innerText = "";
     var hasError = false;
-    var code = compile("js", ed.innerText, {
+    var code = Wenyan.compile("js", ed.innerText, {
       romanizeIdentifiers: "none",
       errorCallback: function(x) {
         hasError = true;
@@ -51,14 +50,14 @@ function main() {
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-      var rb = compile("rb", ed.innerText, {
+      var rb = Wenyan.compile("rb", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("rb").innerText =
         "# Ruby\n" + rb.split("#####\n")[1];
       // hljs.highlightBlock(document.getElementById("rb"));
-      var py = compile("py", ed.innerText, {
+      var py = Wenyan.compile("py", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
@@ -88,7 +87,7 @@ function main() {
     var outdiv = outs[arguments[0]];
     for (var i = 1; i < arguments.length; i++) {
       if (typeof arguments[i] == "number") {
-        outdiv.innerText += num2hanzi(arguments[i]);
+        outdiv.innerText += Wenyan.num2hanzi(arguments[i]);
       } else {
         outdiv.innerText += arguments[i];
       }
@@ -108,7 +107,9 @@ function main() {
   var trythem = document.getElementsByClassName("tryit");
 
   for (var i = 0; i < trythem.length; i++) {
-    var ed = newEditor(prgms[trythem[i].getAttribute("data-prgm")]);
+    var ed = Wenyan.highlighter.newEditor(
+      prgms[trythem[i].getAttribute("data-prgm")]
+    );
     // ed.style.width="50%";
     var out = document.createElement("div");
     out.classList.add("out");
@@ -150,7 +151,7 @@ pre{
 #bg{
 	width: 100%;
 	height: 400px;
-	// overflow: scroll;
+  overflow: scroll;
 	overflow: hidden;
 	position: absolute;
 	left: 0px;
@@ -235,7 +236,7 @@ h2{
 	cursor: pointer;
 }
 .play-btn:hover{
-	color: ${render.BOOK_COLORS.ctrl}
+	color: ${meta.BOOK_COLORS.ctrl}
 }
 .compile-out{
 	border-left: 3px solid;	
@@ -290,8 +291,9 @@ h2{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/vs.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+<script src="https://unpkg.com/@wenyanlang/core/index.min.js"></script>
+<script src="https://unpkg.com/@wenyanlang/highlighter/index.min.js"></script>
 
-<script>${utils.catsrc()}</script>
 <div id="bg"><div id="bg-inner">${load_svg("../renders/turing.svg")}</div></div>
 
 <div id="title-box"><div id="title1">文言 / wenyan&#8209;lang</div><div id="title2">編程語言 Programming Language for the ancient Chinese</div></div>
@@ -344,8 +346,6 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
 <span class="big-btn" onclick="window.location.href='https://github.com/LingDong-/wenyan-lang'">SOURCE CODE (GITHUB)</span>
 <span class="big-btn" onclick="window.location.href='./ide.html'">ONLINE EDITOR</span>
 <span class="big-btn" onclick="window.location.href='https://github.com/LingDong-/wenyan-lang#syntax-cheatsheet'">REFERENCE</span>
-
-
 
 
 <div style="height:180px;"></div>

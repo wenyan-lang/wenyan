@@ -3,8 +3,6 @@ try {
 } catch (e) {} //make sure we're in tools directory
 
 var fs = require("fs");
-var execSync = require("child_process").execSync;
-var parser = require("../src/parser");
 var utils = require("./utils");
 
 var files = fs.readdirSync("../examples/");
@@ -18,14 +16,14 @@ for (var i = 0; i < files.length; i++) {
 var lib = utils.loadlib();
 
 function main() {
-  var ed = newEditor(prgms["mandelbrot"]);
+  var ed = Wenyan.highlighter.newEditor(prgms["mandelbrot"]);
   // var ln = newLineNo(ed);
 
   let highlighted = true;
   let currentHighlightTimeout;
   const highlightCode = () => {
     console.time("highlight");
-    highlight([ed]);
+    Wenyan.highlighter.highlight([ed]);
     highlighted = true;
     console.timeEnd("highlight");
   };
@@ -71,7 +69,7 @@ function main() {
   function run() {
     highlightCode();
     document.getElementById("out").innerText = "";
-    var code = compile("js", ed.innerText, {
+    var code = Wenyan.compile("js", ed.innerText, {
       romanizeIdentifiers: "none",
       resetVarCnt: true,
       errorCallback: log2div,
@@ -92,7 +90,7 @@ function main() {
     var outdiv = document.getElementById("out");
     for (var i = 0; i < arguments.length; i++) {
       if (typeof arguments[i] == "number") {
-        outdiv.innerText += num2hanzi(arguments[i]);
+        outdiv.innerText += Wenyan.num2hanzi(arguments[i]);
       } else {
         outdiv.innerText += arguments[i];
       }
@@ -114,9 +112,11 @@ pre{tab-size: 4;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-<script>${utils.catsrc()}</script>
+<script src="https://unpkg.com/@wenyanlang/core/index.min.js"></script>
+<script src="https://unpkg.com/@wenyanlang/highlighter/index.min.js"></script>
+
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
-	<h2><i>wenyan-lang</i></h2>
+<h2><i>wenyan-lang</i></h2>
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
