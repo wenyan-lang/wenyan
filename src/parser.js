@@ -1,8 +1,10 @@
-const { hanzi2num, num2hanzi } = require("./hanzi2num");
-const hanzi2pinyin = require("./hanzi2pinyin");
-const STDLIB = require("./stdlib");
-const { NUMBER_KEYWORDS, KEYWORDS } = require("./meta");
-const version = require("./version");
+try {
+  var { hanzi2num, num2hanzi } = require("./hanzi2num");
+  var hanzi2pinyin = require("./hanzi2pinyin");
+  var STDLIB = require("./stdlib");
+  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+  var version = require("./version");
+} catch (e) {}
 
 var tmpVarCnt = 0;
 var randVarCnt = 0;
@@ -828,7 +830,7 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = STDLIB,
+    lib = typeof STDLIB == undefined ? {} : STDLIB,
     reader = defaultReader
   } = {}
 ) {

@@ -64,6 +64,9 @@ async function MakePackageJSON() {
 async function Publish() {
   for (const package of packages) {
     console.log(`Publishing ${npmOrganization}/${package}...`);
+    execSync("npm unpublish", {
+      cwd: path.join(distRoot, package)
+    });
     execSync("npm publish --access public", {
       cwd: path.join(distRoot, package)
     });

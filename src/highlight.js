@@ -1,5 +1,7 @@
-const { num2hanzi } = require("./hanzi2num");
-const { NUMBER_KEYWORDS, KEYWORDS } = require("./meta");
+try {
+  var { num2hanzi } = require("./hanzi2num");
+  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+} catch (e) {}
 
 var DEFAULT_COLORS = {
   ctrl: "#F92672",
@@ -129,37 +131,6 @@ var highlight = function(codes) {
     sel.removeAllRanges();
     sel.addRange(range);
   }
-  var keywords = [
-    "break",
-    "case",
-    "catch",
-    "continue",
-    "debugger",
-    "default",
-    "delete",
-    "do",
-    "else",
-    "finally",
-    "for",
-    "function",
-    "if",
-    "in",
-    "instanceof",
-    "new",
-    "return",
-    "switch",
-    "this",
-    "throw",
-    "try",
-    "typeof",
-    "var",
-    "void",
-    "while",
-    "with"
-  ];
-  keywords = keywords.concat(["canvas", "context"]);
-  var alpha =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890$_";
 
   for (var i = 0; i < codes.length; i++) {
     var c = getCaretPosition(codes[i], "start") + NNL;

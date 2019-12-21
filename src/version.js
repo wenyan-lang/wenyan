@@ -1,3 +1,5 @@
-const package = require("../package.json");
+try {
+  const package = require("../package.json");
 
-module.exports = package.version;
+  module.exports = package.version;
+} catch (e) {}
