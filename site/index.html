@@ -15,7 +15,7 @@ pre{
 #bg{
 	width: 100%;
 	height: 400px;
-	// overflow: scroll;
+  overflow: scroll;
 	overflow: hidden;
 	position: absolute;
 	left: 0px;
@@ -321,7 +321,9 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
   var trythem = document.getElementsByClassName("tryit");
 
   for (var i = 0; i < trythem.length; i++) {
-    var ed = Wenyan.highlighter.newEditor(prgms[trythem[i].getAttribute("data-prgm")]);
+    var ed = Wenyan.highlighter.newEditor(
+      prgms[trythem[i].getAttribute("data-prgm")]
+    );
     // ed.style.width="50%";
     var out = document.createElement("div");
     out.classList.add("out");

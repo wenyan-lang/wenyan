@@ -751,7 +751,7 @@ function compile(
     tmpVarCnt = 0;
     randVarCnt = 0;
   }
-  txt = txt.replace(/\r\n/g, "\n");
+  txt = (txt || "").replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);
 
