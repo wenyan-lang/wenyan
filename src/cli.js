@@ -2,6 +2,7 @@ const fs = require("fs");
 const package = require("../package.json");
 const buildDate = `${new Date().toLocaleDateString("en-US")}`;
 const { compile } = require("./parser");
+const { render, unrender } = require("./render");
 
 function cmdlinecode() {
   var ARGS = [
@@ -189,7 +190,8 @@ function cmdlinecode() {
       errorCallback: function(x) {
         console.error(x);
         process.exit();
-      }
+      },
+      lib: STDLIB
     });
     if (args["--output"] == ".") {
       if (files.length == 0) {

@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, "..");
 const distRoot = path.resolve(__dirname, "../dist");
 const npmOrganization = "@wenyanlang";
 
-const packages = ["cli", "core"];
+const packages = ["cli", "core", "render", "highlighter"];
 
 const fileToCopy = ["README.md", "README-ZH.md", "LICENSE"];
 
@@ -41,13 +41,13 @@ async function MakePackageJSON() {
     console.log(`Generating package.json for ${package}...`);
     const json = JSON.parse(JSON.stringify(packageJSON));
     json.name = `${npmOrganization}/${package}`;
-    json.main = "./index.js";
+    json.main = "./index.min.js";
 
     for (const field of fieldsInPackageJSONToRemove) delete json[field];
 
     if (package === "cli") {
       json.bin = {
-        wenyan: "./index.js"
+        wenyan: "./index.min.js"
       };
     }
 
