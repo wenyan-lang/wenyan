@@ -131,5 +131,5 @@ const BOOK_COLORS = {
 };
 
 try {
-  module.exports = { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS };
+  module.exports = { NUMBER_KEYWORDS, KEYWORDS, BOOK_COLORS, RED, BLACK };
 } catch (e) {}

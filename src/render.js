@@ -2,7 +2,7 @@ try {
   var fs = require("fs");
   var { semantic } = require("./highlight");
   var { num2hanzi } = require("./hanzi2num");
-  var { BOOK_COLORS } = require("./meta");
+  var { BOOK_COLORS, RED, BLACK } = require("./meta");
   var parser = require("./parser");
 } catch (e) {}
 

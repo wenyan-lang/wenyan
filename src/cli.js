@@ -4,6 +4,7 @@ const buildDate = `${new Date().toLocaleDateString("en-US")}`;
 const { compile } = require("./parser");
 const { render, unrender } = require("./render");
 const fsReader = require("./fsReader");
+const path = require("path");
 
 function cmdlinecode() {
   var ARGS = [
@@ -226,7 +227,7 @@ function cmdlinecode() {
       // only one page rendered
       if (svgs.length === 1) {
         if (!outputEndsWithSvg) args["--output"] += ".svg";
-        var filepath = path.reslove(args["--output"]);
+        var filepath = path.resolve(args["--output"]);
         fs.writeFileSync(filepath, svgs[0]);
         console.log(filepath); // Outputs generated filename
       }
@@ -235,7 +236,7 @@ function cmdlinecode() {
         if (outputEndsWithSvg) args["--output"] = args["--output"].slice(0, -4); // remove .svg suffix
 
         for (var i = 0; i < svgs.length; i++) {
-          var filepath = path.reslove(
+          var filepath = path.resolve(
             args["--output"] + "." + i.toString().padStart(3, "0") + ".svg"
           );
           fs.writeFileSync(filepath, svgs[i]);
