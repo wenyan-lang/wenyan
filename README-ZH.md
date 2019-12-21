@@ -4,6 +4,8 @@
 
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
+[中文README](./README.md)
+
 文言文編程語言。 [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot01.png)
@@ -166,6 +168,7 @@ wenyan examples/helloworld.wy -o helloworld.js
 |`施「翻倍」於「大衍」。`|`double(dayan);`|
 |`吾有一數。曰五。書之。`|`console.log(5);`|
 
+
 ### 导入
 | wenyan | JavaScript |
 |---|---|
@@ -193,7 +196,7 @@ wenyan examples/helloworld.wy -o helloworld.js
 |---|---|---|---|
 |[语言规范](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** | | 正在进行中 |
 |[类](https://github.com/LingDong-/wenyan-lang/issues/31) / [对象文法](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | 对象文法已经添加 |
-|[import语句](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | import语句已经添加 | |
+|[导入语句](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | 导入语句已经添加 | |
 |标准库 ([Math(数学)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位运算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(随机)](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | 正在进行中 | |
 |[测试套件](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √ | 正在进行中 |
 |[Switch语句](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | | |
