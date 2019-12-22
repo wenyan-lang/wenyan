@@ -7,9 +7,14 @@ const root = path.resolve(__dirname, "..");
 const distRoot = path.resolve(__dirname, "../dist");
 const npmOrganization = "@wenyanlang";
 
-const packages = ["cli", "core", "render", "highlighter"];
+const packages = ["cli", "core", "render"];
 
-const fileToCopy = ["README.md", "README-ZH.md", "LICENSE"];
+const fileToCopy = [
+  "README.md",
+  "README-ZH-CN.md",
+  "README-ZH-TW.md",
+  "LICENSE"
+];
 
 const fieldsInPackageJSONToRemove = [
   "devDependencies",
