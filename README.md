@@ -137,6 +137,7 @@ Arrays are 1-indexed.
 |`夫「甲」之其餘。` | `a.slice(1);` |
 |`夫「玫瑰」之「「名」」。` | `rose["name"]` |
 |`夫「寶劍」之長。` | `sword.length;` |
+|`泄「甲」。` | `a.pop();` |
 
 
 ### Objects
