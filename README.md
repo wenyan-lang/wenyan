@@ -183,7 +183,7 @@ Arrays are 1-indexed.
 
 ## Renderer
 
-```
+```bash
 wenyan examples/turing.wy --render 圖靈機 --output .
 ```
 
