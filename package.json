@@ -23,6 +23,7 @@
     "dev": "npm run clear && webpack --mode development --watch",
     "clear": "rimraf ./dist",
     "publish": "bump --commit && node ./tools/publish.js",
+    "publish:ci": "node ./tools/publish.js",
     "release": "bump --commit --tag && git push --follow-tags",
     "make_ide": "node ./tools/make_ide.js",
     "make_site": "node ./tools/make_site.js",
