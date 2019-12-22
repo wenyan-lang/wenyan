@@ -440,10 +440,10 @@ function tokens2asc(
       asc.push({ op: "temp", iden: tokens[i + 1] });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
-      var x = { op: "cat", containers: [gettok(i + 1, 1)], pos };
+      var x = { op: "cat", containers: [tokens[i + 1]], pos };
       i += 2;
       while (gettok(i, 0) == "opord" && gettok(i, 1) == "l") {
-        x.containers.push(gettok(i + 1, 1));
+        x.containers.push(tokens[i + 1]);
         i += 2;
       }
       asc.push(x);
@@ -611,7 +611,7 @@ function asc2js(asc, imports = []) {
       js += ");";
       strayvar = [];
     } else if (a.op == "fun") {
-      console.log(curlvl);
+      // console.log(curlvl);
       funcurlvls.push(curlvl);
       js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
@@ -632,7 +632,7 @@ function asc2js(asc, imports = []) {
         curlvl++;
       }
     } else if (a.op == "funend") {
-      console.log(funcurlvls, curlvl);
+      // console.log(funcurlvls, curlvl);
       var cl = funcurlvls.pop();
       js += "};".repeat(curlvl - cl);
       curlvl = cl;
@@ -725,8 +725,11 @@ function asc2js(asc, imports = []) {
     } else if (a.op == "cat") {
       var vname = nextTmpVar();
       js +=
-        `var ${vname}=${a.containers[0]}.concat(` +
-        a.containers.slice(1).join(").concat(") +
+        `var ${vname}=${getval(a.containers[0])}.concat(` +
+        a.containers
+          .slice(1)
+          .map(x => x[1])
+          .join(").concat(") +
         ");";
       strayvar.push(vname);
     } else if (a.op == "push") {
