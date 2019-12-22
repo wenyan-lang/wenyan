@@ -14,7 +14,7 @@ function readOtherExample(x) {
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
   var js = parser.compile(lang, txt, {
-    romanizeIdentifiers: "none",
+    romanizeIdentifiers: true,
     lib: utils.loadlib(),
     reader: readOtherExample
   });
@@ -46,4 +46,5 @@ function runAll(lang) {
 
 // runExample("js", "turing");
 // runAll("js");
-runExample("js", "../../../Downloads/local_test");
+// runExample("js", "../../../Downloads/local_test");
+runExample("js", "import");
