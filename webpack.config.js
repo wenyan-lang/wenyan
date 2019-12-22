@@ -56,7 +56,6 @@ const Utils = {
   ...Default(),
   entry: {
     render: './src/render.js',
-    highlighter: './src/highlight.js',
   }
 }
 
