@@ -46,7 +46,7 @@ function main() {
   autohl.onchange = function() {
     if (autohl.checked) {
       alert(
-        "[WARN] Auto highlight might conflict with system input method on certian browsers."
+        "[WARN] Auto highlight might conflict with system input method on certain browsers."
       );
       ed.oninput = e => {
         if (e.inputType !== "insertParagraph") {
