@@ -39,7 +39,7 @@ declare_statement           := (吾有|今有) int_num type (assign data)*
 reference_multi_statement   := 名之(assign identifier)+
 reference_single_statement  := 名之(assign identifier)
 init_define_statement       := 有 type data [reference_single_statement]
-define_statement            := uninit_declare_statement reference_multi_statement
+define_statement            := (declare_statement reference_multi_statement)|init_define_statement
 
 assign_statement            := 昔之 identifier (之 int_num)? 者 今 ((identifier (之 int_num)?)|其) 是矣
 
@@ -106,6 +106,6 @@ function_statement          := function_define_statement|function_call_statement
 // Misc
 print_statement             := 書之
 clean_statement             := 噫
-return_statement            := 乃得 data|乃歸空無
+return_statement            := 乃得 data|乃歸空無|乃得矣
 comment                     := 注曰|疏曰|批曰
 comment_statement           := comment string_literal
