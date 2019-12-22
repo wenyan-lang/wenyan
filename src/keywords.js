@@ -28,6 +28,7 @@ var KEYWORDS_DEFINE = {
   其: ["ans"],
 
   乃得: ["ctrl", "ret"],
+  乃得矣: ["ctrl", "retprev"],
   乃歸空無: ["ctrl", "retvoid"],
   是謂: ["ctrl", "bigend"],
   之術也: ["ctrl", "funend"],

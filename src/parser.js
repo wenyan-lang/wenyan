@@ -332,6 +332,9 @@ function tokens2asc(
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "ret") {
       asc.push({ op: "return", value: tokens[i + 1], pos });
       i += 2;
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "retprev") {
+      asc.push({ op: "return", value: ["ans"], pos });
+      i += 1;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "retvoid") {
       asc.push({ op: "return", pos });
       i += 1;
