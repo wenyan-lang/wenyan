@@ -598,7 +598,7 @@ function asc2js(asc, imports = []) {
             prevobjpublic = a.public;
           }
         }
-        js += `${a.public ? "this." : "var "}${name}=${value};`;
+        js += `${a.public ? `var ${name} = this.` : "var "}${name}=${value};`;
       }
     } else if (a.op == "print") {
       js += `console.log(`;
@@ -612,7 +612,7 @@ function asc2js(asc, imports = []) {
       strayvar = [];
     } else if (a.op == "fun") {
       funcurlvls.push(curlvl);
-      js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
+      js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
         js += a.args[j].name;
         if (j != a.arity - 1) {
@@ -625,19 +625,21 @@ function asc2js(asc, imports = []) {
     } else if (a.op == "funbody") {
       if (asc[i - 1].op != "fun") {
         funcurlvls.push(curlvl);
-        js += `${prevfunpublic ? "this." : ""}${prevfun} =function()`;
+        js += `${
+          prevfunpublic ? `${prevfun} = this.` : ""
+        }${prevfun} =function()`;
       }
       js += "{";
       curlvl++;
     } else if (a.op == "funend") {
-      console.log(funcurlvls, curlvl);
+      // console.log(funcurlvls, curlvl);
       var cl = funcurlvls.pop();
       js += "};".repeat(curlvl - cl);
       curlvl = cl;
     } else if (a.op == "objend") {
       js += "};";
     } else if (a.op == "objbody") {
-      js += `${prevobjpublic ? "this." : ""}${prevobj}={`;
+      js += `${prevobjpublic ? `${prevobj} = this.` : ""}${prevobj}={`;
     } else if (a.op == "prop") {
       js += `${a.name}:${a.value[1]},`;
     } else if (a.op == "end") {
