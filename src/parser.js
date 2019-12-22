@@ -398,9 +398,6 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
-    } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "pop") {
-      asc.push({ op: "pop", container: gettok(i + 1, 1), pos });
-      i += 2;
     } else if (
       gettok(i, 0) == "expr" &&
       tokens[i + 2] &&
@@ -737,8 +734,6 @@ function asc2js(asc, imports = []) {
       strayvar.push(vname);
     } else if (a.op == "push") {
       js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
-    } else if (a.op == "pop") {
-      js += `${a.container}.pop();`;
     } else if (a.op == "for") {
       js += `for (var ${a.iterator} of ${a.container}){`;
       curlvl++;

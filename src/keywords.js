@@ -75,7 +75,6 @@ var KEYWORDS_DEFINE = {
   之長: ["ctnr", "len"],
   之: ["ctnr", "subs"],
   充: ["ctnr", "push"],
-  泄: ["ctnr", "pop"],
   銜: ["ctnr", "cat"],
   其餘: ["ctnr", "rest"],
 
