@@ -1,5 +1,6 @@
 // Work in progress
 
+program                     := statement*
 statement                   := declare_statement
                             | define_statement
                             | assign_statement
@@ -15,6 +16,7 @@ statement                   := declare_statement
                             | clean_statement
                             | return_statement
                             | comment_statement 
+                            | mention_statment
 
 // Variables
 character                   := Unicode
@@ -27,7 +29,7 @@ int_num                     := (int_num_keywords)+
 int_num_keywords            := 零|一|二|三|四|五|六|七|八|九|十|百|千|萬|億|兆|京|垓|秭|穣|溝|澗|正|載|極
 float_num                   := int_num 又 (int_num float_num_keywords)+
 float_num_keywords          := 分|釐|毫|絲|忽|微|塵|埃|渺|漠
-type                        := 數|列|言|爻
+type                        := 數|列|言|爻|術
 data                        := num|string_literal|bool_value|identifier
 
 bool_value                  := 陰|陽
@@ -39,10 +41,7 @@ reference_single_statement  := 名之(assign identifier)
 init_define_statement       := 有 type data [reference_single_statement]
 define_statement            := uninit_declare_statement reference_multi_statement
 
-assign_a                    := 昔之
-assign_b                    := 今
-assign_c                    := 是矣
-assign_statement            := assign_a identifier 者 assign_b identifier assign_c
+assign_statement            := 昔之 identifier (之 int_num)? 者 今 ((identifier (之 int_num)?)|其) 是矣
 
 // Control
 break                       := 乃止
@@ -50,7 +49,7 @@ break                       := 乃止
 if                          := 若
 else                        := 若非
 if_end                      := 也
-logic_if_op                 := 等於|弗等於|弗大於|弗小於|大於|小於
+logic_if_op                 := 等於|不等於|不大於|不小於|大於|小於
 unary_if_expression         := num|identifier|(identifier之(長｜string_literal))|其
 binary_if_expression        := unary_if_expression logic_if_op unary_if_expression
 if_expression               := unary_if_expression|binary_if_expression
@@ -58,33 +57,30 @@ if_statement                := if if_expression statement else statement if_end
 
 for                         := 凡
 for_in                      := 中之
-whiletrue                   := 恆為是
-while_start_token0          := 為是
-while_start_token1          := 遍
-while_end_token             := 云云
+for_end                     := 云云|也
 
-for_c_statement             := while_start_token0 int_num while_start_token1 statement* while_end_token
-whiletrue_statement         := whiletrue statement* while_end_token
-for_obj_statement           := for identifier for_in identifier statement* while_end_token
+for_c_statement             := 為是 int_num 遍 statement* for_end
+while_true_statement        := 恆為是 statement* for_end
+for_arr_statement           := for identifier for_in identifier statement* for_end
 for_statement               := for_c_statement
                             | whiletrue_statement
-                            | for_obj_statement
+                            | for_arr_statement
 
 // Math
 arith_binary_op             := 加|減|乘|除
 logic_binary_op             := 中有陽乎|中無陰乎
 post_mod_math_op            := 所餘幾何
-pre_position                := 以|於
+preposition                 := 以|於
 unary_op                    := 變
-arith_math_statement        := arith_binary_op num|identifier pre_position num|identifier
-mod_math_statement          := 除 num|identifier pre_position num|identifier post_mod_math_op
+arith_math_statement        := arith_binary_op num|identifier|其 preposition num|identifier
+mod_math_statement          := 除 num|identifier|其 preposition num|identifier post_mod_math_op
 logic_math_statement        := 夫 identifier identifier logic_binary_op
 math_statement              := arith_math_statement|logic_math_statement
 
 // Array
 array_func_statement        := 夫 identifier 之 其餘|長|string_literal|int_num
-array_cat_statement         := 銜 identifier (以 identifier)+
-array_fill_statement        := 充 identifier (以 num|identifier)+
+array_cat_statement         := 銜 identifier|其 (以 identifier)+
+array_push_statement        := 充 identifier|其 (以 num|identifier)+
 array_statement             := array_func_statement|array_cat_statement|array_fill_statement
 
 // Object
@@ -92,27 +88,24 @@ object_define_statement     := 其物如是 (物之 string_literal 者 type 曰 
 object_statement            := 吾有 int_num 物 reference_single_statement [object_define_statement] 
 
 // Import 
-import_a                    := 吾嘗觀
-import_b                    := 之書
-import_c                    := 方悟
-import_d                    := 之義
-import_statement            := import_a string_literal import_b import_c identifier+ import_d
+import_statement            := 吾嘗觀 string_literal 之書 方悟 identifier+ 之義
 
-
+// Push
+mention_statement           := (夫 identifier(之 int_num|長)?
 
 // Function
 function_start              := 吾有 int_num 術 reference_single_statement 欲行是術
 function_arg                := 必先得 num type [assign identifier] 是術曰|乃行是術曰 
 function_end                := 是謂 identifier 之術也
-function_define_statement   := function_start function_arg [statement]+ function_end
-function_plain_call         := 施 identifier 於 identifier
-function_nested_call        := ((夫 identifier)+ (取 int_num 以施 identifier)+)+ reference_single_statement
+function_define_statement   := function_start function_arg statement+ function_end
+function_plain_call         := 施 identifier|其 (於 identifier)*
+function_nested_call        := (取 int_num 以施 identifier)+ reference_single_statement
 function_call_statement     := function_plain_call|function_nested_call
 function_statement          := function_define_statement|function_call_statement
 
 // Misc
 print_statement             := 書之
 clean_statement             := 噫
-return_statement            := 乃得|乃歸空無
+return_statement            := 乃得 data|乃歸空無
 comment                     := 注曰|疏曰|批曰
 comment_statement           := comment string_literal
