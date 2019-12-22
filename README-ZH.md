@@ -6,7 +6,7 @@
 
 [英文README](./README.md)
 
-文言文編程語言。 [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
+文言文編程語言。 [在线体验](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot01.png)
 
@@ -64,28 +64,15 @@ for (var i = 0; i < n; i++) {
 
 ### 编译器
 
+使用以下命令安装本编译器：
+
 ```bash
-npm install -g wenyan-lang
+npm install -g @wenyanlang/cli
 ```
 
-如果调用编译器时不带任何参数，则输出以下帮助信息：
+尝试运行内置的例子，例如：
 
-```
-Usage: wenyan [options] [input files]
-
-Options:
---eval    -e <string>  : Give a string instead of a file (default: `')
---exec    -x <boolean> : Execute output (default: `false')
---inspect -i <boolean> : Interactive REPL (default: `false')
---lang    -l <string>  : Language: js/py (default: `js')
---log        <string>  : Log file (default: `/dev/null')
---output  -o <string>  : Output file (default: `/dev/stdout')
---roman   -r <boolean> : Romanize identifiers (default: `true')
-```
-
-首先，尝试去编译几个现有的例子：
-
-```
+```bash
 wenyan examples/helloworld.wy -o helloworld.js
 ```
 
@@ -93,6 +80,13 @@ wenyan examples/helloworld.wy -o helloworld.js
 ### [在线 IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
+
+
+### 编辑器插件：
+
+- 由[antfu](https://github.com/antfu)提供的[适用于VSCode的插件](https://github.com/antfu/wenyan-lang-vscode)
+- 由[voldikss](https://github.com/voldikss)提供的[适用于Vim的插件](https://github.com/voldikss/vim-wenyan)
+- 由[absop](https://github.com/absop)提供的[适用于Sublime Text的插件](https://github.com/absop/SublimeWenyan)
 
 
 ## 语法表
@@ -160,33 +154,49 @@ wenyan examples/helloworld.wy -o helloworld.js
 
 
 ### 函数
+
 | wenyan | JavaScript |
 |---|---|
 |`吾有一術。名之曰「吸星大法」。是術曰。⋯⋯是謂「吸星大法」之術也。`|`function f(){...}`|
 |`吾有一術。名之曰「六脈神劍」。欲行是術。必先得六數。曰「甲」。曰「乙」。曰「丙」。曰「丁」。曰「戊」。曰「己」乃行是術曰。⋯⋯是謂「六脈神劍」之術也。`|`function f(a,b,c,d,e,f){...}`|
 |`吾有一術。名之曰「翻倍」。欲行是術。必先得一數。曰「甲」。乃行是術曰。乘「甲」以二。名之曰「乙」。乃得「乙」。是謂「翻倍」之術也。`|`function double(a){var b = a * 2; return b;}`|
 |`施「翻倍」於「大衍」。`|`double(dayan);`|
-|`吾有一數。曰五。書之。`|`console.log(5);`|
-
+|`吾有一術。名之曰「甲」。欲行是術。必先得一數曰「乙」。二言。曰「丙」。曰「丁」`|`function a(float b, string c, string d)`|
+|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。名之曰「己」。` | `var f = e(a,d(b,c))`|
+|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。取一以施「己」。夫「庚」。夫「辛」。取三以施「壬」。名之曰「癸」。` | `var j = i(f(e(a,d(b,c))),g,h)`|
 
 ### 导入
+
 | wenyan | JavaScript |
 |---|---|
-|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `{sin,cos}=require("math");` |
+|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `var {sin,cos} = require("math");` |
+
+### 杂项
+
+| wenyan | JavaScript |
+|---|---|
+|`吾有一數。曰五。書之。`|`console.log(5);`|
+
+### 注释
+
+| wenyan | JavaScript |
+|---|---|
+|`批曰。「「文氣淋灕。字句切實」」。` | `/*文氣淋灕。字句切實*/` |
+|`注曰。「「文言備矣」」。` | `/*文言備矣*/` |
+|`疏曰。「「居第一之位故稱初。以其陽爻故稱九」」。` | `/*居第一之位故稱初。以其陽爻故稱九*/` |
 
 
 ## 渲染器
 
-`src/render.js` 脚本文件能把 `wy` 代码格式化输出成为古汉语书籍样式（历史印刷书籍）的矢量图（SVG）。同时它还可以将生成的SVG文件解析回原始文言代码。下图是用 wenyan 编写的 万能图灵机程序 渲染而成。
+```bash
+wenyan examples/turing.wy --render 圖靈機 --output .
+```
+
+`src/render.js` 脚本文件能把 `wy` 代码格式化输出成为古汉语书籍样式（历史印刷书籍）的矢量图（SVG）。同时它还可以将生成的SVG文件解析回原始文言代码。需要获取更详细的信息，请使用`wenyan -h`命令来获取帮助。
+
+下图是用 wenyan 编写的 通用图灵机程序 渲染而成。
 
 ![](screenshots/screenshot03.png)
-
-
-## 贡献者提供的工具
-
-- 由[antfu](https://github.com/antfu)提供的[适用于VSCode的插件](https://github.com/antfu/wenyan-lang-vscode)
-- 由[voldikss](https://github.com/voldikss)提供的[适用于Vim的插件](https://github.com/voldikss/vim-wenyan)
-
 
 ## 功能请求
 
