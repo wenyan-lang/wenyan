@@ -46,5 +46,5 @@ function runAll(lang) {
 
 // runExample("js", "turing");
 // runAll("js");
-// runExample("js", "../../../Downloads/local_test");
-runExample("js", "import");
+runExample("js", "../../../Downloads/local_test");
+// runExample("js", "import");
