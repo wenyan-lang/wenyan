@@ -46,4 +46,4 @@ function runAll(lang) {
 
 // runExample("js", "turing");
 // runAll("js");
-runExample("js", "nested_fun");
+runExample("js", "quine");

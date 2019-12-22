@@ -611,28 +611,28 @@ function asc2js(asc, imports = []) {
       js += ");";
       strayvar = [];
     } else if (a.op == "fun") {
+      console.log(curlvl);
       funcurlvls.push(curlvl);
       js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
         js += a.args[j].name;
         if (j != a.arity - 1) {
           js += "){return function(";
+          curlvl++;
         }
-        curlvl++;
       }
-      js += ")";
-      curlvl--;
+      js += "){";
+      curlvl++;
     } else if (a.op == "funbody") {
       if (asc[i - 1].op != "fun") {
         funcurlvls.push(curlvl);
         js += `${
           prevfunpublic ? `${prevfun} = this.` : ""
-        }${prevfun} =function()`;
+        }${prevfun} =function(){`;
+        curlvl++;
       }
-      js += "{";
-      curlvl++;
     } else if (a.op == "funend") {
-      // console.log(funcurlvls, curlvl);
+      console.log(funcurlvls, curlvl);
       var cl = funcurlvls.pop();
       js += "};".repeat(curlvl - cl);
       curlvl = cl;
