@@ -1,109 +1,10 @@
 try {
-  var fs = require("fs");
   var { hanzi2num, num2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
+  var STDLIB = require("./stdlib");
+  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+  var version = require("./version");
 } catch (e) {}
-
-const NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split(
-  ""
-);
-
-var KEYWORDS = {
-  吾有: ["decl", "uninit"],
-  今有: ["decl", "public"],
-  物之: ["decl", "prop"],
-  有: ["decl", "init"],
-  數: ["type", "num"],
-  列: ["type", "arr"],
-  言: ["type", "str"],
-  術: ["type", "fun"],
-  爻: ["type", "bol"],
-  物: ["type", "obj"],
-  書之: ["print"],
-  名之曰: ["name"],
-  施: ["call"],
-  曰: ["assgn"],
-  噫: ["discard"],
-
-  昔之: ["rassgn", "a"],
-  今: ["rassgn", "b"],
-  是矣: ["rassgn", "c"],
-  不復存矣: ["rassgn", "delete"],
-  其: ["ans"],
-
-  乃得: ["ctrl", "ret"],
-  乃歸空無: ["ctrl", "retvoid"],
-  是謂: ["ctrl", "bigend"],
-  之術也: ["ctrl", "funend"],
-  必先得: ["ctrl", "funarg"],
-  是術曰: ["ctrl", "funbody"],
-  乃行是術曰: ["ctrl", "funbody"],
-  欲行是術: ["ctrl", "funstart"],
-  也: ["ctrl", "end"],
-  云云: ["ctrl", "end"],
-  凡: ["ctrl", "for"],
-  中之: ["ctrl", "forin"],
-  恆為是: ["ctrl", "whiletrue"],
-  為是: ["ctrl", "whilen0"],
-  遍: ["ctrl", "whilen1"],
-  乃止: ["ctrl", "break"],
-
-  若非: ["ctrl", "else"],
-  若: ["ctrl", "if"],
-  者: ["ctrl", "conj"],
-
-  其物如是: ["ctrl", "objbody"],
-  之物也: ["ctrl", "objend"],
-
-  夫: ["expr"],
-
-  等於: ["cmp", "=="],
-  不等於: ["cmp", "!="],
-  不大於: ["cmp", "<="],
-  不小於: ["cmp", ">="],
-  大於: ["cmp", ">"],
-  小於: ["cmp", "<"],
-
-  加: ["op", "+"],
-  減: ["op", "-"],
-  乘: ["op", "*"],
-  除: ["op", "/"],
-  中有陽乎: ["lop", "||"],
-  中無陰乎: ["lop", "&&"],
-  變: ["not"],
-  所餘幾何: ["mod"],
-
-  以: ["opord", "l"],
-  於: ["opord", "r"],
-
-  之長: ["ctnr", "len"],
-  之: ["ctnr", "subs"],
-  充: ["ctnr", "push"],
-  銜: ["ctnr", "cat"],
-  其餘: ["ctnr", "rest"],
-
-  陰: ["bool", false],
-  陽: ["bool", true],
-
-  吾嘗觀: ["import", "file"],
-  之書: ["import", "fileend"],
-  方悟: ["import", "iden"],
-  之義: ["import", "idenend"],
-
-  注曰: ["comment"],
-  疏曰: ["comment"],
-  批曰: ["comment"]
-};
-var ke = Object.entries(KEYWORDS);
-ke.sort((a, b) => b[0].length - a[0].length);
-if (!Object.fromEntries) {
-  Object.fromEntries = l => {
-    var o = {};
-    l.map(x => (o[x[0]] = x[1]));
-    return o;
-  };
-}
-KEYWORDS = Object.fromEntries(ke);
 
 function wy2tokens(txt) {
   var tokens = [];
@@ -414,6 +315,9 @@ function tokens2asc(
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "ret") {
       asc.push({ op: "return", value: tokens[i + 1], pos });
       i += 2;
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "retprev") {
+      asc.push({ op: "return", value: ["ans"], pos });
+      i += 1;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "retvoid") {
       asc.push({ op: "return", pos });
       i += 1;
@@ -453,7 +357,7 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
-    } else if (gettok(i, 0) == "call") {
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
       var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
@@ -462,6 +366,9 @@ function tokens2asc(
         i += 2;
       }
       asc.push(x);
+    } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
+      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
@@ -479,6 +386,7 @@ function tokens2asc(
       asc.push(x);
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "subs"
     ) {
@@ -493,6 +401,7 @@ function tokens2asc(
       i += 4;
     } else if (
       gettok(i, 0) == "expr" &&
+      tokens[i + 2] &&
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "len"
     ) {
@@ -513,11 +422,14 @@ function tokens2asc(
       };
       asc.push(x);
       i += 4;
+    } else if (gettok(i, 0) == "expr") {
+      asc.push({ op: "temp", iden: tokens[i + 1] });
+      i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
-      var x = { op: "cat", containers: [gettok(i + 1, 1)], pos };
+      var x = { op: "cat", containers: [tokens[i + 1]], pos };
       i += 2;
       while (gettok(i, 0) == "opord" && gettok(i, 1) == "l") {
-        x.containers.push(gettok(i + 1, 1));
+        x.containers.push(tokens[i + 1]);
         i += 2;
       }
       asc.push(x);
@@ -556,7 +468,16 @@ function tokens2asc(
           i += 7;
         } else {
           x.rhs = tokens[i + 6];
-          i += 8;
+          if (
+            tokens[i + 7] &&
+            gettok(i + 7, 0) == "ctnr" &&
+            gettok(i + 7, 1) == "subs"
+          ) {
+            x.rhssubs = tokens[i + 8];
+            i += 10;
+          } else {
+            i += 8;
+          }
         }
       } else {
         assert(
@@ -565,15 +486,27 @@ function tokens2asc(
           gettok(i + 2, 0) == "ctrl" && gettok(i + 2, 1) == "conj"
         );
         x.rhs = tokens[i + 4];
-        i += 6;
+        if (
+          tokens[i + 5] &&
+          gettok(i + 5, 0) == "ctnr" &&
+          gettok(i + 5, 1) == "subs"
+        ) {
+          x.rhssubs = tokens[i + 6];
+          i += 8;
+        } else {
+          i += 6;
+        }
       }
       asc.push(x);
     } else if (gettok(i, 0) == "discard") {
       asc.push({ op: "discard", pos });
       i++;
+    } else if (gettok(i, 0) == "take") {
+      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
-      var x = { op: "import", file: gettok(i + 1, 1), iden: [] };
+      var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
       i += 3;
       if (tokens[i] && gettok(i, 0) == "import" && gettok(i, 1) == "iden") {
         i++;
@@ -600,20 +533,27 @@ function jsWrapModule(name, src) {
   return `var ${name} = new function(){ ${src} };`;
 }
 
-function lvl1(x) {
+function defaultReader(x) {
   try {
-    return fs.readFileSync(x + ".wy").toString();
-  } catch (e) {
-    var files = fs.readdirSync("./");
-    for (var i = 0; i < files.length; i++) {
-      if (fs.lstatSync(files[i]).isDirectory()) {
-        try {
-          return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
-        } catch (e) {}
+    const fs = eval("require")("fs");
+    try {
+      return fs.readFileSync(x + ".wy").toString();
+    } catch (e) {
+      var files = fs.readdirSync("./");
+      for (var i = 0; i < files.length; i++) {
+        if (fs.lstatSync(files[i]).isDirectory()) {
+          try {
+            return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
+          } catch (e) {}
+        }
       }
     }
+    console.log("Cannot import ", x);
+  } catch (e) {
+    console.error(
+      `Cannot import ${x}, please specify the "reader" option in compile.`
+    );
   }
-  console.log("Cannot import ", x);
 }
 
 function compile(
@@ -627,15 +567,15 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = {},
-    reader = lvl1
+    lib = typeof STDLIB == undefined ? {} : STDLIB,
+    reader = defaultReader
   } = {}
 ) {
   if (resetVarCnt) {
     tmpVarCnt = 0;
     randVarCnt = 0;
   }
-  txt = txt.replace(/\r\n/g, "\n");
+  txt = (txt || "").replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);
 
@@ -729,7 +669,18 @@ function compile(
   return targ;
 }
 
-var parser = { KEYWORDS, NUMBER_KEYWORDS, compile, wy2tokens, tokens2asc };
+var parser = {
+  compile,
+  version,
+  wy2tokens,
+  tokens2asc,
+  hanzi2num,
+  num2hanzi,
+  hanzi2pinyin,
+  KEYWORDS,
+  NUMBER_KEYWORDS,
+  STDLIB
+};
 try {
   module.exports = parser;
 } catch (e) {}

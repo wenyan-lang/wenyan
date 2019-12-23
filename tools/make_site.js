@@ -30,7 +30,7 @@ function load_svg(pth) {
 }
 
 function main() {
-  DEFAULT_COLORS = BOOK_COLORS;
+  setTheme(BOOK_COLORS);
 
   var eds = [];
   var outs = [];
@@ -138,150 +138,150 @@ var html = `<!--GENERATED FILE, DO NOT READ-->
 <meta charset="UTF-8">
 <style>
 body{
-	font-family: sans-serif;
-	margin:0px;
-	background: rgb(50,50,50);
+  font-family: sans-serif;
+  margin:0px;
+  background: rgb(50,50,50);
 }
 [contenteditable="true"]:focus {outline: none;}
 pre{
-	tab-size: 4;
-	font-size: 16;
+  tab-size: 4;
+  font-size: 16;
 }
 #bg{
-	width: 100%;
-	height: 400px;
-	// overflow: scroll;
-	overflow: hidden;
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	z-index: -100;
-	border-bottom: 1px solid black;
+  width: 100%;
+  height: 400px;
+  // overflow: scroll;
+  overflow: hidden;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: -100;
+  border-bottom: 1px solid black;
 }
 #bg-inner{
-	width: 100%;
-	height: 100%;
-	min-width: 1200px;
-	position: absolute;
-	transform: rotate(10deg);
+  width: 100%;
+  height: 100%;
+  min-width: 1200px;
+  position: absolute;
+  transform: rotate(10deg);
 }
 #title-box{
-	background: rgba(255,255,255,0.95);
-	text-align: center;
-	top: 100px;
-	font-weight: 100;
-	width: 700px;
-	margin: 100px auto;
-	padding: 20px;
-	border-left: 8px solid black;
-	border-right: 8px solid black;
-	border-top: 1px solid black;
-	border-bottom: 1px solid black;
+  background: rgba(255,255,255,0.95);
+  text-align: center;
+  top: 100px;
+  font-weight: 100;
+  width: 700px;
+  margin: 100px auto;
+  padding: 20px;
+  border-left: 8px solid black;
+  border-right: 8px solid black;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
 }
 #title1{
-	font-size: 60px;
+  font-size: 60px;
 }
 #title2{
-	font-size: 20px;
+  font-size: 20px;
 }
 #content-box{
-	width: 100%;
-	background: white;
-	--shadow-color: rgba(0, 0, 0, 0.3);
-	box-shadow: 0 0 10px var(--shadow-color);
+  width: 100%;
+  background: white;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 10px var(--shadow-color);
 }
 #content{
-	min-height: 1000px;
-	max-width: 980px;
-	min-width: 800px !important;
-	margin: 0 auto;
-	padding: 10px;
-	padding-top: 50px;
-	line-height: 160%;
+  min-height: 1000px;
+  max-width: 980px;
+  min-width: 800px !important;
+  margin: 0 auto;
+  padding: 10px;
+  padding-top: 50px;
+  line-height: 160%;
 }
 h1{
-	margin-top: 40px;
-	font-weight: normal;
-	font-size: 28px;
+  margin-top: 40px;
+  font-weight: normal;
+  font-size: 28px;
 }
 h2{
-	font-size: 20px;
-	font-weight: normal;
-	margin-left:20px;
-	margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: normal;
+  margin-left:20px;
+  margin-bottom: 10px;
 }
 .tryit{
-	border: 1px solid black;
-	padding: 10px 10px 10px 10px;
-	width: calc(100% - 40px);
-	margin: 0 auto;
-	max-height: 300px;
-	overflow: scroll;
-	margin-bottom: 20px;
+  border: 1px solid black;
+  padding: 10px 10px 10px 10px;
+  width: calc(100% - 40px);
+  margin: 0 auto;
+  max-height: 300px;
+  overflow: scroll;
+  margin-bottom: 20px;
 }
 .out{
-	color: grey;
-	font-size: 14px;
-	max-height: 300px;
-	overflow: scroll;
-	margin-left: 20px;
-	font-family: monospace;
-	word-break: break-all;
+  color: grey;
+  font-size: 14px;
+  max-height: 300px;
+  overflow: scroll;
+  margin-left: 20px;
+  font-family: monospace;
+  word-break: break-all;
 }
 .in-box{
-	border-right: 1px solid grey;
+  border-right: 1px solid grey;
 }
 .play-btn{
-	cursor: pointer;
+  cursor: pointer;
 }
 .play-btn:hover{
-	color: ${render.BOOK_COLORS.ctrl}
+  color: ${render.BOOK_COLORS.ctrl}
 }
 .compile-out{
-	border-left: 3px solid;	
-	padding-left: 20px;
-	font-size: 15px;
-	line-height: 18px;
-	width: 100%;
-	margin: 10px auto;
+  border-left: 3px solid; 
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 18px;
+  width: 100%;
+  margin: 10px auto;
 }
 .compile-out-box{
-	width: calc(100% - 40px);
-	margin-left: 20px;
-	border: 1px solid black;
-	margin-top: 20px;
+  width: calc(100% - 40px);
+  margin-left: 20px;
+  border: 1px solid black;
+  margin-top: 20px;
 }
 #js{
-	border-color: #ffb115;
+  border-color: #ffb115;
 }
 #py{
-	border-color: #1e2933;
+  border-color: #1e2933;
 }
 #rb{
-	border-color: #990000;
+  border-color: #990000;
 }
 
 
 .language-item {
-	border-bottom: 1px solid #ddd;
-	padding: 10px 0 20px 30px;
-}	}
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0 20px 30px;
+} }
 
 .language-item:last-child {
-	border-bottom: none;
+  border-bottom: none;
 }
 
 .big-btn{
-	border: 1px solid black;
-	border-left: 5px solid black;
-	margin: 20px;
-	display:inline-block;
-	padding: 10px 25px 10px 25px;
-	cursor: pointer;
+  border: 1px solid black;
+  border-left: 5px solid black;
+  margin: 20px;
+  display:inline-block;
+  padding: 10px 25px 10px 25px;
+  cursor: pointer;
 }
 .big-btn:hover{
-	color: white;
-	background: black;
+  color: white;
+  background: black;
 }
 </style>
 </head>
@@ -309,7 +309,7 @@ Syntax of <i>wenyan</i> is just like that of its namesake, classical Chinese:
 <h2>天地，好在否！/ HELLO WORLD <span class="play-btn">▶&#xFE0E;</span></h2>
 
 <table class="tryit" data-prgm="helloworld"><tr>
-	<td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
+  <td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
 </tr></table>
 
 The code above is editable, go ahead customize the greeting and hit ▶&#xFE0E;! Another slightly more sophisticated example, using the sieve of Erathosthenes to find prime numbers:
@@ -317,7 +317,7 @@ The code above is editable, go ahead customize the greeting and hit ▶&#xFE0E;!
 <h2>埃氏筛 / SIEVE OF ERATOSTHENES <span class="play-btn">▶&#xFE0E;</span></h2>
 
 <table class="tryit" data-prgm="sieve"><tr>
-	<td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
+  <td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
 </tr></table>
 
 You can find many more examples such as a Universal Turing Machine, a Mandelbrot set plotter, a Tower of Hanoi solver, and so on on the <a href="./ide.html">online IDE</a>.
@@ -328,15 +328,15 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
 <i>wenyan</i> currently compiles to JavaScript, Python, or Ruby, and will support more languages (e.g. C) in the future. The Hello World example (or whatever you edited it to be) above translates to:
 
 <div class="compile-out-box">
-	<div class='language-item'>
-		<pre class="compile-out" id="js"></pre>
-	</div>
-	<div class='language-item'>
-		<pre class="compile-out" id="py"></pre>
-	</div>
-	<div class='language-item'>
-		<pre class="compile-out" id="rb"></pre>
-	</div>
+  <div class='language-item'>
+    <pre class="compile-out" id="js"></pre>
+  </div>
+  <div class='language-item'>
+    <pre class="compile-out" id="py"></pre>
+  </div>
+  <div class='language-item'>
+    <pre class="compile-out" id="rb"></pre>
+  </div>
 </div>
 
 <h1>Get</h1>

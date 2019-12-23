@@ -21,15 +21,18 @@ function asc2js(asc, imports = []) {
   var prevobj = "";
   var prevobjpublic = false;
   var curlvl = 0;
-  var strayvar = 0;
+  var strayvar = [];
+  var took = 0;
+  var funcurlvls = [];
 
   function getval(x) {
     if (x == undefined) {
       return "";
     }
     if (x[0] == "ans") {
-      strayvar = 0;
-      return currTmpVar();
+      var ans = strayvar[strayvar.length - 1];
+      strayvar = [];
+      return ans;
     }
     return x[1];
   }
@@ -45,7 +48,7 @@ function asc2js(asc, imports = []) {
         var value = a.values[j][1];
         if (name == undefined) {
           name = nextTmpVar();
-          strayvar++;
+          strayvar.push(name);
         }
         if (value == undefined) {
           if (a.type == "arr") {
@@ -66,40 +69,48 @@ function asc2js(asc, imports = []) {
             prevobjpublic = a.public;
           }
         }
-        js += `${a.public ? "this." : "var "}${name}=${value};`;
+        js += `${a.public ? `var ${name} = this.` : "var "}${name}=${value};`;
       }
     } else if (a.op == "print") {
       js += `console.log(`;
-      for (var j = 0; j < strayvar; j++) {
-        js += `${prevTmpVar(strayvar - j)}`;
-        if (j != strayvar - 1) {
+      for (var j = 0; j < strayvar.length; j++) {
+        js += `${strayvar[j]}`;
+        if (j != strayvar.length - 1) {
           js += ",";
         }
       }
       js += ");";
-      strayvar = 0;
+      strayvar = [];
     } else if (a.op == "fun") {
-      js += `${prevfunpublic ? "this." : ""}${prevfun} =function(`;
+      // console.log(curlvl);
+      funcurlvls.push(curlvl);
+      js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
       for (var j = 0; j < a.arity; j++) {
         js += a.args[j].name;
         if (j != a.arity - 1) {
-          js += ",";
+          js += "){return function(";
+          curlvl++;
         }
       }
-      js += ")";
+      js += "){";
+      curlvl++;
     } else if (a.op == "funbody") {
       if (asc[i - 1].op != "fun") {
-        js += `${prevfunpublic ? "this." : ""}${prevfun} =function()`;
+        funcurlvls.push(curlvl);
+        js += `${
+          prevfunpublic ? `${prevfun} = this.` : ""
+        }${prevfun} =function(){`;
+        curlvl++;
       }
-      js += "{";
-      curlvl++;
     } else if (a.op == "funend") {
-      js += "};";
-      curlvl--;
+      // console.log(funcurlvls, curlvl);
+      var cl = funcurlvls.pop();
+      js += "};".repeat(curlvl - cl);
+      curlvl = cl;
     } else if (a.op == "objend") {
       js += "};";
     } else if (a.op == "objbody") {
-      js += `${prevobjpublic ? "this." : ""}${prevobj}={`;
+      js += `${prevobjpublic ? `${prevobj} = this.` : ""}${prevobj}={`;
     } else if (a.op == "prop") {
       js += `${a.name}:${a.value[1]},`;
     } else if (a.op == "end") {
@@ -128,7 +139,7 @@ function asc2js(asc, imports = []) {
             js += ".length";
           }
         } else {
-          js += a.test[j][1];
+          js += getval(a.test[j]);
         }
         j++;
       }
@@ -141,36 +152,57 @@ function asc2js(asc, imports = []) {
     } else if (a.op.startsWith("op")) {
       var lhs = getval(a.lhs);
       var rhs = getval(a.rhs);
-
-      js += `var ${nextTmpVar()}=${lhs}${a.op.slice(2)}${rhs};`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+      strayvar.push(vname);
     } else if (a.op == "name") {
       for (var j = 0; j < a.names.length; j++) {
-        js += `var ${a.names[j]}=${prevTmpVar(strayvar - j)};`;
+        js += `var ${a.names[j]}=${
+          strayvar[strayvar.length - a.names.length + j]
+        };`;
       }
-      strayvar -= a.names.length;
+      strayvar = strayvar.slice(0, strayvar.length - a.names.length);
     } else if (a.op == "call") {
-      js += `var ${nextTmpVar()}=${a.fun}(${a.args
-        .map(x => getval(x))
-        .join(",")});`;
-      strayvar++;
+      if (a.pop) {
+        var jj = "";
+        for (var j = 0; j < took; j++) {
+          jj += `(${strayvar[strayvar.length - took + j]})`;
+        }
+        strayvar = strayvar.slice(0, strayvar.length - took);
+        took = 0;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}` + jj + ";";
+        strayvar.push(vname);
+      } else {
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.fun}(${a.args
+          .map(x => getval(x))
+          .join(")(")});`;
+        strayvar.push(vname);
+      }
     } else if (a.op == "subscript") {
       var idx = getval(a.value);
       if (idx == "rest") {
-        js += `var ${nextTmpVar()}=${a.container}.slice(1);`;
-        strayvar++;
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}.slice(1);`;
+        strayvar.push(vname);
       } else {
-        js += `var ${nextTmpVar()}=${a.container}[${idx}${
+        var vname = nextTmpVar();
+        js += `var ${vname}=${a.container}[${idx}${
           a.value[0] == "lit" ? "" : "-1"
         }];`;
-        strayvar++;
+        strayvar.push(vname);
       }
     } else if (a.op == "cat") {
+      var vname = nextTmpVar();
       js +=
-        `var ${nextTmpVar()}=${a.containers[0]}.concat(` +
-        a.containers.slice(1).join(").concat(") +
+        `var ${vname}=${getval(a.containers[0])}.concat(` +
+        a.containers
+          .slice(1)
+          .map(x => x[1])
+          .join(").concat(") +
         ");";
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "push") {
       js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
     } else if (a.op == "for") {
@@ -187,9 +219,10 @@ function asc2js(asc, imports = []) {
       js += "break;";
     } else if (a.op == "not") {
       var v = getval(a.value);
-      js += `var ${nextTmpVar()}=!${v};`;
+      var vname = nextTmpVar();
+      js += `var ${vname}=!${v};`;
 
-      strayvar++;
+      strayvar.push(vname);
     } else if (a.op == "reassign") {
       if (a.del == true) {
         var lhs = getval(a.lhs);
@@ -202,13 +235,23 @@ function asc2js(asc, imports = []) {
         if (a.lhssubs) {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
+        if (a.rhssubs) {
+          rhs += `[${a.rhssubs[1]}${a.rhssubs[0] == "lit" ? "" : "-1"}]`;
+        }
         js += `${lhs}=${rhs};`;
       }
     } else if (a.op == "length") {
-      js += `var ${nextTmpVar()}=${a.container}.length;`;
-      strayvar++;
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.container}.length;`;
+      strayvar.push(vname);
+    } else if (a.op == "temp") {
+      var vname = nextTmpVar();
+      js += `var ${vname}=${a.iden[1]};`;
+      strayvar.push(vname);
     } else if (a.op == "discard") {
-      strayvar = 0;
+      strayvar = [];
+    } else if (a.op == "take") {
+      took = a.count;
     } else if (a.op == "import") {
       var f = a.file.replace(/"/g, "");
       for (var j = 0; j < a.iden.length; j++) {
@@ -224,3 +267,4 @@ function asc2js(asc, imports = []) {
   }
   return js;
 }
+

@@ -4,7 +4,9 @@
 
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
-[中文README](./README-ZH.md)
+[简体中文README](./README-ZH-CN.md)
+
+[繁体中文README](./README-ZH-TW.md)
 
 文言文編程語言。A programming language for the ancient Chinese. [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
 
@@ -51,7 +53,7 @@ Punctuations and newlines are completely optional (just like they are in Classic
 More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mandelbrot set, and Tower of Hanoi, can be found in the `./examples` folder.
 
 ## Features
-- An [NLP](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
+- [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
@@ -62,31 +64,27 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 
 ### The Compiler
 
-Clone the repo, (OR simply download `./build/wenyan.js` and set its executable bit using the terminal command `chmod +x wenyan.js`). Then run `./build/wenyan.js` to compile your wenyan souce code to target language. Calling the compiler without arguments prints the help message, reproduced below:
+Install the compiler by
 
-```
-Usage: wenyan [options] [input files]
-
-Options:
---eval    -e <string>  : Give a string instead of a file (default: `')
---exec    -x <boolean> : Execute output (default: `false')
---inspect -i <boolean> : Interactive REPL (default: `false')
---lang    -l <string>  : Language: js/py (default: `js')
---log        <string>  : Log file (default: `/dev/null')
---output  -o <string>  : Output file (default: `/dev/stdout')
---roman   -r <boolean> : Romanize identifiers (default: `true')
+```bash
+npm install -g @wenyanlang/cli
 ```
 
-Try building the included examples first, e.g.:
+Try run the included examples, e.g.:
 
-```
+```bash
 wenyan examples/helloworld.wy -o helloworld.js
 ```
 
-### [The online IDE](http://wenyan-lang.lingdong.works/ide.html)
+### [The Online IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
 
+### Text Editor Plugins
+
+- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
+- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
 ## Syntax Cheatsheet
 
@@ -152,26 +150,55 @@ Arrays are 1-indexed.
 
 
 ### Functions
+
 | wenyan | JavaScript |
 |---|---|
 |`吾有一術。名之曰「吸星大法」。是術曰。⋯⋯是謂「吸星大法」之術也。`|`function f(){...}`|
 |`吾有一術。名之曰「六脈神劍」。欲行是術。必先得六數。曰「甲」。曰「乙」。曰「丙」。曰「丁」。曰「戊」。曰「己」乃行是術曰。⋯⋯是謂「六脈神劍」之術也。`|`function f(a,b,c,d,e,f){...}`|
 |`吾有一術。名之曰「翻倍」。欲行是術。必先得一數。曰「甲」。乃行是術曰。乘「甲」以二。名之曰「乙」。乃得「乙」。是謂「翻倍」之術也。`|`function double(a){var b = a * 2; return b;}`|
 |`施「翻倍」於「大衍」。`|`double(dayan);`|
+|`吾有一術。名之曰「甲」。欲行是術。必先得一數曰「乙」。二言。曰「丙」。曰「丁」`|`function a(float b, string c, string d)`|
+|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。名之曰「己」。` | `var f = e(a,d(b,c))`|
+|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。取一以施「己」。夫「庚」。夫「辛」。取三以施「壬」。名之曰「癸」。` | `var j = i(f(e(a,d(b,c))),g,h)`|
+| `乃得四十九` | `return 49;` |
+| `減五十以一。乃得矣` | `return 50-1;` |
+| `乃歸空無` | `return;` |
+
+
+### Import
+
+| wenyan | JavaScript |
+|---|---|
+|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `var {sin,cos} = require("math");` |
+
+
+### Misc
+
+| wenyan | JavaScript |
+|---|---|
 |`吾有一數。曰五。書之。`|`console.log(5);`|
+
+### Comments
+
+| wenyan | JavaScript |
+|---|---|
+|`批曰。「「文氣淋灕。字句切實」」。` | `/*文氣淋灕。字句切實*/` |
+|`注曰。「「文言備矣」」。` | `/*文言備矣*/` |
+|`疏曰。「「居第一之位故稱初。以其陽爻故稱九」」。` | `/*居第一之位故稱初。以其陽爻故稱九*/` |
+
 
 ## Renderer
 
-`src/render.js` can render a wenyan program into an image that resembles pages from historical printed books. It can also parse the resultant SVG file back to the original program. Below is the rendering of the Universal Turing Machine written in wenyan:
+```bash
+wenyan examples/turing.wy --render 圖靈機 --output .
+```
+
+Render a wenyan script into an image that resembles pages from historical printed books. 
+It can also parse the resultant SVG file back to the original program. For more details, please refer to the help by `wenyan -h`.
+
+Below is the rendering of the Universal Turing Machine written in wenyan:
 
 ![](screenshots/screenshot03.png)
-
-
-## Contributed Tools
-
-- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
-- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
-- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
 ## Feature Requests
 
@@ -181,14 +208,14 @@ Before opening an Issue, please check if it belongs to the below categories:
 |---|---|---|---|
 |[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
 |[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
-|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | |
-|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | |
+|[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | | Import statements are added |
+|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | √ | In porgress |
 |[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
 |Stricter compiler |  **** | |
 |Compiler for other languages |  ** | √ |
-|[Plugins for editors](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ |
+|[Plugins for editors](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ | VSCode, Vim, Sublime added |
 |Convert [js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/[anything](https://github.com/LingDong-/wenyan-lang/issues/73) back to wenyan |  * | √ |
 |[Escaping](https://github.com/LingDong-/wenyan-lang/issues/84)/[generating](https://github.com/LingDong-/wenyan-lang/issues/128) special characters |  *** | |
 |[Alternative syntax for 「「」」](https://github.com/LingDong-/wenyan-lang/issues/81)|  ** | |
