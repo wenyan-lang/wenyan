@@ -297,7 +297,7 @@ class RBCompiler extends Base {
       } else {
       }
     }
-    return rb;
+    return { result: rb };
   }
 }
 var rblib = `# encoding: UTF-8

@@ -627,6 +627,7 @@ function compile(
   var targ = result;
   if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
+  imports = imports || [];
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;

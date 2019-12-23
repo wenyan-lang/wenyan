@@ -222,7 +222,7 @@ class PYCompiler extends Base {
       }
       // py+="\n"
     }
-    return py;
+    return { result: py };
   }
 }
 
