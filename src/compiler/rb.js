@@ -93,7 +93,6 @@ class RBCompiler extends Base {
     };
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
-      if (a.args) console.log(a.args, a, "+++++++=======++++_____");
       if (a.op == "var") {
         for (let j = 0; j < a.count; j++) {
           if (a.values[j] == undefined) {
@@ -296,7 +295,6 @@ class RBCompiler extends Base {
         rb += `# ${getval(a.value)}\n`;
         rb += "\t".repeat(curlvl);
       } else {
-        // console.log(a.op)
       }
     }
     return rb;

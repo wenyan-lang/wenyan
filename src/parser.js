@@ -572,10 +572,6 @@ function compile(
     reader = defaultReader
   } = {}
 ) {
-  if (resetVarCnt) {
-    tmpVarCnt = 0;
-    randVarCnt = 0;
-  }
   txt = (txt || "").replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);

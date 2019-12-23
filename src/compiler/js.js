@@ -72,7 +72,6 @@ class JSCompiler extends Base {
         js += ");";
         strayvar = [];
       } else if (a.op == "fun") {
-        // console.log(curlvl);
         funcurlvls.push(curlvl);
         js += `${
           prevfunpublic ? `${prevfun} = this.` : ""
@@ -95,7 +94,6 @@ class JSCompiler extends Base {
           curlvl++;
         }
       } else if (a.op == "funend") {
-        // console.log(funcurlvls, curlvl);
         var cl = funcurlvls.pop();
         js += "};".repeat(curlvl - cl);
         curlvl = cl;

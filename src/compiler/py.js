@@ -17,7 +17,6 @@ class PYCompiler extends Base {
         return "";
       }
       if (x[0] == "ans") {
-        console.log(this);
         strayvar = 0;
         return this.currTmpVar();
       }
