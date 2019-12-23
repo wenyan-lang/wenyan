@@ -54,7 +54,7 @@ console.log("問天地好在。");
 
 ## 特點
 - 符合[古漢語](https://en.wikipedia.org/wiki/Classical_Chinese)語法的自然語言處理程序
-- 可以編譯成[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org)，或者[Ruby](http:/ /ruby-lang.org)
+- 可以編譯成[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org)，或者[Ruby](http://ruby-lang.org)
 - [圖靈完備](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - [在線 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻體驗
 - 通過[幾個例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入門
@@ -207,7 +207,7 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 |[語言規範](https://github.com/LingDong-/wenyan-lang/issues/1)| ***** | | 正在進行中 |
 |[類](https://github.com/LingDong-/wenyan-lang/issues/31) / [對象文法](https://github.com/LingDong-/wenyan-lang/issues/20) | *** | | 對象文法已經添加 |
 |[導入語句](https://github.com/LingDong-/wenyan-lang/issues/100) | *** | | 導入語句已經添加 |
-|標準庫([Math(數學)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位運算)](https://github.com/LingDong- /wenyan-lang/issues/2)/[Random(隨機)](https://github.com/LingDong-/wenyan-lang/issues/87)) | ***** | √ | 正在進行中 |
+|標準庫([Math(數學)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位運算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(隨機)](https://github.com/LingDong-/wenyan-lang/issues/87)) | ***** | √ | 正在進行中 |
 |[測試套件](https://github.com/LingDong-/wenyan-lang/issues/38)| **** | √ | 正在進行中 |
 |[Switch語句](https://github.com/LingDong-/wenyan-lang/issues/53)| *** | | |
 |[函數式程序設計](https://github.com/LingDong-/wenyan-lang/issues/99) | *** | | |
@@ -218,7 +218,7 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 |[轉義](https://github.com/LingDong-/wenyan-lang/issues/84)/[生成](https://github.com/LingDong-/wenyan-lang/issues/128) 特殊符號| *** | | |
 |[對「「」」的替換語法](https://github.com/LingDong-/wenyan-lang/issues/81)| ** | | |
 |[對 。的替換語法](https://github.com/LingDong-/wenyan-lang/issues/93)| ** | | |
-|在線IDE 的[字體](https://github.com/LingDong-/wenyan-lang/issues/5) 和[垂直文本](https://github.com/LingDong-/wenyan-lang/issues/ 9) | ** | | |
+|在線IDE 的[字體](https://github.com/LingDong-/wenyan-lang/issues/5) 和[垂直文本](https://github.com/LingDong-/wenyan-lang/issues/9) | ** | | |
 |[將註釋呈現為小型內聯文本](https://github.com/LingDong-/wenyan-lang/issues/148) | ** | | |
 |更多示例 | ** | √ | |
 
