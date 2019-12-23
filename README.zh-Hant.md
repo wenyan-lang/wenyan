@@ -4,7 +4,7 @@
 
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
-[英文README](./README.md)
+[English](./README.md) | [简体中文](./README.zh-Hans.md) | 繁体中文
 
 文言文編程語言。 [在線體驗](http://wenyan-lang.lingdong.works/ide.html)
 
