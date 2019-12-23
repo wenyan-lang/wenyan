@@ -1323,10 +1323,6 @@ function compile(
     reader = defaultReader
   } = {}
 ) {
-  if (resetVarCnt) {
-    tmpVarCnt = 0;
-    randVarCnt = 0;
-  }
   txt = (txt || "").replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);
@@ -1382,6 +1378,7 @@ function compile(
   var targ = result;
   if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
+  imports = imports || [];
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
@@ -1894,7 +1891,6 @@ class JSCompiler extends Base {
         js += ");";
         strayvar = [];
       } else if (a.op == "fun") {
-        // console.log(curlvl);
         funcurlvls.push(curlvl);
         js += `${
           prevfunpublic ? `${prevfun} = this.` : ""
@@ -1917,7 +1913,6 @@ class JSCompiler extends Base {
           curlvl++;
         }
       } else if (a.op == "funend") {
-        // console.log(funcurlvls, curlvl);
         var cl = funcurlvls.pop();
         js += "};".repeat(curlvl - cl);
         curlvl = cl;
@@ -2106,7 +2101,6 @@ class PYCompiler extends Base {
         return "";
       }
       if (x[0] == "ans") {
-        console.log(this);
         strayvar = 0;
         return this.currTmpVar();
       }
@@ -2312,7 +2306,7 @@ class PYCompiler extends Base {
       }
       // py+="\n"
     }
-    return py;
+    return { result: py };
   }
 }
 
@@ -2478,7 +2472,6 @@ class RBCompiler extends Base {
     };
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
-      if (a.args) console.log(a.args, a, "+++++++=======++++_____");
       if (a.op == "var") {
         for (let j = 0; j < a.count; j++) {
           if (a.values[j] == undefined) {
@@ -2681,10 +2674,9 @@ class RBCompiler extends Base {
         rb += `# ${getval(a.value)}\n`;
         rb += "\t".repeat(curlvl);
       } else {
-        // console.log(a.op)
       }
     }
-    return rb;
+    return { result: rb };
   }
 }
 var rblib = `# encoding: UTF-8
