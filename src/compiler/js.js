@@ -1,4 +1,6 @@
-const Base = require("./base");
+try {
+  var Base = require("./base");
+} catch (e) {}
 class JSCompiler extends Base {
   compile(options = {}) {
     var imports = options.imports || [];
@@ -258,5 +260,7 @@ class JSCompiler extends Base {
     return { result: js, imports };
   }
 }
-
-module.exports = JSCompiler;
+const JS = JSCompiler;
+try {
+  module.exports = JS;
+} catch (e) {}

@@ -11,12 +11,20 @@ function remotelib(urls) {
 
 function catsrc() {
   var s = "";
-  var srcs = fs.readdirSync("../src/");
+  var rootPath = "../src/";
+  var compilerPath = "../src/compiler/";
+  var compilerList = ["base", "js", "py", "rb", "compilers"];
+  // Must make sure compilers.js in the end.
+  compilerList.push("compilers");
+  compilerList = compilerList.map(filename => compilerPath + filename + ".js");
+  var srcs = fs.readdirSync(rootPath).map(filename => rootPath + filename);
+  srcs = srcs.concat(compilerList);
+
   for (var i = 0; i < srcs.length; i++) {
     if (srcs[i].endsWith(".js") && !srcs[i].includes("cli")) {
       s +=
         fs
-          .readFileSync("../src/" + srcs[i])
+          .readFileSync(srcs[i])
           .toString()
           .replace(/const/g, "var") + ";\n";
     }

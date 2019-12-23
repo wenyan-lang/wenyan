@@ -1,4 +1,6 @@
-const Base = require("./base");
+try {
+  var Base = require("./base");
+} catch (e) {}
 class PYCompiler extends Base {
   compile() {
     var lop = {
@@ -286,4 +288,8 @@ class Ctnr():
 		return self[self.it]
 #####
 `;
-module.exports = PYCompiler;
+
+const PY = PYCompiler;
+try {
+  module.exports = PY;
+} catch (e) {}

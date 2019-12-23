@@ -1,4 +1,6 @@
-const Base = require("./base");
+try {
+  var Base = require("./base");
+} catch (e) {}
 class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
@@ -349,4 +351,7 @@ require 'forwardable'
 	end
 #####
 `;
-module.exports = RBCompiler;
+const RB = RBCompiler;
+try {
+  module.exports = RB;
+} catch (error) {}

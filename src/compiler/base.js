@@ -22,4 +22,7 @@ class BaseCompiler {
     throw Error("No Implementation");
   }
 }
-module.exports = BaseCompiler;
+var Base = BaseCompiler;
+try {
+  module.exports = Base;
+} catch (e) {}
