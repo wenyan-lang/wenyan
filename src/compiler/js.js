@@ -1,4 +1,4 @@
-const Base = require('./base');
+const Base = require("./base");
 class JSCompiler extends Base {
   compile() {
     let asc = this.asc;
@@ -11,7 +11,7 @@ class JSCompiler extends Base {
     let strayvar = [];
     let took = 0;
     let funcurlvls = [];
-  
+
     function getval(x) {
       if (x == undefined) {
         return "";
@@ -23,7 +23,7 @@ class JSCompiler extends Base {
       }
       return x[1];
     }
-  
+
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
       if (a.op == "var") {
@@ -71,7 +71,9 @@ class JSCompiler extends Base {
       } else if (a.op == "fun") {
         // console.log(curlvl);
         funcurlvls.push(curlvl);
-        js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
+        js += `${
+          prevfunpublic ? `${prevfun} = this.` : ""
+        }${prevfun} =function(`;
         for (let j = 0; j < a.arity; j++) {
           js += a.args[j].name;
           if (j != a.arity - 1) {
@@ -208,7 +210,7 @@ class JSCompiler extends Base {
         let v = getval(a.value);
         let vname = this.nextTmpVar();
         js += `let ${vname}=!${v};`;
-  
+
         strayvar.push(vname);
       } else if (a.op == "reassign") {
         if (a.del == true) {
@@ -252,7 +254,7 @@ class JSCompiler extends Base {
       }
       // js+="\n"
     }
-    return js;  
+    return js;
   }
 }
 

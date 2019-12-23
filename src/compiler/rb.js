@@ -1,4 +1,4 @@
-const Base = require('./base');
+const Base = require("./base");
 class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
@@ -26,7 +26,8 @@ class RBCompiler extends Base {
           });
           break;
         case "return":
-          if (item.value[0] == "iden") item.value[1] = this.rename(item.value[1]);
+          if (item.value[0] == "iden")
+            item.value[1] = this.rename(item.value[1]);
           break;
         case "cat":
           item.containers = item.containers.map(e => this.rename(e));
@@ -45,7 +46,8 @@ class RBCompiler extends Base {
           break;
         case "if":
           item.test = item.test.map(condition => {
-            if (condition[0] == "iden") condition[1] = this.rename(condition[1]);
+            if (condition[0] == "iden")
+              condition[1] = this.rename(condition[1]);
             return condition;
           });
         default:
@@ -77,7 +79,7 @@ class RBCompiler extends Base {
     let lambdaList = [];
     let methodIndex = 0;
     asc = this.lowerAllPinYinAndMakeItGlobal(asc);
-    const getval = (x) => {
+    const getval = x => {
       if (!x) return "";
       if (x[0] == "ans") {
         strayvar = 0;
@@ -86,7 +88,7 @@ class RBCompiler extends Base {
       if (x[0] == "iden") return this.rename(x[1]);
       if (x[1] == undefined) return "nil";
       return x[1];
-    }
+    };
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
       if (a.args) console.log(a.args, a, "+++++++=======++++_____");
@@ -219,7 +221,9 @@ class RBCompiler extends Base {
         strayvar -= a.names.length;
       } else if (a.op == "call") {
         rb += "\t".repeat(curlvl);
-        let functionCallStr = `${a.fun}(${a.args.map(x => getval(x)).join(",")})`;
+        let functionCallStr = `${a.fun}(${a.args
+          .map(x => getval(x))
+          .join(",")})`;
         if (lambdaList.includes(a.fun)) {
           functionCallStr = `${a.fun}.call(${a.args
             .map(x => getval(x))
@@ -248,7 +252,9 @@ class RBCompiler extends Base {
         strayvar++;
       } else if (a.op == "push") {
         rb += "\t".repeat(curlvl);
-        rb += `${a.container}.push(${a.values.map(x => getval(x)).join(",")})\n`;
+        rb += `${a.container}.push(${a.values
+          .map(x => getval(x))
+          .join(",")})\n`;
       } else if (a.op == "for") {
         rb += "\t".repeat(curlvl);
         rb += `${a.container}.each do |${a.iterator.toLowerCase()}|\n`;
@@ -293,7 +299,6 @@ class RBCompiler extends Base {
     }
     return rb;
   }
-
 }
 var rblib = `# encoding: UTF-8
 require 'forwardable'
