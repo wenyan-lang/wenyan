@@ -1,39 +1,40 @@
 const Base = require('./base');
 class JSCompiler extends Base {
   compile() {
-    var js = ``; //`"use strict";`;
-    var prevfun = "";
-    var prevfunpublic = false;
-    var prevobj = "";
-    var prevobjpublic = false;
-    var curlvl = 0;
-    var strayvar = [];
-    var took = 0;
-    var funcurlvls = [];
+    let asc = this.asc;
+    let js = ``;
+    let prevfun = "";
+    let prevfunpublic = false;
+    let prevobj = "";
+    let prevobjpublic = false;
+    let curlvl = 0;
+    let strayvar = [];
+    let took = 0;
+    let funcurlvls = [];
   
     function getval(x) {
       if (x == undefined) {
         return "";
       }
       if (x[0] == "ans") {
-        var ans = strayvar[strayvar.length - 1];
+        let ans = strayvar[strayvar.length - 1];
         strayvar = [];
         return ans;
       }
       return x[1];
     }
   
-    for (var i = 0; i < asc.length; i++) {
-      var a = asc[i];
+    for (let i = 0; i < asc.length; i++) {
+      let a = asc[i];
       if (a.op == "var") {
-        for (var j = 0; j < a.count; j++) {
+        for (let j = 0; j < a.count; j++) {
           if (a.values[j] == undefined) {
             a.values[j] = [];
           }
-          var name = a.names[j];
-          var value = a.values[j][1];
+          let name = a.names[j];
+          let value = a.values[j][1];
           if (name == undefined) {
-            name = nextTmpVar();
+            name = this.nextTmpVar();
             strayvar.push(name);
           }
           if (value == undefined) {
@@ -55,11 +56,11 @@ class JSCompiler extends Base {
               prevobjpublic = a.public;
             }
           }
-          js += `${a.public ? `var ${name} = this.` : "var "}${name}=${value};`;
+          js += `${a.public ? `let ${name} = this.` : "let "}${name}=${value};`;
         }
       } else if (a.op == "print") {
         js += `console.log(`;
-        for (var j = 0; j < strayvar.length; j++) {
+        for (let j = 0; j < strayvar.length; j++) {
           js += `${strayvar[j]}`;
           if (j != strayvar.length - 1) {
             js += ",";
@@ -71,7 +72,7 @@ class JSCompiler extends Base {
         // console.log(curlvl);
         funcurlvls.push(curlvl);
         js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
-        for (var j = 0; j < a.arity; j++) {
+        for (let j = 0; j < a.arity; j++) {
           js += a.args[j].name;
           if (j != a.arity - 1) {
             js += "){return function(";
@@ -90,7 +91,7 @@ class JSCompiler extends Base {
         }
       } else if (a.op == "funend") {
         // console.log(funcurlvls, curlvl);
-        var cl = funcurlvls.pop();
+        let cl = funcurlvls.pop();
         js += "};".repeat(curlvl - cl);
         curlvl = cl;
       } else if (a.op == "objend") {
@@ -105,7 +106,7 @@ class JSCompiler extends Base {
         js += ";";
       } else if (a.op == "if") {
         js += "if (";
-        var j = 0;
+        let j = 0;
         while (j < a.test.length) {
           if (a.test[j][0] == "cmp") {
             js += a.test[j][1];
@@ -136,53 +137,53 @@ class JSCompiler extends Base {
       } else if (a.op == "return") {
         js += `return ${getval(a.value)}`;
       } else if (a.op.startsWith("op")) {
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
-        var vname = nextTmpVar();
-        js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+        let lhs = getval(a.lhs);
+        let rhs = getval(a.rhs);
+        let vname = this.nextTmpVar();
+        js += `let ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);
       } else if (a.op == "name") {
-        for (var j = 0; j < a.names.length; j++) {
-          js += `var ${a.names[j]}=${
+        for (let j = 0; j < a.names.length; j++) {
+          js += `let ${a.names[j]}=${
             strayvar[strayvar.length - a.names.length + j]
           };`;
         }
         strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
         if (a.pop) {
-          var jj = "";
-          for (var j = 0; j < took; j++) {
+          let jj = "";
+          for (let j = 0; j < took; j++) {
             jj += `(${strayvar[strayvar.length - took + j]})`;
           }
           strayvar = strayvar.slice(0, strayvar.length - took);
           took = 0;
-          var vname = nextTmpVar();
-          js += `var ${vname}=${a.fun}` + jj + ";";
+          let vname = this.nextTmpVar();
+          js += `let ${vname}=${a.fun}` + jj + ";";
           strayvar.push(vname);
         } else {
-          var vname = nextTmpVar();
-          js += `var ${vname}=${a.fun}(${a.args
+          let vname = this.nextTmpVar();
+          js += `let ${vname}=${a.fun}(${a.args
             .map(x => getval(x))
             .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
-        var idx = getval(a.value);
+        let idx = getval(a.value);
         if (idx == "rest") {
-          var vname = nextTmpVar();
-          js += `var ${vname}=${a.container}.slice(1);`;
+          let vname = this.nextTmpVar();
+          js += `let ${vname}=${a.container}.slice(1);`;
           strayvar.push(vname);
         } else {
-          var vname = nextTmpVar();
-          js += `var ${vname}=${a.container}[${idx}${
+          let vname = this.nextTmpVar();
+          js += `let ${vname}=${a.container}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
           strayvar.push(vname);
         }
       } else if (a.op == "cat") {
-        var vname = nextTmpVar();
+        let vname = this.nextTmpVar();
         js +=
-          `var ${vname}=${getval(a.containers[0])}.concat(` +
+          `let ${vname}=${getval(a.containers[0])}.concat(` +
           a.containers
             .slice(1)
             .map(x => x[1])
@@ -192,32 +193,32 @@ class JSCompiler extends Base {
       } else if (a.op == "push") {
         js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
       } else if (a.op == "for") {
-        js += `for (var ${a.iterator} of ${a.container}){`;
+        js += `for (let ${a.iterator} of ${a.container}){`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         js += "while (true){";
         curlvl++;
       } else if (a.op == "whilen") {
-        var v = randVar();
-        js += `for (var ${v}=0;${v}<${getval(a.value)};${v}++){`;
+        let v = this.randVar();
+        js += `for (let ${v}=0;${v}<${getval(a.value)};${v}++){`;
         curlvl++;
       } else if (a.op == "break") {
         js += "break;";
       } else if (a.op == "not") {
-        var v = getval(a.value);
-        var vname = nextTmpVar();
-        js += `var ${vname}=!${v};`;
+        let v = getval(a.value);
+        let vname = this.nextTmpVar();
+        js += `let ${vname}=!${v};`;
   
         strayvar.push(vname);
       } else if (a.op == "reassign") {
         if (a.del == true) {
-          var lhs = getval(a.lhs);
+          let lhs = getval(a.lhs);
           js += `delete ${lhs}[${a.lhssubs[1]}${
             a.lhssubs[0] == "lit" ? "" : "-1"
           }];`;
         } else {
-          var rhs = getval(a.rhs);
-          var lhs = getval(a.lhs);
+          let rhs = getval(a.rhs);
+          let lhs = getval(a.lhs);
           if (a.lhssubs) {
             lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
           }
@@ -227,21 +228,21 @@ class JSCompiler extends Base {
           js += `${lhs}=${rhs};`;
         }
       } else if (a.op == "length") {
-        var vname = nextTmpVar();
-        js += `var ${vname}=${a.container}.length;`;
+        let vname = this.nextTmpVar();
+        js += `let ${vname}=${a.container}.length;`;
         strayvar.push(vname);
       } else if (a.op == "temp") {
-        var vname = nextTmpVar();
-        js += `var ${vname}=${a.iden[1]};`;
+        let vname = this.nextTmpVar();
+        js += `let ${vname}=${a.iden[1]};`;
         strayvar.push(vname);
       } else if (a.op == "discard") {
         strayvar = [];
       } else if (a.op == "take") {
         took = a.count;
       } else if (a.op == "import") {
-        var f = a.file.replace(/"/g, "");
-        for (var j = 0; j < a.iden.length; j++) {
-          js += `var ${a.iden[j]}=${f}.${a.iden[j]};`;
+        let f = a.file.replace(/"/g, "");
+        for (let j = 0; j < a.iden.length; j++) {
+          js += `let ${a.iden[j]}=${f}.${a.iden[j]};`;
         }
         imports.push(f);
       } else if (a.op == "comment") {

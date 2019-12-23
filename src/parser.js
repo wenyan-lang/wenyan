@@ -623,15 +623,16 @@ function compile(
   var mwrapper;
   switch (lang) {
     case "js":
-      targ = require('./compiler/js')(asc, imports);
+      JS = require('./compiler/js')
+      compiler = new JS(asc);
+      targ = compiler.compile()
       mwrapper = jsWrapModule;
       break;
     case "py":
-      try {
-        asc2py = require("./asc2py.js");
-      } catch (e) {}
-      targ = asc2py(asc, imports);
-      mwrapper = x => x;
+      PY = require('./compiler/py')
+      compiler = new PY(asc);
+      targ = compiler.compile()
+      mwrapper = jsWrapModule;  
       break;
     case "rb":
       try {
