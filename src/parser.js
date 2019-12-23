@@ -623,7 +623,7 @@ function compile(
   var mwrapper;
   switch (lang) {
     case "js":
-      targ = asc2js(asc, imports);
+      targ = require('./compiler/js')(asc, imports);
       mwrapper = jsWrapModule;
       break;
     case "py":

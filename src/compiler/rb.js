@@ -1,10 +1,3 @@
-var tmpVarCnt = 0;
-var randVarCnt = 0;
-var randVar = () => `_rand${++randVarCnt}`;
-var currTmpVar = () => `_ans${tmpVarCnt}`;
-var nextTmpVar = () => `_ans${++tmpVarCnt}`;
-var prevTmpVar = n => `_ans${tmpVarCnt - n + 1}`;
-
 var rblib = `# encoding: UTF-8
 require 'forwardable'
 	class Ctnr
