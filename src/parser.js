@@ -624,7 +624,7 @@ function compile(
   if (!compilers[lang]) {
     return logCallback("Target language not supported.");
   }
-  compiler = new compilers[lang](asc);
+  var compiler = new compilers[lang](asc);
   var result = compiler.compile({ imports });
   var { imports, result } = result;
   var targ = result;
