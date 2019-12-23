@@ -26,7 +26,7 @@ function catsrc() {
         fs
           .readFileSync(srcs[i])
           .toString()
-          .replace(/const/g, "var") + ";\n";
+          .replace(/const\s/g, "var ") + ";\n";
     }
   }
   return s;
