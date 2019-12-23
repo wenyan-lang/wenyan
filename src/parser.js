@@ -619,15 +619,16 @@ function compile(
   logCallback(asc);
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
-  var targ;
   var imports = [];
   var mwrapper = jsWrapModule;
-  if(!compilers[lang]) {
+  if (!compilers[lang]) {
     return logCallback("Target language not supported.");
   }
   compiler = new compilers[lang](asc);
-  targ = compiler.compile()
-  if(lang == "rb") mwrapper =  x => x;
+  var result = compiler.compile({ imports });
+  var { imports, result } = result;
+  var targ = result;
+  if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
