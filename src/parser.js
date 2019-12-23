@@ -4,6 +4,7 @@ try {
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
   var version = require("./version");
+  var compilers = require("./compiler/compilers");
 } catch (e) {}
 
 function wy2tokens(txt) {
@@ -620,33 +621,15 @@ function compile(
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var targ;
   var imports = [];
-  var mwrapper;
-  switch (lang) {
-    case "js":
-      JS = require('./compiler/js')
-      compiler = new JS(asc);
-      targ = compiler.compile()
-      mwrapper = jsWrapModule;
-      break;
-    case "py":
-      PY = require('./compiler/py')
-      compiler = new PY(asc);
-      targ = compiler.compile()
-      mwrapper = jsWrapModule;  
-      break;
-    case "rb":
-      try {
-        asc2rb = require("./asc2rb.js");
-      } catch (e) {}
-      targ = asc2rb(asc, imports);
-      mwrapper = x => x;
-      break;
-    default:
-      logCallback("Target language not supported.");
+  var mwrapper = jsWrapModule;
+  if(!compilers[lang]) {
+    return logCallback("Target language not supported.");
   }
+  compiler = new compilers[lang](asc);
+  targ = compiler.compile()
+  if(lang == "rb") mwrapper =  x => x;
   logCallback(targ);
   imports = Array.from(new Set(imports));
-  // console.log(imports);
   for (var i = 0; i < imports.length; i++) {
     var isrc;
     if (imports[i] in lib) {

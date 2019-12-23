@@ -15,7 +15,7 @@ class BaseCompiler {
     return `_ans${++this.tmpVarCnt}`
   }
   prevTmpVar(n) {
-    `_ans${this.tmpVarCnt - n + 1}`
+    return `_ans${this.tmpVarCnt - n + 1}`
   }
 
   compile(options = {}) {
