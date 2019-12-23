@@ -68,7 +68,7 @@ class RBCompiler extends Base {
     return asc;
   }
 
-  compile() {
+  compile(imports) {
     let asc = this.asc;
     let lop = {
       "||": " or ",
@@ -297,7 +297,7 @@ class RBCompiler extends Base {
       } else {
       }
     }
-    return { result: rb };
+    return { result: rb, imports };
   }
 }
 var rblib = `# encoding: UTF-8

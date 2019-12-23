@@ -2,7 +2,7 @@ try {
   var Base = require("./base");
 } catch (e) {}
 class PYCompiler extends Base {
-  compile() {
+  compile(imports) {
     var lop = {
       "||": " or ",
       "&&": " and "
@@ -216,13 +216,12 @@ class PYCompiler extends Base {
       } else if (a.op == "comment") {
         py += "\t".repeat(curlvl);
         py += `# ${getval(a.value)}\n`;
-        py += "\t".repeat(curlvl);
       } else {
         console.log(a.op);
       }
       // py+="\n"
     }
-    return { result: py };
+    return { result: py, imports };
   }
 }
 
