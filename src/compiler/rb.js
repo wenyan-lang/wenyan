@@ -267,7 +267,7 @@ class RBCompiler extends Base {
         curlvl++;
       } else if (a.op == "whilen") {
         rb += "\t".repeat(curlvl);
-        let v = randVar();
+        let v = this.randVar();
         rb += `${getval(a.value)}.times do |${v}|\n`;
         curlvl++;
       } else if (a.op == "break") {

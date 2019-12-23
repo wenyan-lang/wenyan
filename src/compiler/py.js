@@ -189,7 +189,7 @@ class PYCompiler extends Base {
         curlvl++;
       } else if (a.op == "whilen") {
         py += "\t".repeat(curlvl);
-        var v = randVar();
+        var v = this.randVar();
         py += `for ${v} in range(${getval(a.value)}):\n`;
         curlvl++;
       } else if (a.op == "break") {
