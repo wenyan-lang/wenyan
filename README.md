@@ -84,6 +84,10 @@ wenyan examples/helloworld.wy -o helloworld.js
 - [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
 - [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
+### Advance Usage
+
+[API Specification](./documentation/API.md)
+
 ## Syntax Cheatsheet
 
 A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below, or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
@@ -224,12 +228,9 @@ Before opening an Issue, please check if it belongs to the below categories:
 
 If you could help implement a feature with a `√` under `help needed`, please feel free to submit a pull request. It would be very much appreciated! If you would like to help out on other features, please let me know too! Thanks.
 
-
 ## Known bugs
+
 |Name|Priority|Help needed|Status|
 |---|---|---|---|
 |[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
 |[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
-
-
-
