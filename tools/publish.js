@@ -11,8 +11,8 @@ const packages = ["cli", "core", "render"];
 
 const fileToCopy = [
   "README.md",
-  "README-ZH-CN.md",
-  "README-ZH-TW.md",
+  "README.zh-Hans,md",
+  "README.zh-Hant.md",
   "LICENSE"
 ];
 
