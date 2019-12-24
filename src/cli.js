@@ -34,7 +34,10 @@ program
     "Output compiled code or executing result to file"
   )
   .option("-r, --render", "Outputs renderings")
-  .option("--roman", "Romanize identifiers")
+  .option(
+    "--roman [method]",
+    'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
+  )
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
   .helpOption("-h, --help", "Display help");
@@ -90,6 +93,10 @@ function preprocess() {
     if (program.compile) program.output = `${base}.${program.lang}`;
     else if (program.render) program.output = `${base}.svg`;
     else program.output = `${base}.log`;
+  }
+
+  if (program.roman == true) {
+    program.roman = "pinyin";
   }
 }
 
