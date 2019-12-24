@@ -167,7 +167,9 @@ function tokenRomanize(tokens, method) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
-          r = hanzi2pinyin(tokens[i][1]);
+          r = hanzi2pinyin(tokens[i][1], (system = "pinyin"));
+        } else if (method == "baxter") {
+          r = hanzi2pinyin(tokens[i][1], (system = "baxter"));
         } else if (method == "unicode") {
           r = hanzi2unicodeEntry(tokens[i][1]);
         } else {
@@ -680,7 +682,7 @@ function asc2js(asc, imports = []) {
     } else if (a.op == "else") {
       js += "}else{";
     } else if (a.op == "return") {
-      js += `return ${getval(a.value)}`;
+      js += `return ${getval(a.value)};`;
     } else if (a.op.startsWith("op")) {
       var lhs = getval(a.lhs);
       var rhs = getval(a.rhs);
@@ -845,6 +847,7 @@ function compile(
   if (resetVarCnt) {
     tmpVarCnt = 0;
     randVarCnt = 0;
+    idenMap = {};
   }
   txt = (txt || "").replace(/\r\n/g, "\n");
 
