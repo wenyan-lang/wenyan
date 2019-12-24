@@ -940,7 +940,9 @@ function compile(
           errorCallback,
           lib
         })
-      ) + targ;
+      ) +
+      "/*=-=-=-=-=-=-=*/" +
+      targ;
   }
 
   return targ;
