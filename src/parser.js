@@ -705,6 +705,9 @@ function asc2js(asc, imports = []) {
         strayvar = strayvar.slice(0, strayvar.length - took);
         took = 0;
         var vname = nextTmpVar();
+        if (jj.length) {
+          jj = "()";
+        }
         js += `var ${vname}=${a.fun}` + jj + ";";
         strayvar.push(vname);
       } else {
