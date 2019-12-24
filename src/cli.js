@@ -102,7 +102,6 @@ function preprocess() {
 
 function getCompiled() {
   const source = getSource();
-  console.log(source);
   return compile(program.lang, source, {
     romanizeIdentifiers: program.roman,
     logCallback: logHandler(program.log, "a"),
