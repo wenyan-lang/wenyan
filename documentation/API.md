@@ -44,8 +44,6 @@ const compiled = Wenyan.compile('吾有一言。曰「「問天地好在。」�
 
 - core
   - [compile](#compile)
-  - [wy2tokens](#wy2tokens)
-  - [tokens2asc](#tokens2asc)
 
 ### Compile
 
@@ -62,18 +60,6 @@ function compile(targetLang: string, source: string, options?: CompilerOptions)
 | targetLang | string | Can be `js`, `py` or `rb` |
 | source | string | The Wenyan source code |
 | options | object | [Compiler Options](#Compiler-Options) |
-
-### wy2tokens
-
-[Source](../src/parser.js)
-
-TODO...
-
-### tokens2asc
-
-[Source](../src/parser.js)
-
-TODO...
 
 ### Compiler Options
 
