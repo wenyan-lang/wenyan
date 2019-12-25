@@ -827,9 +827,12 @@ function asc2js(asc, imports = []) {
     } else if (a.op == "catcherr") {
       var ec = errcurlvls[errcurlvls.length - 1];
       if (a.error == undefined) {
+        var vname = nextTmpVar();
+        strayvar.push(vname);
         if (curlvl != ec[0]) {
           js += `}else{`;
         }
+        js += `var ${vname}=${ec[1]}.name;`;
       } else {
         if (curlvl != ec[0]) {
           js += `}else `;
