@@ -13,9 +13,11 @@ statement                   : declare_statement
                             | object_statement
                             | pick_up_statement
                             | array_statement
-                            | BREAK;
+                            | clean_statement
+                            | BREAK
+                            | comment;
 
-pick_up_statement           : '夫' data ('之' (STRING_LITERAL|INT_NUM|'其餘'))? reference_single_statement?;
+pick_up_statement           : '夫' data ('之' (STRING_LITERAL|INT_NUM|'其餘'|IDENTIFIER|'長'))? reference_single_statement? ;
 
 
 array_statement             : array_cat_statement|array_push_statement ;
@@ -27,12 +29,12 @@ function_statement          : function_define_statement|(function_call_statement
 function_call_statement     : function_plain_call|function_nested_call ;
 function_plain_call         : ('施' IDENTIFIER (preposition data)*)|('施其' (preposition data)*) ;
 function_nested_call        : ('取' INT_NUM '以施' IDENTIFIER)+ ;
-function_define_statement   : '吾有' INT_NUM '術' reference_single_statement ('欲行是術' '必先得' INT_NUM TYPE ('曰' IDENTIFIER)+)? ('是術曰'|'乃行是術曰') statement+ '是謂' IDENTIFIER '之術也' ;
+function_define_statement   : '吾有' INT_NUM '術' reference_single_statement ('欲行是術' '必先得' (INT_NUM TYPE ('曰' IDENTIFIER)+)+)? ('是術曰'|'乃行是術曰') statement* '是謂' IDENTIFIER '之術也' ;
 
 
 if_statement                : IF if_expression '者' statement+ (ELSE statement+)? FOR_IF_END ;
 if_expression               : unary_if_expression|binary_if_expression ;
-unary_if_expression         : INT_NUM|FLOAT_NUM|IDENTIFIER|(IDENTIFIER '之'('長'|STRING_LITERAL))|'其' ;
+unary_if_expression         : data|(IDENTIFIER '之'('長'|STRING_LITERAL|IDENTIFIER))|'其' ;
 binary_if_expression        : unary_if_expression IF_LOGIC_OP unary_if_expression ;
 
 
@@ -55,16 +57,16 @@ for_while_statement         : FOR_START_WHILE statement*            FOR_IF_END ;
 
 math_statement              : (arith_math_statement|logic_math_statement|mod_math_statement) (reference_multi_statement)? ;
 arith_math_statement        : arith_binary_math|arith_unary_math ;
-arith_binary_math           : ARITH_BINARY_OP (data|'其') preposition data ;
+arith_binary_math           : ARITH_BINARY_OP (data|'其') preposition (data|'其') ;
 arith_unary_math            : UNARY_OP (IDENTIFIER|'其') ;
 mod_math_statement          : '除' (INT_NUM|FLOAT_NUM|IDENTIFIER|'其') preposition (INT_NUM|FLOAT_NUM|IDENTIFIER) POST_MOD_MATH_OP? ;
 logic_math_statement        : '夫' IDENTIFIER IDENTIFIER LOGIC_BINARY_OP ;
 
 
-assign_statement            : '昔之' IDENTIFIER ('之' (INT_NUM|STRING_LITERAL))? '者' (('今' ((data ('之' INT_NUM)?)|'其') '是矣')|'今不復存矣') ;
+assign_statement            : '昔之' IDENTIFIER ('之' (INT_NUM|STRING_LITERAL|IDENTIFIER))? '者' (('今' ((data ('之' INT_NUM)?)|'其') '是矣')|'今不復存矣') ;
 
 
-return_statement            : '乃得' data|'乃歸空無'|'乃得矣' ;
+return_statement            : '乃得' (data|'其')|'乃歸空無'|'乃得矣' ;
 
 
 import_statement            : '吾嘗觀' STRING_LITERAL '之書' ('方悟' IDENTIFIER+ '之義')? ;
@@ -109,6 +111,7 @@ BOOL_VALUE                  : '陰'|'陽' ;
 print_statement             : '書之' ;
 
 WS                          : ([ \t\r\n]|'。'|'，')+ -> skip ;
-COMMENT                     : ('注曰'|'疏曰'|'批曰') STRING_LITERAL -> skip ;
+comment                     : ('注曰'|'疏曰'|'批曰') STRING_LITERAL ;
+clean_statement             : '噫' ;
 
 BREAK                       : '乃止' ;
