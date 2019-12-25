@@ -75,7 +75,7 @@ wenyan examples/helloworld.wy
 # will outputs: 問天地好在。
 ```
 
-> From v0.1.0, the `wenyan` command will direct execute the script by default. If you are migrating from previous versions, please use `wenyan -h` to output the help and check [this PR](https://github.com/LingDong-/wenyan-lang) for the detailed changes.
+> From v0.1.0, the `wenyan` command will direct execute the script by default. If you are migrating from previous versions, please use `wenyan -h` to output the help and check [this PR](https://github.com/LingDong-/wenyan-lang/pull/356) for the detailed changes.
 
 
 ### [The Online IDE](http://wenyan-lang.lingdong.works/ide.html)
