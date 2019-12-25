@@ -537,6 +537,26 @@ function tokens2asc(
         i++;
       }
       asc.push(x);
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "try") {
+      asc.push({ op: "try", pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catch") {
+      asc.push({ op: "catch", pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catcherr0") {
+      typeassert(i + 2, ["try"]);
+      asc.push({ op: "catcherr", error: tokens[i + 1], pos });
+      i += 3;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catchall") {
+      asc.push({ op: "catcherr", error: undefined, pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "end") {
+      asc.push({ op: "tryend", pos });
+      i++;
+    } else if (gettok(i, 0) == "throw" && gettok(i, 1) == "a") {
+      typeassert(i + 2, ["throw"]);
+      asc.push({ op: "throw", error: tokens[i + 1], pos });
+      i += 3;
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
       i += 2;
@@ -558,6 +578,7 @@ function asc2js(asc, imports = []) {
   var strayvar = [];
   var took = 0;
   var funcurlvls = [];
+  var errcurlvls = [];
 
   function getval(x) {
     if (x == undefined) {
@@ -795,6 +816,39 @@ function asc2js(asc, imports = []) {
         js += `var ${a.iden[j]}=${f}.${a.iden[j]};`;
       }
       imports.push(f);
+    } else if (a.op == "try") {
+      js += `try{`;
+      curlvl++;
+    } else if (a.op == "catch") {
+      var r = randVar();
+      errcurlvls.push([curlvl, r]);
+      js += `}catch(${r}){`;
+      strayvar = [];
+    } else if (a.op == "catcherr") {
+      var ec = errcurlvls[errcurlvls.length - 1];
+      if (a.error == undefined) {
+        if (curlvl != ec[0]) {
+          js += `}else{`;
+        }
+      } else {
+        if (curlvl != ec[0]) {
+          js += `}else `;
+          curlvl--;
+        }
+        js += `if (${ec[1]}.name==${a.error[1]}){`;
+        curlvl++;
+      }
+    } else if (a.op == "tryend") {
+      var ec = errcurlvls.pop();
+      if (curlvl != ec[0]) {
+        js += `}`;
+        curlvl--;
+      }
+      js += `}`;
+      curlvl--;
+    } else if (a.op == "throw") {
+      var r = randVar();
+      js += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
     } else if (a.op == "comment") {
       js += `/*${getval(a.value)}*/`;
     } else {
