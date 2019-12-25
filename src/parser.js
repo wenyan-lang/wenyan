@@ -849,6 +849,7 @@ function asc2js(asc, imports = []) {
       }
       js += `}`;
       curlvl--;
+      strayvar = [];
     } else if (a.op == "throw") {
       var r = randVar();
       js += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
