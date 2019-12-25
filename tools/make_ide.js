@@ -95,8 +95,10 @@ function main() {
     var showcode = code;
 
     if (hidestd.checked) {
-      var s = showcode.split("/*=-=-=-=-=-=-=*/");
-      showcode = s[s.length - 1];
+      showcode = showcode.replace(
+        /\/\*___wenyan_import_([\s\S]+?)_start___\*\/([\s\S]*?)\/\*___wenyan_import_([\s\S]+?)_end___\*\//g,
+        "/* module $1 is hidden */\n"
+      );
     }
 
     document.getElementById("js").innerText = js_beautify(showcode);
