@@ -7,7 +7,7 @@ var execSync = require("child_process").execSync;
 var parser = require("../src/parser");
 var utils = require("./utils");
 
-var files = fs.readdirSync("../examples/").filter(x => !x.startsWith("."));
+var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
 var prgms = {};
 for (var i = 0; i < files.length; i++) {
   prgms[files[i].split(".")[0]] = fs
