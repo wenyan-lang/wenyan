@@ -62,7 +62,9 @@ function wy2tokens(txt) {
         i++;
       }
     } else if (
-      (txt[i] == "」" && txt[i + 1] == "」" && txt[i + 2] != "」") ||
+      (txt[i] == "」" &&
+        txt[i + 1] == "」" &&
+        (txt[i + 2] != "」" || txt[i + 3] == "」")) ||
       txt[i] == "』"
     ) {
       var is_sin = txt[i] == "」";
