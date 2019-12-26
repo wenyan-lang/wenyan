@@ -63,12 +63,17 @@ class PYCompiler extends Base {
             } else if (a.type == "fun") {
               value = "lambda _:0";
               prevfun = name;
+            } else if (a.type == "obj") {
+              value = "{}";
+              prevobj = name;
+              prevobjpublic = a.public;
             }
           }
           py += "\t".repeat(curlvl);
           py += `${name}=${value}\n`;
         }
       } else if (a.op == "print") {
+        py += "\t".repeat(curlvl);
         py += `print(`;
         for (var j = 0; j < strayvar.length; j++) {
           py += `${strayvar[j]}`;
@@ -79,9 +84,10 @@ class PYCompiler extends Base {
         py += ");";
         strayvar = [];
       } else if (a.op == "fun") {
+        console.log(a);
         py += "\t".repeat(curlvl);
         py += `def ` + prevfun + `(`;
-        py += a.arity.map(a => a.name).join(",");
+        py += a.args.map(a => a.name).join(",");
         py += ")";
       } else if (a.op == "funbody") {
         py += "\t".repeat(curlvl);
@@ -103,6 +109,7 @@ class PYCompiler extends Base {
         py += "\n";
         curlvl--;
       } else if (a.op == "if") {
+        py += "\n";
         py += "\t".repeat(curlvl);
         py += "if ";
         var j = 0;
@@ -132,6 +139,7 @@ class PYCompiler extends Base {
         py += ":\n";
         curlvl++;
       } else if (a.op == "else") {
+        py += "\n";
         py += "\t".repeat(curlvl - 1);
         py += "else:\n";
       } else if (a.op == "return") {
@@ -146,12 +154,15 @@ class PYCompiler extends Base {
         strayvar.push(vname);
       } else if (a.op == "name") {
         for (var j = 0; j < a.names.length; j++) {
+          py += "\n";
+          py += "\t".repeat(curlvl);
           py += `${a.names[j]}=${
             strayvar[strayvar.length - a.names.length + j]
           };`;
         }
         strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
+        py += "\t".repeat(curlvl);
         if (a.pop) {
           var jj = "";
           for (var j = 0; j < took; j++) {
@@ -219,6 +230,7 @@ class PYCompiler extends Base {
         py += `${vname}=!${v};`;
         strayvar.push(vname);
       } else if (a.op == "reassign") {
+        py += "\n";
         py += "\t".repeat(curlvl);
         var rhs = getval(a.rhs);
         var lhs = getval(a.lhs);

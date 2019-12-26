@@ -51,20 +51,18 @@ function main() {
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-      var rb = compile("rb", ed.innerText, {
-        romanizeIdentifiers: "none",
-        errorCallback: () => 0
-      });
-      document.getElementById("rb").innerText =
-        "# Ruby\n" + rb.split("#####\n")[1];
-      // hljs.highlightBlock(document.getElementById("rb"));
       var py = compile("py", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("py").innerText =
         "# Python\n" + py.split("#####\n")[1];
-      // hljs.highlightBlock(document.getElementById("py"));
+      var rb = compile("rb", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("rb").innerText =
+        "# Ruby\n" + rb.split("#####\n")[1];
     }
     // hljs.highlightBlock(document.getElementById("js"));
     if (!hasError) {
@@ -238,7 +236,7 @@ h2{
   color: ${render.BOOK_COLORS.ctrl}
 }
 .compile-out{
-  border-left: 3px solid; 
+  border-left: 3px solid;
   padding-left: 20px;
   font-size: 15px;
   line-height: 18px;

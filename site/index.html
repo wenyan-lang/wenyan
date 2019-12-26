@@ -103,7 +103,7 @@ h2{
   color: #E53
 }
 .compile-out{
-  border-left: 3px solid; 
+  border-left: 3px solid;
   padding-left: 20px;
   font-size: 15px;
   line-height: 18px;
@@ -34202,12 +34202,13 @@ function compile(
   var klass = compilers[lang];
   var compiler = new klass(asc);
   var result = compiler.compile({ imports });
+  console.log(result)
   var { imports, result } = result;
   var targ = result;
   if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = imports || [];
-  console.log(imports)
+  console.log(imports);
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
@@ -34635,10 +34636,6 @@ class BaseCompiler {
   nextTmpVar() {
     return `_ans${++this.tmpVarCnt}`;
   }
-  prevTmpVar(n) {
-    return `_ans${this.tmpVarCnt - n + 1}`;
-  }
-
   compile(options = {}) {
     throw Error("No Implementation");
   }
@@ -34724,7 +34721,9 @@ class JSCompiler extends Base {
       } else if (a.op == "fun") {
         // console.log(curlvl);
         funcurlvls.push(curlvl);
-        js += `${prevfunpublic ? `${prevfun} = this.` : ""}${prevfun} =function(`;
+        js += `${
+          prevfunpublic ? `${prevfun} = this.` : ""
+        }${prevfun} =function(`;
         for (var j = 0; j < a.arity; j++) {
           js += a.args[j].name;
           if (j != a.arity - 1) {
@@ -34945,7 +34944,7 @@ class JSCompiler extends Base {
       }
       // js+="\n"
     }
-    return {result: js, imports};
+    return { result: js, imports };
   }
 }
 var JS = JSCompiler;
@@ -34957,7 +34956,8 @@ try {
   var Base = require("./base");
 } catch (e) {}
 class PYCompiler extends Base {
-  compile(imports) {
+  compile(options = {}) {
+    var imports = options.imports || [];
     var lop = {
       "||": " or ",
       "&&": " and "
@@ -34965,15 +34965,20 @@ class PYCompiler extends Base {
 
     var py = pylib;
     var prevfun = "";
+    var prevfunpublic = false;
+    var prevobj = "";
+    var prevobjpublic = false;
     var curlvl = 0;
-    var strayvar = 0;
+    var strayvar = [];
+    var took = 0;
     var getval = x => {
       if (x == undefined) {
         return "";
       }
       if (x[0] == "ans") {
-        strayvar = 0;
-        return this.currTmpVar();
+        var ans = strayvar[strayvar.length - 1];
+        strayvar = [];
+        return ans;
       }
       if (x[1] == undefined) {
         return undefined;
@@ -34998,7 +35003,7 @@ class PYCompiler extends Base {
           var value = getval(a.values[j]);
           if (name == undefined) {
             name = this.nextTmpVar();
-            strayvar++;
+            strayvar.push(name);
           }
           if (value == undefined) {
             if (a.type == "arr") {
@@ -35012,6 +35017,10 @@ class PYCompiler extends Base {
             } else if (a.type == "fun") {
               value = "lambda _:0";
               prevfun = name;
+            } else if (a.type == "obj") {
+              value = "{}";
+              prevobj = name;
+              prevobjpublic = a.public;
             }
           }
           py += "\t".repeat(curlvl);
@@ -35019,24 +35028,20 @@ class PYCompiler extends Base {
         }
       } else if (a.op == "print") {
         py += "\t".repeat(curlvl);
-        py += `print("".join([`;
-        for (var j = 0; j < strayvar; j++) {
-          py += `str(${this.prevTmpVar(strayvar - j)})`;
-          if (j != strayvar - 1) {
+        py += `print(`;
+        for (var j = 0; j < strayvar.length; j++) {
+          py += `${strayvar[j]}`;
+          if (j != strayvar.length - 1) {
             py += ",";
           }
         }
-        py += "]))\n";
-        strayvar = 0;
+        py += ");";
+        strayvar = [];
       } else if (a.op == "fun") {
+        console.log(a)
         py += "\t".repeat(curlvl);
         py += `def ` + prevfun + `(`;
-        for (var j = 0; j < a.arity; j++) {
-          py += a.args[j].name;
-          if (j != a.arity - 1) {
-            py += ",";
-          }
-        }
+        py += a.args.map(a => a.name).join(",");
         py += ")";
       } else if (a.op == "funbody") {
         py += "\t".repeat(curlvl);
@@ -35048,10 +35053,17 @@ class PYCompiler extends Base {
       } else if (a.op == "funend") {
         py += "\n";
         curlvl--;
+      } else if (a.op == "objend") {
+        py += "};";
+      } else if (a.op == "objbody") {
+        py += `${prevobjpublic ? `${prevobj} = this.` : ""}${prevobj}={`;
+      } else if (a.op == "prop") {
+        py += `${a.name}:${a.value[1]},`;
       } else if (a.op == "end") {
         py += "\n";
         curlvl--;
       } else if (a.op == "if") {
+        py += "\n";
         py += "\t".repeat(curlvl);
         py += "if ";
         var j = 0;
@@ -35081,6 +35093,7 @@ class PYCompiler extends Base {
         py += ":\n";
         curlvl++;
       } else if (a.op == "else") {
+        py += "\n";
         py += "\t".repeat(curlvl - 1);
         py += "else:\n";
       } else if (a.op == "return") {
@@ -35090,44 +35103,59 @@ class PYCompiler extends Base {
         py += "\t".repeat(curlvl);
         var lhs = getval(a.lhs);
         var rhs = getval(a.rhs);
-
-        var op = a.op.slice(2);
-        if (op in lop) {
-          op = lop[op];
-        }
-        py += `${this.nextTmpVar()}=${lhs}${op}${rhs}\n`;
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+        strayvar.push(vname);
       } else if (a.op == "name") {
         for (var j = 0; j < a.names.length; j++) {
+          py += "\n";
           py += "\t".repeat(curlvl);
-          py += `${a.names[j]}=${this.prevTmpVar(strayvar - j)}\n`;
+          py += `${a.names[j]}=${
+            strayvar[strayvar.length - a.names.length + j]
+          };`;
         }
-        strayvar -= a.names.length;
+        strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
         py += "\t".repeat(curlvl);
-        py += `${this.nextTmpVar()}=${a.fun}(${a.args
-          .map(x => getval(x))
-          .join(",")})\n`;
-        strayvar++;
-      } else if (a.op == "subscript") {
-        py += "\t".repeat(curlvl);
-        var idx = getval(a.value);
-        if (idx == "rest") {
-          py += `${this.nextTmpVar()}=${a.container}.slice(1)\n`;
-          strayvar++;
+        if (a.pop) {
+          var jj = "";
+          for (var j = 0; j < took; j++) {
+            jj += `(${strayvar[strayvar.length - took + j]})`;
+          }
+          strayvar = strayvar.slice(0, strayvar.length - took);
+          took = 0;
+          var vname = this.nextTmpVar();
+          if (!jj.length) {
+            jj = "()";
+          }
+          py += `${vname}=${a.fun}` + jj + ";";
+          strayvar.push(vname);
         } else {
-          py += `${this.nextTmpVar()}=${a.container}[${idx}${
-            a.value[0] == "lit" ? "" : "-1"
-          }]\n`;
-          strayvar++;
+          var vname = this.nextTmpVar();
+          py += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          strayvar.push(vname);
         }
+      } else if (a.op == "subscript") {
+        var idx = getval(a.value);
+        var vname = this.nextTmpVar();
+        if (idx == "rest") {
+          py += `${vname}=${a.container}.slice(1);`;
+        } else {
+          py += `${vname}=${a.container}[${idx}${
+            a.value[0] == "lit" ? "" : "-1"
+          }];`;
+        }
+        strayvar.push(vname);
       } else if (a.op == "cat") {
-        py += "\t".repeat(curlvl);
+        var vname = this.nextTmpVar();
         py +=
-          `${this.nextTmpVar()}=${a.containers[0]}.concat(` +
-          a.containers.slice(1).join(").concat(") +
-          ")\n";
-        strayvar++;
+          `${vname}=${getval(a.containers[0])}.concat(` +
+          a.containers
+            .slice(1)
+            .map(x => x[1])
+            .join(").concat(") +
+          ");";
+        strayvar.push(vname);
       } else if (a.op == "push") {
         py += "\t".repeat(curlvl);
         py += `${a.container}.push(${a.values
@@ -35152,10 +35180,11 @@ class PYCompiler extends Base {
       } else if (a.op == "not") {
         py += "\t".repeat(curlvl);
         var v = getval(a.value);
-        py += `${this.nextTmpVar()}=not ${v}\n`;
-
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=!${v};`;
+        strayvar.push(vname);
       } else if (a.op == "reassign") {
+        py += "\n";
         py += "\t".repeat(curlvl);
         var rhs = getval(a.rhs);
         var lhs = getval(a.lhs);
@@ -35163,11 +35192,61 @@ class PYCompiler extends Base {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
         py += `${lhs}=${rhs}\n`;
+      } else if (a.op == "temp") {
+        var vname = this.nextTmpVar();
+        py += `${vname}=${a.iden[1]};`;
+        strayvar.push(vname);
       } else if (a.op == "discard") {
-        strayvar = 0;
+        strayvar = [];
+      } else if (a.op == "take") {
+        took = a.count;
+      } else if (a.op == "import") {
+        var f = a.file.replace(/"/g, "");
+        for (var j = 0; j < a.iden.length; j++) {
+          py += `${a.iden[j]}=${f}.${a.iden[j]};`;
+        }
+        imports.push(f);
+      } else if (a.op == "try") {
+        py += `try{`;
+        curlvl++;
+      } else if (a.op == "catch") {
+        var r = this.randVar();
+        errcurlvls.push([curlvl, r]);
+        py += `}catch(${r}){`;
+        strayvar = [];
+      } else if (a.op == "catcherr") {
+        var ec = errcurlvls[errcurlvls.length - 1];
+        if (a.error == undefined) {
+          var vname = this.nextTmpVar();
+          strayvar.push(vname);
+          if (curlvl != ec[0]) {
+            py += `}else{`;
+          }
+          py += `${vname}=${ec[1]}.name;`;
+        } else {
+          if (curlvl != ec[0]) {
+            py += `}else `;
+            curlvl--;
+          }
+          py += `if (${ec[1]}.name==${a.error[1]}){`;
+          curlvl++;
+        }
+      } else if (a.op == "tryend") {
+        var ec = errcurlvls.pop();
+        if (curlvl != ec[0]) {
+          py += `}`;
+          curlvl--;
+        }
+        py += `}`;
+        curlvl--;
+        strayvar = [];
+      } else if (a.op == "throw") {
+        var r = this.randVar();
+        py += `${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
       } else if (a.op == "length") {
-        py += `${this.nextTmpVar()}=len(${a.container});`;
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=${a.container}.length;`;
+        strayvar.push(vname);
       } else if (a.op == "comment") {
         py += "\t".repeat(curlvl);
         py += `# ${getval(a.value)}\n`;
@@ -35254,7 +35333,7 @@ class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
-
+  prevTmpVar(){}
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       var item = asc[i];
@@ -35317,7 +35396,8 @@ class RBCompiler extends Base {
     return asc;
   }
 
-  compile(imports) {
+  compile(options = {}) {
+    let imports = options.imports || [];
     let asc = this.asc;
     let lop = {
       "||": " or ",
@@ -35742,20 +35822,19 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-      var rb = compile("rb", ed.innerText, {
-        romanizeIdentifiers: "none",
-        errorCallback: () => 0
-      });
-      document.getElementById("rb").innerText =
-        "# Ruby\n" + rb.split("#####\n")[1];
-      // hljs.highlightBlock(document.getElementById("rb"));
       var py = compile("py", ed.innerText, {
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("py").innerText =
         "# Python\n" + py.split("#####\n")[1];
-      // hljs.highlightBlock(document.getElementById("py"));
+        var rb = compile("rb", ed.innerText, {
+          romanizeIdentifiers: "none",
+          errorCallback: () => 0
+        });
+        document.getElementById("rb").innerText =
+          "# Ruby\n" + rb.split("#####\n")[1];
+
     }
     // hljs.highlightBlock(document.getElementById("js"));
     if (!hasError) {

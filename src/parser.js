@@ -646,6 +646,7 @@ function compile(
   var klass = compilers[lang];
   var compiler = new klass(asc);
   var result = compiler.compile({ imports });
+  console.log(result);
   var { imports, result } = result;
   var targ = result;
   if (lang == "rb") mwrapper = x => x;

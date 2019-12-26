@@ -5,7 +5,7 @@ class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
-
+  prevTmpVar() {}
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       const item = asc[i];
@@ -68,7 +68,8 @@ class RBCompiler extends Base {
     return asc;
   }
 
-  compile(imports) {
+  compile(options = {}) {
+    let imports = options.imports || [];
     let asc = this.asc;
     let lop = {
       "||": " or ",
