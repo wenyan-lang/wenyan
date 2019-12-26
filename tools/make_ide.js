@@ -19,6 +19,36 @@ for (var i = 0; i < files.length; i++) {
 var lib = utils.loadlib();
 
 function main() {
+  function hideImportedModules(source) {
+    const markerRegex = /\/\*___wenyan_module_([\s\S]+?)_(start|end)___\*\//g;
+    const matches = [];
+
+    var match;
+    while ((match = markerRegex.exec(source))) {
+      if (!match) break;
+
+      if (matches.length) {
+        const prev = matches[matches.length - 1];
+        if (prev[2] !== "end" && prev[1] !== match[1]) continue; // ignore nested imports
+      }
+
+      matches.push(match);
+    }
+
+    for (const match of matches) {
+      if (match[2] === "start") continue;
+
+      source = source.replace(
+        new RegExp(
+          `\\/\\*___wenyan_module_${match[1]}_start___\\*\\/[\\s\\S]*\\/\\*___wenyan_module_${match[1]}_end___\\*\\/`
+        ),
+        `/* module ${match[1]} is hidden */\n`
+      );
+    }
+
+    return source;
+  }
+
   let highlighted = true;
   let currentHighlightTimeout;
   const highlightCode = () => {
@@ -119,12 +149,7 @@ function main() {
       reader: x => prgms[x]
     });
 
-    var showcode = code;
-
-    if (hidestd.checked) {
-      var s = showcode.split("/*=-=-=-=-=-=-=*/");
-      showcode = s[s.length - 1];
-    }
+    var showcode = hidestd.checked ? hideImportedModules(code) : code;
 
     document.getElementById("js").innerText = js_beautify(showcode);
     hljs.highlightBlock(document.getElementById("js"));
@@ -166,7 +191,7 @@ pre{tab-size: 4;}
 <script>${utils.catsrc()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
   <h2><i>wenyan-lang</i></h2>
-<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="hide-std"/><small>Hide Imported Code</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Romanization</small><select id="pick-roman"></select></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Romanization</small><select id="pick-roman"></select></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
 <script>var examplesAlias = ${JSON.stringify(examplesAlias)};</script>

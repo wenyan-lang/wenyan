@@ -660,6 +660,7 @@ function compile(
       isrc = reader(imports[i]);
     }
     targ =
+      `/*___wenyan_module_${imports[i]}_start___*/` +
       mwrapper(
         imports[i],
         compile(lang, isrc, {
@@ -670,7 +671,7 @@ function compile(
           lib
         })
       ) +
-      "/*=-=-=-=-=-=-=*/" +
+      `/*___wenyan_module_${imports[i]}_end___*/` +
       targ;
   }
 
