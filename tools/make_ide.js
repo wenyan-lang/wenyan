@@ -6,6 +6,7 @@ var fs = require("fs");
 var execSync = require("child_process").execSync;
 var parser = require("../src/parser");
 var utils = require("./utils");
+const examplesAlias = require("./examplesAlias");
 
 var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
 var prgms = {};
@@ -48,9 +49,6 @@ function main() {
     return source;
   }
 
-  var ed = newEditor(prgms["mandelbrot"]);
-  // var ln = newLineNo(ed);
-
   let highlighted = true;
   let currentHighlightTimeout;
   const highlightCode = () => {
@@ -60,17 +58,46 @@ function main() {
     console.timeEnd("highlight");
   };
 
+  var makeTitle = example => {
+    return (examplesAlias[example] || example) + " - wenyan-lang Online IDE";
+  };
+
   var sel = document.getElementById("pick-example");
   for (var k in prgms) {
     var opt = document.createElement("option");
     opt.value = k;
-    opt.innerHTML = k;
+    opt.text = examplesAlias[k] || k;
     sel.appendChild(opt);
   }
-  sel.value = "mandelbrot";
+  var match = location.search.match(/(?:^\?|&)example=([^&]+)/);
+  match = match && decodeURIComponent(match[1]);
+  var example = match || "mandelbrot";
+  var ed = newEditor(prgms[example]);
+  // var ln = newLineNo(ed);
+  sel.value = example;
+  document.title = makeTitle(example);
   sel.onchange = function() {
-    ed.innerText = prgms[sel.value];
+    var example = sel.value;
+    if (!prgms[example]) {
+      return;
+    }
+    var title = makeTitle(example);
+    document.title = title;
+    ed.innerText = prgms[example];
     run();
+    if (history.pushState) {
+      var url = "?example=" + encodeURIComponent(example);
+      history.pushState({ example: example }, title, url);
+    }
+  };
+  window.onpopstate = function(event) {
+    var example = event.state && event.state.example;
+    if (example && prgms[example]) {
+      sel.value = example;
+      document.title = makeTitle(example);
+      ed.innerText = prgms[example];
+      run();
+    }
   };
   var autohl = document.getElementById("auto-hl");
   autohl.onchange = function() {
@@ -151,6 +178,7 @@ function main() {
 var html = `<!--GENERATED FILE, DO NOT READ-->
 <head>
 <meta charset="UTF-8">
+<title>wenyan-lang Online IDE</title>
 <style>
 [contenteditable="true"]:focus {outline: none;}
 pre{tab-size: 4;}
@@ -166,6 +194,7 @@ pre{tab-size: 4;}
 <table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Romanization</small><select id="pick-roman"></select></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
+<script>var examplesAlias = ${JSON.stringify(examplesAlias)};</script>
 <script>${main.toString()};main();</script>
 </body>
 `;

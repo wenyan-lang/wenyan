@@ -215,7 +215,7 @@ Before opening an Issue, please check if it belongs to the below categories:
 |[Language Spec](https://github.com/LingDong-/wenyan-lang/issues/1)|  ***** |  | In progress |
 |[Class](https://github.com/LingDong-/wenyan-lang/issues/31) / [Object literals](https://github.com/LingDong-/wenyan-lang/issues/20) |  *** | | Object literals added |
 |[Import statements](https://github.com/LingDong-/wenyan-lang/issues/100) |  *** | | Import statements are added |
-|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | √ | In porgress |
+|Standard library ([Math](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random](https://github.com/LingDong-/wenyan-lang/issues/87)) |  ***** | √ | In progress |
 |[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | |
