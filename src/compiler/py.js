@@ -69,25 +69,19 @@ class PYCompiler extends Base {
           py += `${name}=${value}\n`;
         }
       } else if (a.op == "print") {
-        py += "\t".repeat(curlvl);
-        py += `print("".join([`;
-        for (var j = 0; j < strayvar; j++) {
-          py += `str(${this.prevTmpVar(strayvar - j)})`;
-          if (j != strayvar - 1) {
+        py += `print(`;
+        for (var j = 0; j < strayvar.length; j++) {
+          py += `${strayvar[j]}`;
+          if (j != strayvar.length - 1) {
             py += ",";
           }
         }
-        py += "]))\n";
-        strayvar = 0;
+        py += ");";
+        strayvar = [];
       } else if (a.op == "fun") {
         py += "\t".repeat(curlvl);
         py += `def ` + prevfun + `(`;
-        for (var j = 0; j < a.arity; j++) {
-          py += a.args[j].name;
-          if (j != a.arity - 1) {
-            py += ",";
-          }
-        }
+        py += a.arity.map(a => a.name).join(",");
         py += ")";
       } else if (a.op == "funbody") {
         py += "\t".repeat(curlvl);
@@ -147,19 +141,16 @@ class PYCompiler extends Base {
         py += "\t".repeat(curlvl);
         var lhs = getval(a.lhs);
         var rhs = getval(a.rhs);
-
-        var op = a.op.slice(2);
-        if (op in lop) {
-          op = lop[op];
-        }
-        py += `${this.nextTmpVar()}=${lhs}${op}${rhs}\n`;
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+        strayvar.push(vname);
       } else if (a.op == "name") {
         for (var j = 0; j < a.names.length; j++) {
-          py += "\t".repeat(curlvl);
-          py += `${a.names[j]}=${this.prevTmpVar(strayvar - j)}\n`;
+          py += `${a.names[j]}=${
+            strayvar[strayvar.length - a.names.length + j]
+          };`;
         }
-        strayvar -= a.names.length;
+        strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
         if (a.pop) {
           var jj = "";
@@ -180,24 +171,26 @@ class PYCompiler extends Base {
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
-        py += "\t".repeat(curlvl);
         var idx = getval(a.value);
+        var vname = this.nextTmpVar();
         if (idx == "rest") {
-          py += `${this.nextTmpVar()}=${a.container}.slice(1)\n`;
-          strayvar++;
+          py += `${vname}=${a.container}.slice(1);`;
         } else {
-          py += `${this.nextTmpVar()}=${a.container}[${idx}${
+          py += `${vname}=${a.container}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
-          }]\n`;
-          strayvar++;
+          }];`;
         }
+        strayvar.push(vname);
       } else if (a.op == "cat") {
-        py += "\t".repeat(curlvl);
+        var vname = this.nextTmpVar();
         py +=
-          `${this.nextTmpVar()}=${a.containers[0]}.concat(` +
-          a.containers.slice(1).join(").concat(") +
-          ")\n";
-        strayvar++;
+          `${vname}=${getval(a.containers[0])}.concat(` +
+          a.containers
+            .slice(1)
+            .map(x => x[1])
+            .join(").concat(") +
+          ");";
+        strayvar.push(vname);
       } else if (a.op == "push") {
         py += "\t".repeat(curlvl);
         py += `${a.container}.push(${a.values
@@ -222,9 +215,9 @@ class PYCompiler extends Base {
       } else if (a.op == "not") {
         py += "\t".repeat(curlvl);
         var v = getval(a.value);
-        py += `${this.nextTmpVar()}=not ${v}\n`;
-
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=!${v};`;
+        strayvar.push(vname);
       } else if (a.op == "reassign") {
         py += "\t".repeat(curlvl);
         var rhs = getval(a.rhs);
@@ -233,8 +226,12 @@ class PYCompiler extends Base {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
         py += `${lhs}=${rhs}\n`;
+      } else if (a.op == "temp") {
+        var vname = this.nextTmpVar();
+        py += `${vname}=${a.iden[1]};`;
+        strayvar.push(vname);
       } else if (a.op == "discard") {
-        strayvar = 0;
+        strayvar = [];
       } else if (a.op == "take") {
         took = a.count;
       } else if (a.op == "import") {
@@ -259,7 +256,7 @@ class PYCompiler extends Base {
           if (curlvl != ec[0]) {
             py += `}else{`;
           }
-          py += `var ${vname}=${ec[1]}.name;`;
+          py += `${vname}=${ec[1]}.name;`;
         } else {
           if (curlvl != ec[0]) {
             py += `}else `;
@@ -279,10 +276,11 @@ class PYCompiler extends Base {
         strayvar = [];
       } else if (a.op == "throw") {
         var r = this.randVar();
-        py += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
+        py += `${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
       } else if (a.op == "length") {
-        py += `${this.nextTmpVar()}=len(${a.container});`;
-        strayvar++;
+        var vname = this.nextTmpVar();
+        py += `${vname}=${a.container}.length;`;
+        strayvar.push(vname);
       } else if (a.op == "comment") {
         py += "\t".repeat(curlvl);
         py += `# ${getval(a.value)}\n`;
