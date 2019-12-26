@@ -426,7 +426,7 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "subs"
     ) {
-      typeassert(i + 1, ["iden", "lit"]);
+      typeassert(i + 1, ["iden", "lit", "ans"]);
       var x = {
         op: "subscript",
         container: tokens[i + 1],
@@ -441,7 +441,7 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "len"
     ) {
-      typeassert(i + 1, ["iden", "lit"]);
+      typeassert(i + 1, ["iden", "lit", "subs"]);
       var x = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
