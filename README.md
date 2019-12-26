@@ -82,6 +82,11 @@ wenyan examples/helloworld.wy
 
 ![](screenshots/screenshot02.png)
 
+
+### [The Decompiler](https://zxch3n.github.io/wenyanizer/)
+
+You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://github.com/zxch3n/wenyanizer) by [zxch3n](https://github.com/zxch3n).
+
 ### Text Editor Plugins
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
