@@ -2,7 +2,8 @@ try {
   var Base = require("./base");
 } catch (e) {}
 class PYCompiler extends Base {
-  compile(imports) {
+  compile(options = {}) {
+    var imports = options.imports || [];
     var lop = {
       "||": " or ",
       "&&": " and "
@@ -10,15 +11,20 @@ class PYCompiler extends Base {
 
     var py = pylib;
     var prevfun = "";
+    var prevfunpublic = false;
+    var prevobj = "";
+    var prevobjpublic = false;
     var curlvl = 0;
-    var strayvar = 0;
+    var strayvar = [];
+    var took = 0;
     const getval = x => {
       if (x == undefined) {
         return "";
       }
       if (x[0] == "ans") {
-        strayvar = 0;
-        return this.currTmpVar();
+        var ans = strayvar[strayvar.length - 1];
+        strayvar = [];
+        return ans;
       }
       if (x[1] == undefined) {
         return undefined;
@@ -43,7 +49,7 @@ class PYCompiler extends Base {
           var value = getval(a.values[j]);
           if (name == undefined) {
             name = this.nextTmpVar();
-            strayvar++;
+            strayvar.push(name);
           }
           if (value == undefined) {
             if (a.type == "arr") {
@@ -93,6 +99,12 @@ class PYCompiler extends Base {
       } else if (a.op == "funend") {
         py += "\n";
         curlvl--;
+      } else if (a.op == "objend") {
+        py += "};";
+      } else if (a.op == "objbody") {
+        py += `${prevobjpublic ? `${prevobj} = this.` : ""}${prevobj}={`;
+      } else if (a.op == "prop") {
+        py += `${a.name}:${a.value[1]},`;
       } else if (a.op == "end") {
         py += "\n";
         curlvl--;
@@ -149,11 +161,24 @@ class PYCompiler extends Base {
         }
         strayvar -= a.names.length;
       } else if (a.op == "call") {
-        py += "\t".repeat(curlvl);
-        py += `${this.nextTmpVar()}=${a.fun}(${a.args
-          .map(x => getval(x))
-          .join(",")})\n`;
-        strayvar++;
+        if (a.pop) {
+          var jj = "";
+          for (var j = 0; j < took; j++) {
+            jj += `(${strayvar[strayvar.length - took + j]})`;
+          }
+          strayvar = strayvar.slice(0, strayvar.length - took);
+          took = 0;
+          var vname = this.nextTmpVar();
+          if (!jj.length) {
+            jj = "()";
+          }
+          py += `${vname}=${a.fun}` + jj + ";";
+          strayvar.push(vname);
+        } else {
+          var vname = this.nextTmpVar();
+          py += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          strayvar.push(vname);
+        }
       } else if (a.op == "subscript") {
         py += "\t".repeat(curlvl);
         var idx = getval(a.value);
@@ -210,6 +235,51 @@ class PYCompiler extends Base {
         py += `${lhs}=${rhs}\n`;
       } else if (a.op == "discard") {
         strayvar = 0;
+      } else if (a.op == "take") {
+        took = a.count;
+      } else if (a.op == "import") {
+        var f = a.file.replace(/"/g, "");
+        for (var j = 0; j < a.iden.length; j++) {
+          py += `${a.iden[j]}=${f}.${a.iden[j]};`;
+        }
+        imports.push(f);
+      } else if (a.op == "try") {
+        py += `try{`;
+        curlvl++;
+      } else if (a.op == "catch") {
+        var r = this.randVar();
+        errcurlvls.push([curlvl, r]);
+        py += `}catch(${r}){`;
+        strayvar = [];
+      } else if (a.op == "catcherr") {
+        var ec = errcurlvls[errcurlvls.length - 1];
+        if (a.error == undefined) {
+          var vname = this.nextTmpVar();
+          strayvar.push(vname);
+          if (curlvl != ec[0]) {
+            py += `}else{`;
+          }
+          py += `var ${vname}=${ec[1]}.name;`;
+        } else {
+          if (curlvl != ec[0]) {
+            py += `}else `;
+            curlvl--;
+          }
+          py += `if (${ec[1]}.name==${a.error[1]}){`;
+          curlvl++;
+        }
+      } else if (a.op == "tryend") {
+        var ec = errcurlvls.pop();
+        if (curlvl != ec[0]) {
+          py += `}`;
+          curlvl--;
+        }
+        py += `}`;
+        curlvl--;
+        strayvar = [];
+      } else if (a.op == "throw") {
+        var r = this.randVar();
+        py += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
       } else if (a.op == "length") {
         py += `${this.nextTmpVar()}=len(${a.container});`;
         strayvar++;

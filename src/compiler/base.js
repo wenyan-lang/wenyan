@@ -14,10 +14,6 @@ class BaseCompiler {
   nextTmpVar() {
     return `_ans${++this.tmpVarCnt}`;
   }
-  prevTmpVar(n) {
-    return `_ans${this.tmpVarCnt - n + 1}`;
-  }
-
   compile(options = {}) {
     throw Error("No Implementation");
   }
