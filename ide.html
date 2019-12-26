@@ -33128,10 +33128,10 @@ var semantic = function(txt) {
   var out = [];
   var i = 0;
   while (i < txt.length) {
-    if (txt[i] == "「") {
+    if (txt[i] == "「" || txt[i] == "『") {
       off++;
       out.push("quot");
-    } else if (txt[i] == "」") {
+    } else if (txt[i] == "」" || txt[i] == "』") {
       off--;
       out.push("quot");
     } else {
@@ -33473,7 +33473,9 @@ function wy2tokens(txt) {
         i++;
       }
     } else if (
-      (txt[i] == "」" && txt[i + 1] == "」" && (txt[i + 2] != "」" || txt[i+3] == "」")) ||
+      (txt[i] == "」" &&
+        txt[i + 1] == "」" &&
+        (txt[i + 2] != "」" || txt[i + 3] == "」")) ||
       txt[i] == "』"
     ) {
       var is_sin = txt[i] == "」";
