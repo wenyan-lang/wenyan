@@ -1,7 +1,7 @@
 {
   "name": "wenyanlang",
   "description": "文言 A programming language for the ancient Chinese",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "LingDong <lingdong0618@hotmail.com>",
   "private": true,
   "repository": {
