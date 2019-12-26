@@ -18,6 +18,36 @@ for (var i = 0; i < files.length; i++) {
 var lib = utils.loadlib();
 
 function main() {
+  function hideImportedModules(source) {
+    const markerRegex = /\/\*___wenyan_module_([\s\S]+?)_(start|end)___\*\//g;
+    const matches = [];
+
+    var match;
+    while ((match = markerRegex.exec(source))) {
+      if (!match) break;
+
+      if (matches.length) {
+        const prev = matches[matches.length - 1];
+        if (prev[2] !== "end" && prev[1] !== match[1]) continue; // ignore nested imports
+      }
+
+      matches.push(match);
+    }
+
+    for (const match of matches) {
+      if (match[2] === "start") continue;
+
+      source = source.replace(
+        new RegExp(
+          `\\/\\*___wenyan_module_${match[1]}_start___\\*\\/[\\s\\S]*\\/\\*___wenyan_module_${match[1]}_end___\\*\\/`
+        ),
+        `/* module ${match[1]} is hidden */\n`
+      );
+    }
+
+    return source;
+  }
+
   var ed = newEditor(prgms["mandelbrot"]);
   // var ln = newLineNo(ed);
 
@@ -92,14 +122,7 @@ function main() {
       reader: x => prgms[x]
     });
 
-    var showcode = code;
-
-    if (hidestd.checked) {
-      showcode = showcode.replace(
-        /\/\*___wenyan_import_([\s\S]+?)_start___\*\/([\s\S]*?)\/\*___wenyan_import_([\s\S]+?)_end___\*\//g,
-        "/* module $1 is hidden */\n"
-      );
-    }
+    var showcode = hidestd.checked ? hideImportedModules(code) : code;
 
     document.getElementById("js").innerText = js_beautify(showcode);
     hljs.highlightBlock(document.getElementById("js"));
