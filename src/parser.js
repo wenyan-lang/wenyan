@@ -688,7 +688,9 @@ function compile(
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
-    if (imports[i] in lib) {
+    if (imports[i] in lib[lang]) {
+      isrc = lib[lang][imports[i]];
+    } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
       isrc = reader(imports[i]);
