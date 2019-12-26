@@ -45,24 +45,36 @@ function wy2tokens(txt) {
         tok += txt[i];
       }
     } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+      var is_sin = txt[i] == "「";
       if (litlvl == 0) {
         enddata();
         endnum();
         idt = true;
         tok = "";
+      } else {
+        tok += txt[i];
+        if (is_sin) {
+          tok += txt[i + 1];
+        }
       }
       litlvl++;
-      if (txt[i] == "「") {
+      if (is_sin) {
         i++;
       }
     } else if ((txt[i] == "」" && txt[i + 1] == "」") || txt[i] == "』") {
+      var is_sin = txt[i] == "」";
       litlvl--;
       if (litlvl == 0) {
         tokens.push(["lit", `"${tok}"`, i + 1]);
         idt = false;
         tok = "";
+      } else {
+        tok += txt[i];
+        if (is_sin) {
+          tok += txt[i + 1];
+        }
       }
-      if (txt[i] == "」") {
+      if (is_sin) {
         i++;
       }
     } else if (litlvl > 0) {

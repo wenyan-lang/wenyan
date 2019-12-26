@@ -35,15 +35,15 @@ var setTheme = function(theme) {
 };
 
 var semantic = function(txt) {
-  var off = false;
+  var off = 0;
   var out = [];
   var i = 0;
   while (i < txt.length) {
     if (txt[i] == "「") {
-      off = true;
+      off++;
       out.push("quot");
     } else if (txt[i] == "」") {
-      off = false;
+      off--;
       out.push("quot");
     } else {
       if (off) {

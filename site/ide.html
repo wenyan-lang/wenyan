@@ -33124,15 +33124,15 @@ var setTheme = function(theme) {
 };
 
 var semantic = function(txt) {
-  var off = false;
+  var off = 0;
   var out = [];
   var i = 0;
   while (i < txt.length) {
     if (txt[i] == "「") {
-      off = true;
+      off ++;
       out.push("quot");
     } else if (txt[i] == "」") {
-      off = false;
+      off --;
       out.push("quot");
     } else {
       if (off) {
@@ -33455,28 +33455,40 @@ function wy2tokens(txt) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i]=="『") {
-      if (litlvl == 0){
+    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+      var is_sin = (txt[i] == "「")
+      if (litlvl == 0) {
         enddata();
         endnum();
         idt = true;
         tok = "";
+      }else{
+        tok += txt[i]
+        if (is_sin){
+          tok += txt[i+1]
+        }
       }
       litlvl++;
-      if (txt[i] == "「"){
+      if (is_sin) {
         i++;
       }
-    } else if (txt[i] == "」" && txt[i + 1] == "」" || txt[i]=="』") {
-      litlvl --;
-      if (litlvl == 0){
+    } else if ((txt[i] == "」" && txt[i + 1] == "」") || txt[i] == "』") {
+      var is_sin = (txt[i] == "」");
+      litlvl--;
+      if (litlvl == 0) {
         tokens.push(["lit", `"${tok}"`, i + 1]);
         idt = false;
         tok = "";
+      }else{
+        tok += txt[i]
+        if (is_sin){
+          tok += txt[i+1]
+        }
       }
-      if (txt[i] == "」"){
+      if (is_sin) {
         i++;
       }
-    } else if (litlvl > 0){
+    } else if (litlvl > 0) {
       tok += txt[i];
     } else {
       if (txt[i] == "「") {
@@ -33788,7 +33800,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: tokens[i+1], args: [], pos };
+      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -33797,14 +33809,14 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
-      asc.push({ op: "call", pop: true, fun: tokens[i+1], pos });
+      asc.push({ op: "call", pop: true, fun: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
       var x = {
         op: "push",
-        container: tokens[i+1],
+        container: tokens[i + 1],
         values: [tokens[i + 3]],
         pos
       };
@@ -33823,7 +33835,7 @@ function tokens2asc(
       typeassert(i + 1, ["iden", "lit"]);
       var x = {
         op: "subscript",
-        container: tokens[i+1],
+        container: tokens[i + 1],
         value: tokens[i + 3],
         pos
       };
@@ -33836,7 +33848,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "len"
     ) {
       typeassert(i + 1, ["iden", "lit"]);
-      var x = { op: "length", container: tokens[i+1], pos };
+      var x = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -33871,7 +33883,7 @@ function tokens2asc(
     ) {
       var x = {
         op: "for",
-        container: tokens[i+1],
+        container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
         pos
       };
@@ -34068,7 +34080,7 @@ function compile(
   var imports = [];
   var mwrapper = jsWrapModule;
   if (!compilers[lang]) {
-    console.log(compilers)
+    console.log(compilers);
     return logCallback("Target language not supported.");
   }
   var klass = compilers[lang];
@@ -34187,7 +34199,8 @@ function render(fname, txt, { plotResult = false } = {}) {
   txt = txt.replace(/\n+/g, "");
   txt = txt.replace(/\t+/g, "");
   txt = txt.replace(/ +/g, "");
-
+  txt = txt.replace(/『/g, "「「");
+  txt = txt.replace(/』/g, "」」");
   // txt = txt + txt + txt;
 
   var tokens = parser.wy2tokens(txt);
@@ -34365,7 +34378,7 @@ function render(fname, txt, { plotResult = false } = {}) {
             var ky = PCT + CH / 2;
             var kx = Math.min(commentx, x + CO + CW / 2);
             for (var k = 0; k < cmt.length; k++) {
-              if (cmt[k] == "。") {
+              if (cmt[k] == "。" || cmt[k] == "、") {
                 svg += `<circle cx="${kx + CW / 2 - CO}" cy="${ky -
                   CH / 2}" r="${CH /
                   12}" stroke="${RED}" fill="none" stroke-width="0.5"></circle>`;
@@ -34392,6 +34405,10 @@ function render(fname, txt, { plotResult = false } = {}) {
           7}" stroke="${RED}" fill="none" stroke-width="1" wy-data="${
           txt[i]
         }"></circle>`;
+      } else if (txt[i] == "、" && !iden) {
+        svg += `<text x="${x + CW - 6}" y="${y -
+          CH +
+          PSH}" fill="${RED}" wy-data="${txt[i]}">、</text>`;
       } else if (txt[i] == "「") {
         iden = true;
         if (y > Y1) {
@@ -34459,7 +34476,7 @@ function unrender(svgs) {
 function test_render() {
   var svgs = render(
     "圖靈機",
-    fs.readFileSync("../examples/turing.txt").toString()
+    fs.readFileSync("../examples/turing.wy").toString()
   );
   // var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
   // var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
@@ -34717,7 +34734,9 @@ class JSCompiler extends Base {
           ");";
         strayvar.push(vname);
       } else if (a.op == "push") {
-        js += `${getval(a.container)}.push(${a.values.map(x => getval(x)).join(",")});`;
+        js += `${getval(a.container)}.push(${a.values
+          .map(x => getval(x))
+          .join(",")});`;
       } else if (a.op == "for") {
         js += `for (var ${a.iterator} of ${getval(a.container)}){`;
         curlvl++;
@@ -35001,7 +35020,9 @@ class PYCompiler extends Base {
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          py += `${vname}=${getval(a.fun)}(${a.args.map(x => getval(x)).join(")(")});`;
+          py += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
@@ -35163,11 +35184,9 @@ try {
 } catch (e) {}
 class RBCompiler extends Base {
   rename(name) {
-
     return name && `${name.toLowerCase()}`;
   }
   lowerAllPinYinAndMakeItGlobal(asc) {
-
     for (let i = 0; i < asc.length; i++) {
       var item = asc[i];
       switch (item.op) {
@@ -35176,7 +35195,9 @@ class RBCompiler extends Base {
           item.names = item.names.map(e => this.rename(e));
           break;
         case "call":
-          if (item.fun[0]=="iden") {item.fun[1] = this.rename(item.fun[1])};
+          if (item.fun[0] == "iden") {
+            item.fun[1] = this.rename(item.fun[1]);
+          }
           item.args = item.args.map(arg => {
             if (arg[0] == "iden") arg[1] = this.rename(arg[1]);
             return arg;
@@ -35196,15 +35217,21 @@ class RBCompiler extends Base {
           item.containers = item.containers.map(e => this.rename(e));
           break;
         case "for":
-          if (item.container[0]=="iden") {item.container[1] = this.rename(item.container[1])}
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           item.iterator = this.rename(item.iterator);
           break;
         case "push":
         case "length":
-          if (item.container[0]=="iden") {item.container[1] = this.rename(item.container[1])}
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           break;
         case "subscript":
-          if (item.container[0]=="iden") {item.container[1] = this.rename(item.container[1])}
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           if (item.value[0] == "iden") this.rename(item.value[1]);
           break;
         case "if":
@@ -35396,7 +35423,9 @@ class RBCompiler extends Base {
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          rb += `${vname}=${getval(a.fun)}(${a.args.map(x => getval(x)).join(")(")});`;
+          rb += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
