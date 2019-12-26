@@ -5,7 +5,6 @@ class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
-  prevTmpVar() {}
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       const item = asc[i];
@@ -76,17 +75,20 @@ class RBCompiler extends Base {
       "&&": " and "
     };
     let rb = rblib;
-    let prevfun = "";
+    var prevfun = "";
+    var prevobj = "";
+    var prevobjpublic = false;
     let curlvl = 0;
-    let strayvar = 0;
+    let strayvar = [];
     let lambdaList = [];
     let methodIndex = 0;
     asc = this.lowerAllPinYinAndMakeItGlobal(asc);
     const getval = x => {
       if (!x) return "";
       if (x[0] == "ans") {
-        strayvar = 0;
-        return this.currTmpVar();
+        var ans = strayvar[strayvar.length - 1];
+        strayvar = [];
+        return ans;
       }
       if (x[0] == "iden") return this.rename(x[1]);
       if (x[1] == undefined) return "nil";
@@ -107,7 +109,7 @@ class RBCompiler extends Base {
           let value = getval(a.values[j]);
           if (name == undefined) {
             name = this.nextTmpVar();
-            strayvar++;
+            strayvar.push(name);
           }
           if ([undefined, "nil"].includes(value)) {
             if (a.type == "arr") {
@@ -126,12 +128,7 @@ class RBCompiler extends Base {
       } else if (a.op == "print") {
         rb += "\t".repeat(curlvl);
         rb += `p([`;
-        for (let j = 0; j < strayvar; j++) {
-          rb += `${this.prevTmpVar(strayvar - j)}.to_s`;
-          if (j != strayvar - 1) {
-            rb += ",";
-          }
-        }
+        rb += strayvar.join(", ");
         rb += "].join)\n";
         strayvar = 0;
       } else if (a.op == "fun") {
@@ -206,52 +203,61 @@ class RBCompiler extends Base {
         rb += `return ${getval(a.value)}\n`;
       } else if (a.op.startsWith("op")) {
         rb += "\t".repeat(curlvl);
-        let lhs = getval(a.lhs);
-        let rhs = getval(a.rhs);
-
-        let op = a.op.slice(2);
-        if (op in lop) {
-          op = lop[op];
-        }
-        rb += `${this.nextTmpVar()}=${lhs}${op}${rhs}\n`;
-        strayvar++;
+        var lhs = getval(a.lhs);
+        var rhs = getval(a.rhs);
+        var vname = this.nextTmpVar();
+        rb += `${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+        strayvar.push(vname);
       } else if (a.op == "name") {
-        for (let j = 0; j < a.names.length; j++) {
+        for (var j = 0; j < a.names.length; j++) {
+          rb += "\n";
           rb += "\t".repeat(curlvl);
-          rb += `${a.names[j]}=${this.prevTmpVar(strayvar - j)}\n`;
+          rb += `${a.names[j]}=${
+            strayvar[strayvar.length - a.names.length + j]
+          };`;
         }
-        strayvar -= a.names.length;
+        strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
         rb += "\t".repeat(curlvl);
-        let functionCallStr = `${a.fun}(${a.args
-          .map(x => getval(x))
-          .join(",")})`;
-        if (lambdaList.includes(a.fun)) {
-          functionCallStr = `${a.fun}.call(${a.args
-            .map(x => getval(x))
-            .join(",")})`;
-        }
-        rb += `${this.nextTmpVar()}=${functionCallStr}\n`;
-        strayvar++;
-      } else if (a.op == "subscript") {
-        rb += "\t".repeat(curlvl);
-        let idx = getval(a.value);
-        if (idx == "rest") {
-          rb += `${this.nextTmpVar()}=${a.container}.slice(1)\n`;
-          strayvar++;
+        if (a.pop) {
+          var jj = "";
+          for (var j = 0; j < took; j++) {
+            jj += `(${strayvar[strayvar.length - took + j]})`;
+          }
+          strayvar = strayvar.slice(0, strayvar.length - took);
+          took = 0;
+          var vname = this.nextTmpVar();
+          if (!jj.length) {
+            jj = "()";
+          }
+          rb += `${vname}=${a.fun}` + jj + ";";
+          strayvar.push(vname);
         } else {
-          rb += `${this.nextTmpVar()}=${a.container}[${idx}${
-            a.value[0] == "lit" ? "" : "-1"
-          }]\n`;
-          strayvar++;
+          var vname = this.nextTmpVar();
+          rb += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          strayvar.push(vname);
         }
+      } else if (a.op == "subscript") {
+        var idx = getval(a.value);
+        var vname = this.nextTmpVar();
+        if (idx == "rest") {
+          rb += `${vname}=${a.container}.slice(1);`;
+        } else {
+          rb += `${vname}=${a.container}[${idx}${
+            a.value[0] == "lit" ? "" : "-1"
+          }];`;
+        }
+        strayvar.push(vname);
       } else if (a.op == "cat") {
-        rb += "\t".repeat(curlvl);
+        var vname = this.nextTmpVar();
         rb +=
-          `${this.nextTmpVar()}=${a.containers[0]}.concat(` +
-          a.containers.slice(1).join(").concat(") +
-          ")\n";
-        strayvar++;
+          `${vname}=${getval(a.containers[0])}.concat(` +
+          a.containers
+            .slice(1)
+            .map(x => x[1])
+            .join(").concat(") +
+          ");";
+        strayvar.push(vname);
       } else if (a.op == "push") {
         rb += "\t".repeat(curlvl);
         rb += `${a.container}.push(${a.values
@@ -275,9 +281,10 @@ class RBCompiler extends Base {
         rb += "break\n";
       } else if (a.op == "not") {
         rb += "\t".repeat(curlvl);
-        let v = getval(a.value);
-        rb += `${this.nextTmpVar()}=!${v}\n`;
-        strayvar++;
+        var v = getval(a.value);
+        var vname = this.nextTmpVar();
+        rb += `${vname}=!${v};`;
+        strayvar.push(vname);
       } else if (a.op == "reassign") {
         rb += "\t".repeat(curlvl);
         let rhs = getval(a.rhs);
@@ -286,11 +293,24 @@ class RBCompiler extends Base {
           lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
         }
         rb += `${lhs}=${rhs}\n`;
+      } else if (a.op == "temp") {
+        var vname = this.nextTmpVar();
+        rb += `${vname}=${a.iden[1]};`;
+        strayvar.push(vname);
       } else if (a.op == "discard") {
-        strayvar = 0;
+        strayvar = [];
+      } else if (a.op == "take") {
+        took = a.count;
+      } else if (a.op == "import") {
+        var f = a.file.replace(/"/g, "");
+        for (var j = 0; j < a.iden.length; j++) {
+          rb += `${a.iden[j]}=${f}.${a.iden[j]};`;
+        }
+        imports.push(f);
       } else if (a.op == "length") {
-        rb += `${this.nextTmpVar()}=${a.container}.length;`;
-        strayvar++;
+        var vname = this.nextTmpVar();
+        rb += `${vname}=${a.container}.length;`;
+        strayvar.push(vname);
       } else if (a.op == "comment") {
         rb += "\t".repeat(curlvl);
         rb += `# ${getval(a.value)}\n`;

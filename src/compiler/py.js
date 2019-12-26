@@ -11,7 +11,6 @@ class PYCompiler extends Base {
 
     var py = pylib;
     var prevfun = "";
-    var prevfunpublic = false;
     var prevobj = "";
     var prevobjpublic = false;
     var curlvl = 0;
@@ -251,20 +250,6 @@ class PYCompiler extends Base {
           py += `${a.iden[j]}=${f}.${a.iden[j]};`;
         }
         imports.push(f);
-      } else if (a.op == "try") {
-        // TODO!
-        curlvl++;
-      } else if (a.op == "catch") {
-        // TODO!
-        strayvar = [];
-      } else if (a.op == "catcherr") {
-        // TODO!
-      } else if (a.op == "tryend") {
-        // TODO!
-        curlvl--;
-        strayvar = [];
-      } else if (a.op == "throw") {
-        // TODO!
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
         py += `${vname}=${a.container}.length;`;
