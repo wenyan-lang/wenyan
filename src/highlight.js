@@ -39,10 +39,10 @@ var semantic = function(txt) {
   var out = [];
   var i = 0;
   while (i < txt.length) {
-    if (txt[i] == "「") {
+    if (txt[i] == "「" || txt[i] == "『") {
       off++;
       out.push("quot");
-    } else if (txt[i] == "」") {
+    } else if (txt[i] == "」" || txt[i] == "』") {
       off--;
       out.push("quot");
     } else {
