@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "commander": "^4.0.1",
     "enzyme": "^3.10.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",

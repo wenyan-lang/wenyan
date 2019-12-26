@@ -4,8 +4,7 @@ try {
 class JSCompiler extends Base {
   compile(options = {}) {
     var imports = options.imports || [];
-    var asc = this.asc;
-    var js = ``;
+    var js = ``; //`"use strict";`;
     var prevfun = "";
     var prevfunpublic = false;
     var prevobj = "";
@@ -14,6 +13,7 @@ class JSCompiler extends Base {
     var strayvar = [];
     var took = 0;
     var funcurlvls = [];
+    var errcurlvls = [];
 
     function getval(x) {
       if (x == undefined) {
@@ -27,8 +27,8 @@ class JSCompiler extends Base {
       return x[1];
     }
 
-    for (var i = 0; i < asc.length; i++) {
-      var a = asc[i];
+    for (var i = 0; i < this.asc.length; i++) {
+      var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
           if (a.values[j] == undefined) {
@@ -72,6 +72,7 @@ class JSCompiler extends Base {
         js += ");";
         strayvar = [];
       } else if (a.op == "fun") {
+        // console.log(curlvl);
         funcurlvls.push(curlvl);
         js += `${
           prevfunpublic ? `${prevfun} = this.` : ""
@@ -86,7 +87,7 @@ class JSCompiler extends Base {
         js += "){";
         curlvl++;
       } else if (a.op == "funbody") {
-        if (asc[i - 1].op != "fun") {
+        if (this.asc[i - 1].op != "fun") {
           funcurlvls.push(curlvl);
           js += `${
             prevfunpublic ? `${prevfun} = this.` : ""
@@ -94,6 +95,7 @@ class JSCompiler extends Base {
           curlvl++;
         }
       } else if (a.op == "funend") {
+        // console.log(funcurlvls, curlvl);
         var cl = funcurlvls.pop();
         js += "};".repeat(curlvl - cl);
         curlvl = cl;
@@ -138,7 +140,7 @@ class JSCompiler extends Base {
       } else if (a.op == "else") {
         js += "}else{";
       } else if (a.op == "return") {
-        js += `return ${getval(a.value)}`;
+        js += `return ${getval(a.value)};`;
       } else if (a.op.startsWith("op")) {
         var lhs = getval(a.lhs);
         var rhs = getval(a.rhs);
@@ -161,6 +163,9 @@ class JSCompiler extends Base {
           strayvar = strayvar.slice(0, strayvar.length - took);
           took = 0;
           var vname = this.nextTmpVar();
+          if (!jj.length) {
+            jj = "()";
+          }
           js += `var ${vname}=${a.fun}` + jj + ";";
           strayvar.push(vname);
         } else {
@@ -248,6 +253,43 @@ class JSCompiler extends Base {
           js += `var ${a.iden[j]}=${f}.${a.iden[j]};`;
         }
         imports.push(f);
+      } else if (a.op == "try") {
+        js += `try{`;
+        curlvl++;
+      } else if (a.op == "catch") {
+        var r = this.randVar();
+        errcurlvls.push([curlvl, r]);
+        js += `}catch(${r}){`;
+        strayvar = [];
+      } else if (a.op == "catcherr") {
+        var ec = errcurlvls[errcurlvls.length - 1];
+        if (a.error == undefined) {
+          var vname = this.nextTmpVar();
+          strayvar.push(vname);
+          if (curlvl != ec[0]) {
+            js += `}else{`;
+          }
+          js += `var ${vname}=${ec[1]}.name;`;
+        } else {
+          if (curlvl != ec[0]) {
+            js += `}else `;
+            curlvl--;
+          }
+          js += `if (${ec[1]}.name==${a.error[1]}){`;
+          curlvl++;
+        }
+      } else if (a.op == "tryend") {
+        var ec = errcurlvls.pop();
+        if (curlvl != ec[0]) {
+          js += `}`;
+          curlvl--;
+        }
+        js += `}`;
+        curlvl--;
+        strayvar = [];
+      } else if (a.op == "throw") {
+        var r = this.randVar();
+        js += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
       } else if (a.op == "comment") {
         js += `/*${getval(a.value)}*/`;
       } else {

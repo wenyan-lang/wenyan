@@ -51,7 +51,7 @@ function runExample(lang, name, options = {}) {
 }
 
 function runAll(lang, options) {
-  var files = fs.readdirSync(exampleDir);
+  var files = fs.readdirSync(exampleDir).filter(x => x.endsWith(".wy"));
   for (const file of files) {
     const filename = file.split(".")[0];
     it(filename, () => runExample(lang, filename, options));

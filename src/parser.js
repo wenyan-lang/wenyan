@@ -151,7 +151,9 @@ function tokenRomanize(tokens, method) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
-          r = hanzi2pinyin(tokens[i][1]);
+          r = hanzi2pinyin(tokens[i][1], (system = "pinyin"));
+        } else if (method == "baxter") {
+          r = hanzi2pinyin(tokens[i][1], (system = "baxter"));
         } else if (method == "unicode") {
           r = hanzi2unicodeEntry(tokens[i][1]);
         } else {
@@ -519,6 +521,26 @@ function tokens2asc(
         i++;
       }
       asc.push(x);
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "try") {
+      asc.push({ op: "try", pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catch") {
+      asc.push({ op: "catch", pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catcherr0") {
+      typeassert(i + 2, ["try"]);
+      asc.push({ op: "catcherr", error: tokens[i + 1], pos });
+      i += 3;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catchall") {
+      asc.push({ op: "catcherr", error: undefined, pos });
+      i++;
+    } else if (gettok(i, 0) == "try" && gettok(i, 1) == "end") {
+      asc.push({ op: "tryend", pos });
+      i++;
+    } else if (gettok(i, 0) == "throw" && gettok(i, 1) == "a") {
+      typeassert(i + 2, ["throw"]);
+      asc.push({ op: "throw", error: tokens[i + 1], pos });
+      i += 3;
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
       i += 2;
@@ -572,6 +594,7 @@ function compile(
     reader = defaultReader
   } = {}
 ) {
+  if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
 
   var tokens = wy2tokens(txt);
@@ -628,6 +651,7 @@ function compile(
   if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = imports || [];
+  console.log(imports);
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
@@ -646,7 +670,9 @@ function compile(
           errorCallback,
           lib
         })
-      ) + targ;
+      ) +
+      "/*=-=-=-=-=-=-=*/" +
+      targ;
   }
 
   return targ;

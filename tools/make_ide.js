@@ -6,8 +6,9 @@ var fs = require("fs");
 var execSync = require("child_process").execSync;
 var parser = require("../src/parser");
 var utils = require("./utils");
+const examplesAlias = require("./examplesAlias");
 
-var files = fs.readdirSync("../examples/");
+var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
 var prgms = {};
 for (var i = 0; i < files.length; i++) {
   prgms[files[i].split(".")[0]] = fs
@@ -18,9 +19,6 @@ for (var i = 0; i < files.length; i++) {
 var lib = utils.loadlib();
 
 function main() {
-  var ed = newEditor(prgms["mandelbrot"]);
-  // var ln = newLineNo(ed);
-
   let highlighted = true;
   let currentHighlightTimeout;
   const highlightCode = () => {
@@ -30,17 +28,46 @@ function main() {
     console.timeEnd("highlight");
   };
 
+  var makeTitle = example => {
+    return (examplesAlias[example] || example) + " - wenyan-lang Online IDE";
+  };
+
   var sel = document.getElementById("pick-example");
   for (var k in prgms) {
     var opt = document.createElement("option");
     opt.value = k;
-    opt.innerHTML = k;
+    opt.text = examplesAlias[k] || k;
     sel.appendChild(opt);
   }
-  sel.value = "mandelbrot";
+  var match = location.search.match(/(?:^\?|&)example=([^&]+)/);
+  match = match && decodeURIComponent(match[1]);
+  var example = match || "mandelbrot";
+  var ed = newEditor(prgms[example]);
+  // var ln = newLineNo(ed);
+  sel.value = example;
+  document.title = makeTitle(example);
   sel.onchange = function() {
-    ed.innerText = prgms[sel.value];
+    var example = sel.value;
+    if (!prgms[example]) {
+      return;
+    }
+    var title = makeTitle(example);
+    document.title = title;
+    ed.innerText = prgms[example];
     run();
+    if (history.pushState) {
+      var url = "?example=" + encodeURIComponent(example);
+      history.pushState({ example: example }, title, url);
+    }
+  };
+  window.onpopstate = function(event) {
+    var example = event.state && event.state.example;
+    if (example && prgms[example]) {
+      sel.value = example;
+      document.title = makeTitle(example);
+      ed.innerText = prgms[example];
+      run();
+    }
   };
   var autohl = document.getElementById("auto-hl");
   autohl.onchange = function() {
@@ -68,17 +95,38 @@ function main() {
     }
   };
 
+  var selr = document.getElementById("pick-roman");
+  for (var k of ["none", "pinyin", "baxter", "unicode"]) {
+    var opt = document.createElement("option");
+    opt.value = k;
+    opt.innerHTML = k;
+    selr.appendChild(opt);
+  }
+  selr.value = "none";
+  selr.onchange = run;
+
+  var hidestd = document.getElementById("hide-std");
+  hidestd.onchange = run;
+
   function run() {
     highlightCode();
     document.getElementById("out").innerText = "";
     var code = compile("js", ed.innerText, {
-      romanizeIdentifiers: "none",
+      romanizeIdentifiers: selr.value,
       resetVarCnt: true,
       errorCallback: log2div,
       lib: STDLIB,
       reader: x => prgms[x]
     });
-    document.getElementById("js").innerText = js_beautify(code);
+
+    var showcode = code;
+
+    if (hidestd.checked) {
+      var s = showcode.split("/*=-=-=-=-=-=-=*/");
+      showcode = s[s.length - 1];
+    }
+
+    document.getElementById("js").innerText = js_beautify(showcode);
     hljs.highlightBlock(document.getElementById("js"));
     code = code.replace(/console.log\(/g, `log2div(`);
     eval(code);
@@ -105,6 +153,7 @@ function main() {
 var html = `<!--GENERATED FILE, DO NOT READ-->
 <head>
 <meta charset="UTF-8">
+<title>wenyan-lang Online IDE</title>
 <style>
 [contenteditable="true"]:focus {outline: none;}
 pre{tab-size: 4;}
@@ -117,9 +166,10 @@ pre{tab-size: 4;}
 <script>${utils.catsrc()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
   <h2><i>wenyan-lang</i></h2>
-<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="hide-std"/><small>Hide Imported Code</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Romanization</small><select id="pick-roman"></select></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
+<script>var examplesAlias = ${JSON.stringify(examplesAlias)};</script>
 <script>${main.toString()};main();</script>
 </body>
 `;

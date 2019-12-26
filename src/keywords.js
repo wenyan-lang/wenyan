@@ -87,6 +87,15 @@ var KEYWORDS_DEFINE = {
   方悟: ["import", "iden"],
   之義: ["import", "idenend"],
 
+  嗚呼: ["throw", "a"],
+  之禍: ["throw", "b"],
+  姑妄行此: ["try", "try"],
+  如事不諧: ["try", "catch"],
+  豈: ["try", "catcherr0"],
+  之禍歟: ["try", "catcherr1"],
+  不知何禍歟: ["try", "catchall"],
+  乃作罷: ["try", "end"],
+
   注曰: ["comment"],
   疏曰: ["comment"],
   批曰: ["comment"]
