@@ -14,7 +14,9 @@ class RBCompiler extends Base {
           item.names = item.names.map(e => this.rename(e));
           break;
         case "call":
-          item.fun = this.rename(item.fun);
+          if (item.fun[0] == "iden") {
+            item.fun[1] = this.rename(item.fun[1]);
+          }
           item.args = item.args.map(arg => {
             if (arg[0] == "iden") arg[1] = this.rename(arg[1]);
             return arg;
@@ -34,15 +36,21 @@ class RBCompiler extends Base {
           item.containers = item.containers.map(e => this.rename(e));
           break;
         case "for":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           item.iterator = this.rename(item.iterator);
           break;
         case "push":
         case "length":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           break;
         case "subscript":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           if (item.value[0] == "iden") this.rename(item.value[1]);
           break;
         case "if":
@@ -130,7 +138,7 @@ class RBCompiler extends Base {
         rb += `p([`;
         rb += strayvar.join(", ");
         rb += "].join)\n";
-        strayvar = 0;
+        strayvar = [];
       } else if (a.op == "fun") {
         rb += "\t".repeat(curlvl);
         let argsStr = a.args.map(arg => arg.name).join(",");
@@ -230,20 +238,22 @@ class RBCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          rb += `${vname}=${a.fun}` + jj + ";";
+          rb += `${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          rb += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          rb += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
         var idx = getval(a.value);
         var vname = this.nextTmpVar();
         if (idx == "rest") {
-          rb += `${vname}=${a.container}.slice(1);`;
+          rb += `${vname}=${getval(a.container)}.slice(1);`;
         } else {
-          rb += `${vname}=${a.container}[${idx}${
+          rb += `${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
         }
@@ -260,12 +270,12 @@ class RBCompiler extends Base {
         strayvar.push(vname);
       } else if (a.op == "push") {
         rb += "\t".repeat(curlvl);
-        rb += `${a.container}.push(${a.values
+        rb += `${getval(a.container)}.push(${a.values
           .map(x => getval(x))
           .join(",")})\n`;
       } else if (a.op == "for") {
         rb += "\t".repeat(curlvl);
-        rb += `${a.container}.each do |${a.iterator.toLowerCase()}|\n`;
+        rb += `${getval(a.container)}.each do |${a.iterator.toLowerCase()}|\n`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         rb += "\t".repeat(curlvl);
@@ -309,7 +319,7 @@ class RBCompiler extends Base {
         imports.push(f);
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        rb += `${vname}=${a.container}.length;`;
+        rb += `${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "comment") {
         rb += "\t".repeat(curlvl);

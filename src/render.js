@@ -63,7 +63,8 @@ function render(fname, txt, { plotResult = false } = {}) {
   txt = txt.replace(/\n+/g, "");
   txt = txt.replace(/\t+/g, "");
   txt = txt.replace(/ +/g, "");
-
+  txt = txt.replace(/『/g, "「「");
+  txt = txt.replace(/』/g, "」」");
   // txt = txt + txt + txt;
 
   var tokens = parser.wy2tokens(txt);
@@ -241,7 +242,7 @@ function render(fname, txt, { plotResult = false } = {}) {
             var ky = PCT + CH / 2;
             var kx = Math.min(commentx, x + CO + CW / 2);
             for (var k = 0; k < cmt.length; k++) {
-              if (cmt[k] == "。") {
+              if (cmt[k] == "。" || cmt[k] == "、") {
                 svg += `<circle cx="${kx + CW / 2 - CO}" cy="${ky -
                   CH / 2}" r="${CH /
                   12}" stroke="${RED}" fill="none" stroke-width="0.5"></circle>`;
@@ -268,6 +269,10 @@ function render(fname, txt, { plotResult = false } = {}) {
           7}" stroke="${RED}" fill="none" stroke-width="1" wy-data="${
           txt[i]
         }"></circle>`;
+      } else if (txt[i] == "、" && !iden) {
+        svg += `<text x="${x + CW - 6}" y="${y -
+          CH +
+          PSH}" fill="${RED}" wy-data="${txt[i]}">、</text>`;
       } else if (txt[i] == "「") {
         iden = true;
         if (y > Y1) {
@@ -335,7 +340,7 @@ function unrender(svgs) {
 function test_render() {
   var svgs = render(
     "圖靈機",
-    fs.readFileSync("../examples/turing.txt").toString()
+    fs.readFileSync("../examples/turing.wy").toString()
   );
   // var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
   // var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})

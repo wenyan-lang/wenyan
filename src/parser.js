@@ -12,6 +12,7 @@ function wy2tokens(txt) {
   var tok = "";
   var idt = false;
   var num = false;
+  var litlvl = 0;
   var data = false;
 
   var i = 0;
@@ -34,6 +35,7 @@ function wy2tokens(txt) {
   while (i < txt.length) {
     if (
       txt[i] == "。" ||
+      txt[i] == "、" ||
       txt[i] == "\n" ||
       txt[i] == "\r" ||
       txt[i] == "\t" ||
@@ -42,64 +44,78 @@ function wy2tokens(txt) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if (txt[i] == "「" && txt[i + 1] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-      i++;
-    } else if (txt[i] == "」" && txt[i + 1] == "」") {
-      tokens.push(["lit", `"${tok}"`, i + 1]);
-      idt = false;
-      tok = "";
-      i++;
-    } else if (txt[i] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-    } else if (txt[i] == "」") {
-      tokens.push(["iden", tok, i]);
-      idt = false;
-      tok = "";
+    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+      if (litlvl == 0) {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
+      }
+      litlvl++;
+      if (txt[i] == "「") {
+        i++;
+      }
+    } else if ((txt[i] == "」" && txt[i + 1] == "」") || txt[i] == "』") {
+      litlvl--;
+      if (litlvl == 0) {
+        tokens.push(["lit", `"${tok}"`, i + 1]);
+        idt = false;
+        tok = "";
+      }
+      if (txt[i] == "」") {
+        i++;
+      }
+    } else if (litlvl > 0) {
+      tok += txt[i];
     } else {
-      if (idt) {
-        tok += txt[i];
-      } else if (num) {
-        if (NUMBER_KEYWORDS.includes(txt[i])) {
-          tok += txt[i];
-        } else {
-          endnum();
-          i--;
-        }
+      if (txt[i] == "「") {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
+      } else if (txt[i] == "」") {
+        tokens.push(["iden", tok, i]);
+        idt = false;
+        tok = "";
       } else {
-        var ok = false;
-        for (var k in KEYWORDS) {
-          ok = true;
-          for (var j = 0; j < k.length; j++) {
-            if (txt[i + j] != k[j]) {
-              ok = false;
+        if (idt) {
+          tok += txt[i];
+        } else if (num) {
+          if (NUMBER_KEYWORDS.includes(txt[i])) {
+            tok += txt[i];
+          } else {
+            endnum();
+            i--;
+          }
+        } else {
+          var ok = false;
+          for (var k in KEYWORDS) {
+            ok = true;
+            for (var j = 0; j < k.length; j++) {
+              if (txt[i + j] != k[j]) {
+                ok = false;
+                break;
+              }
+            }
+            if (ok) {
+              enddata();
+              var kinfo = KEYWORDS[k];
+              while (kinfo.length < 2) {
+                kinfo.push(undefined);
+              }
+              i += k.length - 1;
+              tokens.push(kinfo.concat([i]));
               break;
             }
           }
-          if (ok) {
-            enddata();
-            var kinfo = KEYWORDS[k];
-            while (kinfo.length < 2) {
-              kinfo.push(undefined);
+          if (!ok) {
+            if (NUMBER_KEYWORDS.includes(txt[i])) {
+              num = true;
+              tok = txt[i];
+            } else {
+              tok += txt[i];
+              data = true;
             }
-            i += k.length - 1;
-            tokens.push(kinfo.concat([i]));
-            break;
-          }
-        }
-        if (!ok) {
-          if (NUMBER_KEYWORDS.includes(txt[i])) {
-            num = true;
-            tok = txt[i];
-          } else {
-            tok += txt[i];
-            data = true;
           }
         }
       }
@@ -361,7 +377,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
+      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -370,14 +386,14 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
-      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      asc.push({ op: "call", pop: true, fun: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
       var x = {
         op: "push",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         values: [tokens[i + 3]],
         pos
       };
@@ -396,7 +412,7 @@ function tokens2asc(
       typeassert(i + 1, ["iden", "lit"]);
       var x = {
         op: "subscript",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         value: tokens[i + 3],
         pos
       };
@@ -409,7 +425,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "len"
     ) {
       typeassert(i + 1, ["iden", "lit"]);
-      var x = { op: "length", container: gettok(i + 1, 1), pos };
+      var x = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -444,7 +460,7 @@ function tokens2asc(
     ) {
       var x = {
         op: "for",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
         pos
       };
@@ -641,6 +657,7 @@ function compile(
   var imports = [];
   var mwrapper = jsWrapModule;
   if (!compilers[lang]) {
+    console.log(compilers);
     return logCallback("Target language not supported.");
   }
   var klass = compilers[lang];

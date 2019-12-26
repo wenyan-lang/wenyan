@@ -166,11 +166,11 @@ class JSCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          js += `var ${vname}=${a.fun}` + jj + ";";
+          js += `var ${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.fun}(${a.args
+          js += `var ${vname}=${getval(a.fun)}(${a.args
             .map(x => getval(x))
             .join(")(")});`;
           strayvar.push(vname);
@@ -179,11 +179,11 @@ class JSCompiler extends Base {
         var idx = getval(a.value);
         if (idx == "rest") {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}.slice(1);`;
+          js += `var ${vname}=${getval(a.container)}.slice(1);`;
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}[${idx}${
+          js += `var ${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
           strayvar.push(vname);
@@ -199,9 +199,11 @@ class JSCompiler extends Base {
           ");";
         strayvar.push(vname);
       } else if (a.op == "push") {
-        js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
+        js += `${getval(a.container)}.push(${a.values
+          .map(x => getval(x))
+          .join(",")});`;
       } else if (a.op == "for") {
-        js += `for (var ${a.iterator} of ${a.container}){`;
+        js += `for (var ${a.iterator} of ${getval(a.container)}){`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         js += "while (true){";
@@ -237,7 +239,7 @@ class JSCompiler extends Base {
         }
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        js += `var ${vname}=${a.container}.length;`;
+        js += `var ${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "temp") {
         var vname = this.nextTmpVar();
