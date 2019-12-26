@@ -13,23 +13,23 @@ function readOtherExample(x) {
 
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
-  var js = parser.compile(lang, txt, {
+  var sourceCode = parser.compile(lang, txt, {
     romanizeIdentifiers: true,
     lib: utils.loadlib(),
     reader: readOtherExample
   });
   console.log("=== COMPILED ===");
-  console.log(js);
+  console.log(sourceCode);
   console.log("=== EVAL ===");
   switch (lang) {
     case "py":
-      console.log(utils.pyeval(js));
+      console.log(utils.pyeval(sourceCode));
       break;
     case "js":
-      eval(js);
+      eval(sourceCode);
       break;
     case "rb":
-      console.log(utils.rbeval(js));
+      console.log(utils.rbeval(sourceCode));
       break;
     default:
       break;
@@ -40,11 +40,13 @@ function runAll(lang) {
   var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
   console.log(files);
   for (var i = 0; i < files.length; i++) {
+    console.log(`======= Progress ${i + 1}/${files.length} =======`);
     runExample(lang, files[i].split(".")[0]);
   }
 }
 
-// runExample("js", "turing");
-// runAll("js");
-runExample("js", "../../../Downloads/local_test");
+runExample("js", "try");
+// runAll("py");
+
+// runExample("js", "../../../Downloads/local_test");
 // runExample("js", "import");
