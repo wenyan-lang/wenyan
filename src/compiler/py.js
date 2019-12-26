@@ -84,7 +84,6 @@ class PYCompiler extends Base {
         py += ");";
         strayvar = [];
       } else if (a.op == "fun") {
-        console.log(a);
         py += "\t".repeat(curlvl);
         py += `def ` + prevfun + `(`;
         py += a.args.map(a => a.name).join(",");

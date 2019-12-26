@@ -45,8 +45,8 @@ function runAll(lang) {
   }
 }
 
-// runExample("js", "turing");
-runAll("py");
+runExample("js", "try");
+// runAll("py");
 
 // runExample("js", "../../../Downloads/local_test");
 // runExample("js", "import");
