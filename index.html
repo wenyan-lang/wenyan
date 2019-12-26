@@ -33269,15 +33269,15 @@ var setTheme = function(theme) {
 };
 
 var semantic = function(txt) {
-  var off = false;
+  var off = 0;
   var out = [];
   var i = 0;
   while (i < txt.length) {
     if (txt[i] == "「") {
-      off = true;
+      off ++;
       out.push("quot");
     } else if (txt[i] == "」") {
-      off = false;
+      off --;
       out.push("quot");
     } else {
       if (off) {
@@ -33568,6 +33568,7 @@ function wy2tokens(txt) {
   var tok = "";
   var idt = false;
   var num = false;
+  var litlvl = 0;
   var data = false;
 
   var i = 0;
@@ -33590,6 +33591,7 @@ function wy2tokens(txt) {
   while (i < txt.length) {
     if (
       txt[i] == "。" ||
+      txt[i] == "、" ||
       txt[i] == "\n" ||
       txt[i] == "\r" ||
       txt[i] == "\t" ||
@@ -33598,64 +33600,90 @@ function wy2tokens(txt) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if (txt[i] == "「" && txt[i + 1] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-      i++;
-    } else if (txt[i] == "」" && txt[i + 1] == "」") {
-      tokens.push(["lit", `"${tok}"`, i + 1]);
-      idt = false;
-      tok = "";
-      i++;
-    } else if (txt[i] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-    } else if (txt[i] == "」") {
-      tokens.push(["iden", tok, i]);
-      idt = false;
-      tok = "";
-    } else {
-      if (idt) {
-        tok += txt[i];
-      } else if (num) {
-        if (NUMBER_KEYWORDS.includes(txt[i])) {
-          tok += txt[i];
-        } else {
-          endnum();
-          i--;
+    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+      var is_sin = (txt[i] == "「")
+      if (litlvl == 0) {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
+      }else{
+        tok += txt[i]
+        if (is_sin){
+          tok += txt[i+1]
         }
+      }
+      litlvl++;
+      if (is_sin) {
+        i++;
+      }
+    } else if ((txt[i] == "」" && txt[i + 1] == "」") || txt[i] == "』") {
+      var is_sin = (txt[i] == "」");
+      litlvl--;
+      if (litlvl == 0) {
+        tokens.push(["lit", `"${tok}"`, i + 1]);
+        idt = false;
+        tok = "";
+      }else{
+        tok += txt[i]
+        if (is_sin){
+          tok += txt[i+1]
+        }
+      }
+      if (is_sin) {
+        i++;
+      }
+    } else if (litlvl > 0) {
+      tok += txt[i];
+    } else {
+      if (txt[i] == "「") {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
+      } else if (txt[i] == "」") {
+        tokens.push(["iden", tok, i]);
+        idt = false;
+        tok = "";
       } else {
-        var ok = false;
-        for (var k in KEYWORDS) {
-          ok = true;
-          for (var j = 0; j < k.length; j++) {
-            if (txt[i + j] != k[j]) {
-              ok = false;
+        if (idt) {
+          tok += txt[i];
+        } else if (num) {
+          if (NUMBER_KEYWORDS.includes(txt[i])) {
+            tok += txt[i];
+          } else {
+            endnum();
+            i--;
+          }
+        } else {
+          var ok = false;
+          for (var k in KEYWORDS) {
+            ok = true;
+            for (var j = 0; j < k.length; j++) {
+              if (txt[i + j] != k[j]) {
+                ok = false;
+                break;
+              }
+            }
+            if (ok) {
+              enddata();
+              var kinfo = KEYWORDS[k];
+              while (kinfo.length < 2) {
+                kinfo.push(undefined);
+              }
+              i += k.length - 1;
+              tokens.push(kinfo.concat([i]));
               break;
             }
           }
-          if (ok) {
-            enddata();
-            var kinfo = KEYWORDS[k];
-            while (kinfo.length < 2) {
-              kinfo.push(undefined);
+          if (!ok) {
+            if (NUMBER_KEYWORDS.includes(txt[i])) {
+              num = true;
+              tok = txt[i];
+            } else {
+              tok += txt[i];
+              data = true;
             }
-            i += k.length - 1;
-            tokens.push(kinfo.concat([i]));
-            break;
-          }
-        }
-        if (!ok) {
-          if (NUMBER_KEYWORDS.includes(txt[i])) {
-            num = true;
-            tok = txt[i];
-          } else {
-            tok += txt[i];
-            data = true;
           }
         }
       }
@@ -33917,7 +33945,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
+      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -33926,14 +33954,14 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
-      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      asc.push({ op: "call", pop: true, fun: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
       var x = {
         op: "push",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         values: [tokens[i + 3]],
         pos
       };
@@ -33952,7 +33980,7 @@ function tokens2asc(
       typeassert(i + 1, ["iden", "lit"]);
       var x = {
         op: "subscript",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         value: tokens[i + 3],
         pos
       };
@@ -33965,7 +33993,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "len"
     ) {
       typeassert(i + 1, ["iden", "lit"]);
-      var x = { op: "length", container: gettok(i + 1, 1), pos };
+      var x = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -34000,7 +34028,7 @@ function tokens2asc(
     ) {
       var x = {
         op: "for",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
         pos
       };
@@ -34197,6 +34225,7 @@ function compile(
   var imports = [];
   var mwrapper = jsWrapModule;
   if (!compilers[lang]) {
+    console.log(compilers);
     return logCallback("Target language not supported.");
   }
   var klass = compilers[lang];
@@ -34216,6 +34245,7 @@ function compile(
       isrc = reader(imports[i]);
     }
     targ =
+      `/*___wenyan_module_${imports[i]}_start___*/` +
       mwrapper(
         imports[i],
         compile(lang, isrc, {
@@ -34226,7 +34256,7 @@ function compile(
           lib
         })
       ) +
-      "/*=-=-=-=-=-=-=*/" +
+      `/*___wenyan_module_${imports[i]}_end___*/` +
       targ;
   }
 
@@ -34314,7 +34344,8 @@ function render(fname, txt, { plotResult = false } = {}) {
   txt = txt.replace(/\n+/g, "");
   txt = txt.replace(/\t+/g, "");
   txt = txt.replace(/ +/g, "");
-
+  txt = txt.replace(/『/g, "「「");
+  txt = txt.replace(/』/g, "」」");
   // txt = txt + txt + txt;
 
   var tokens = parser.wy2tokens(txt);
@@ -34492,7 +34523,7 @@ function render(fname, txt, { plotResult = false } = {}) {
             var ky = PCT + CH / 2;
             var kx = Math.min(commentx, x + CO + CW / 2);
             for (var k = 0; k < cmt.length; k++) {
-              if (cmt[k] == "。") {
+              if (cmt[k] == "。" || cmt[k] == "、") {
                 svg += `<circle cx="${kx + CW / 2 - CO}" cy="${ky -
                   CH / 2}" r="${CH /
                   12}" stroke="${RED}" fill="none" stroke-width="0.5"></circle>`;
@@ -34519,6 +34550,10 @@ function render(fname, txt, { plotResult = false } = {}) {
           7}" stroke="${RED}" fill="none" stroke-width="1" wy-data="${
           txt[i]
         }"></circle>`;
+      } else if (txt[i] == "、" && !iden) {
+        svg += `<text x="${x + CW - 6}" y="${y -
+          CH +
+          PSH}" fill="${RED}" wy-data="${txt[i]}">、</text>`;
       } else if (txt[i] == "「") {
         iden = true;
         if (y > Y1) {
@@ -34586,7 +34621,7 @@ function unrender(svgs) {
 function test_render() {
   var svgs = render(
     "圖靈機",
-    fs.readFileSync("../examples/turing.txt").toString()
+    fs.readFileSync("../examples/turing.wy").toString()
   );
   // var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
   // var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
@@ -34811,11 +34846,11 @@ class JSCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          js += `var ${vname}=${a.fun}` + jj + ";";
+          js += `var ${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.fun}(${a.args
+          js += `var ${vname}=${getval(a.fun)}(${a.args
             .map(x => getval(x))
             .join(")(")});`;
           strayvar.push(vname);
@@ -34824,11 +34859,11 @@ class JSCompiler extends Base {
         var idx = getval(a.value);
         if (idx == "rest") {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}.slice(1);`;
+          js += `var ${vname}=${getval(a.container)}.slice(1);`;
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}[${idx}${
+          js += `var ${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
           strayvar.push(vname);
@@ -34844,9 +34879,11 @@ class JSCompiler extends Base {
           ");";
         strayvar.push(vname);
       } else if (a.op == "push") {
-        js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
+        js += `${getval(a.container)}.push(${a.values
+          .map(x => getval(x))
+          .join(",")});`;
       } else if (a.op == "for") {
-        js += `for (var ${a.iterator} of ${a.container}){`;
+        js += `for (var ${a.iterator} of ${getval(a.container)}){`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         js += "while (true){";
@@ -34882,7 +34919,7 @@ class JSCompiler extends Base {
         }
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        js += `var ${vname}=${a.container}.length;`;
+        js += `var ${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "temp") {
         var vname = this.nextTmpVar();
@@ -35124,20 +35161,22 @@ class PYCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          py += `${vname}=${a.fun}` + jj + ";";
+          py += `${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          py += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          py += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
         var idx = getval(a.value);
         var vname = this.nextTmpVar();
         if (idx == "rest") {
-          py += `${vname}=${a.container}.slice(1);`;
+          py += `${vname}=${getval(a.container)}.slice(1);`;
         } else {
-          py += `${vname}=${a.container}[${idx}${
+          py += `${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
         }
@@ -35154,12 +35193,12 @@ class PYCompiler extends Base {
         strayvar.push(vname);
       } else if (a.op == "push") {
         py += "\t".repeat(curlvl);
-        py += `${a.container}.push(${a.values
+        py += `${getval(a.container)}.push(${a.values
           .map(x => getval(x))
           .join(",")})\n`;
       } else if (a.op == "for") {
         py += "\t".repeat(curlvl);
-        py += `for ${a.iterator} in ${a.container}:\n`;
+        py += `for ${a.iterator} in ${getval(a.container)}:\n`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         py += "\t".repeat(curlvl);
@@ -35204,7 +35243,7 @@ class PYCompiler extends Base {
         imports.push(f);
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        py += `${vname}=${a.container}.length;`;
+        py += `${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "comment") {
         py += "\t".repeat(curlvl);
@@ -35301,7 +35340,9 @@ class RBCompiler extends Base {
           item.names = item.names.map(e => this.rename(e));
           break;
         case "call":
-          item.fun = this.rename(item.fun);
+          if (item.fun[0] == "iden") {
+            item.fun[1] = this.rename(item.fun[1]);
+          }
           item.args = item.args.map(arg => {
             if (arg[0] == "iden") arg[1] = this.rename(arg[1]);
             return arg;
@@ -35321,15 +35362,21 @@ class RBCompiler extends Base {
           item.containers = item.containers.map(e => this.rename(e));
           break;
         case "for":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           item.iterator = this.rename(item.iterator);
           break;
         case "push":
         case "length":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           break;
         case "subscript":
-          item.container = this.rename(item.container);
+          if (item.container[0] == "iden") {
+            item.container[1] = this.rename(item.container[1]);
+          }
           if (item.value[0] == "iden") this.rename(item.value[1]);
           break;
         case "if":
@@ -35415,9 +35462,9 @@ class RBCompiler extends Base {
       } else if (a.op == "print") {
         rb += "\t".repeat(curlvl);
         rb += `p([`;
-        rb += strayvar.join(", ")
+        rb += strayvar.join(", ");
         rb += "].join)\n";
-        strayvar = 0;
+        strayvar = [];
       } else if (a.op == "fun") {
         rb += "\t".repeat(curlvl);
         let argsStr = a.args.map(arg => arg.name).join(",");
@@ -35517,20 +35564,22 @@ class RBCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          rb += `${vname}=${a.fun}` + jj + ";";
+          rb += `${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          rb += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          rb += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
         var idx = getval(a.value);
         var vname = this.nextTmpVar();
         if (idx == "rest") {
-          rb += `${vname}=${a.container}.slice(1);`;
+          rb += `${vname}=${getval(a.container)}.slice(1);`;
         } else {
-          rb += `${vname}=${a.container}[${idx}${
+          rb += `${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
         }
@@ -35547,12 +35596,12 @@ class RBCompiler extends Base {
         strayvar.push(vname);
       } else if (a.op == "push") {
         rb += "\t".repeat(curlvl);
-        rb += `${a.container}.push(${a.values
+        rb += `${getval(a.container)}.push(${a.values
           .map(x => getval(x))
           .join(",")})\n`;
       } else if (a.op == "for") {
         rb += "\t".repeat(curlvl);
-        rb += `${a.container}.each do |${a.iterator.toLowerCase()}|\n`;
+        rb += `${getval(a.container)}.each do |${a.iterator.toLowerCase()}|\n`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         rb += "\t".repeat(curlvl);
@@ -35596,7 +35645,7 @@ class RBCompiler extends Base {
         imports.push(f);
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        rb += `${vname}=${a.container}.length;`;
+        rb += `${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "comment") {
         rb += "\t".repeat(curlvl);
