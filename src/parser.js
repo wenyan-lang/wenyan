@@ -646,13 +646,11 @@ function compile(
   var klass = compilers[lang];
   var compiler = new klass(asc);
   var result = compiler.compile({ imports });
-  console.log(result);
   var { imports, result } = result;
   var targ = result;
   if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = imports || [];
-  console.log(imports);
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
