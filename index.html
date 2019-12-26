@@ -34202,7 +34202,7 @@ function compile(
   var klass = compilers[lang];
   var compiler = new klass(asc);
   var result = compiler.compile({ imports });
-  console.log(result)
+  console.log(result);
   var { imports, result } = result;
   var targ = result;
   if (lang == "rb") mwrapper = x => x;
@@ -35038,7 +35038,7 @@ class PYCompiler extends Base {
         py += ");";
         strayvar = [];
       } else if (a.op == "fun") {
-        console.log(a)
+        console.log(a);
         py += "\t".repeat(curlvl);
         py += `def ` + prevfun + `(`;
         py += a.args.map(a => a.name).join(",");
@@ -35207,42 +35207,19 @@ class PYCompiler extends Base {
         }
         imports.push(f);
       } else if (a.op == "try") {
-        py += `try{`;
+        // TODO!
         curlvl++;
       } else if (a.op == "catch") {
-        var r = this.randVar();
-        errcurlvls.push([curlvl, r]);
-        py += `}catch(${r}){`;
+        // TODO!
         strayvar = [];
       } else if (a.op == "catcherr") {
-        var ec = errcurlvls[errcurlvls.length - 1];
-        if (a.error == undefined) {
-          var vname = this.nextTmpVar();
-          strayvar.push(vname);
-          if (curlvl != ec[0]) {
-            py += `}else{`;
-          }
-          py += `${vname}=${ec[1]}.name;`;
-        } else {
-          if (curlvl != ec[0]) {
-            py += `}else `;
-            curlvl--;
-          }
-          py += `if (${ec[1]}.name==${a.error[1]}){`;
-          curlvl++;
-        }
+        // TODO!
       } else if (a.op == "tryend") {
-        var ec = errcurlvls.pop();
-        if (curlvl != ec[0]) {
-          py += `}`;
-          curlvl--;
-        }
-        py += `}`;
+        // TODO!
         curlvl--;
         strayvar = [];
       } else if (a.op == "throw") {
-        var r = this.randVar();
-        py += `${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
+        // TODO!
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
         py += `${vname}=${a.container}.length;`;
@@ -35333,7 +35310,7 @@ class RBCompiler extends Base {
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
-  prevTmpVar(){}
+  prevTmpVar() {}
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       var item = asc[i];
@@ -35828,13 +35805,12 @@ You can find many more examples such as a Universal Turing Machine, a Mandelbrot
       });
       document.getElementById("py").innerText =
         "# Python\n" + py.split("#####\n")[1];
-        var rb = compile("rb", ed.innerText, {
-          romanizeIdentifiers: "none",
-          errorCallback: () => 0
-        });
-        document.getElementById("rb").innerText =
-          "# Ruby\n" + rb.split("#####\n")[1];
-
+      var rb = compile("rb", ed.innerText, {
+        romanizeIdentifiers: "none",
+        errorCallback: () => 0
+      });
+      document.getElementById("rb").innerText =
+        "# Ruby\n" + rb.split("#####\n")[1];
     }
     // hljs.highlightBlock(document.getElementById("js"));
     if (!hasError) {
