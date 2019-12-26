@@ -28,7 +28,7 @@ function main() {
     console.timeEnd("highlight");
   };
 
-  var makeTitle = (example) => {
+  var makeTitle = example => {
     return (examplesAlias[example] || example) + " - wenyan-lang Online IDE";
   };
 
@@ -60,7 +60,7 @@ function main() {
       history.pushState({ example: example }, title, url);
     }
   };
-  window.onpopstate = function (event) {
+  window.onpopstate = function(event) {
     var example = event.state && event.state.example;
     if (example && prgms[example]) {
       sel.value = example;
