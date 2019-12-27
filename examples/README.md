@@ -33,6 +33,7 @@
 | [sieve.wy][30]                   | 埃氏篩                  |
 | [sqrt_newton.wy][31]             | 牛頓求根法              |
 | [turing.wy][32]                  | 圖靈機                  |
+| [drawHeart.wy][33]               | 畫心                    |
 
 [1]: https://en.wikipedia.org/wiki/Fizz_buzz "Fizz buzz"
 [2]: https://zh.wikipedia.org/wiki/自產生程式 "自產生程式"
@@ -66,3 +67,4 @@
 [30]: sieve.wy
 [31]: sqrt_newton.wy
 [32]: turing.wy
+[33]: drawHeart.wy
