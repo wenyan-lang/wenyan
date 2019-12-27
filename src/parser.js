@@ -1,5 +1,5 @@
 try {
-  var { hanzi2num, num2hanzi } = require("./hanzi2num");
+  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
@@ -26,7 +26,7 @@ function wy2tokens(txt) {
   }
   function endnum() {
     if (num) {
-      tokens.push(["num", hanzi2num(tok), i]);
+      tokens.push(["num", hanzi2numstr(tok), i]);
       tok = "";
       num = false;
     }
@@ -141,7 +141,7 @@ function wy2tokens(txt) {
   }
   if (tok.length) {
     if (num) {
-      tokens.push(["num", hanzi2num(tok)]);
+      tokens.push(["num", hanzi2numstr(tok)]);
     } else if (data) {
       tokens.push(["data", tok]);
     } else {
@@ -309,7 +309,7 @@ function tokens2asc(
           if (gettok(i, 0) == "num") {
             typeassert(i + 1, ["type"], "argument type");
             var typ = gettok(i + 1, 1);
-            var cnt = gettok(i, 1);
+            var cnt = Number(gettok(i, 1));
             x.arity += cnt;
             i += 2;
             for (var j = 0; j < cnt; j++) {
@@ -720,6 +720,7 @@ var parser = {
   wy2tokens,
   tokens2asc,
   hanzi2num,
+  hanzi2numstr,
   num2hanzi,
   hanzi2pinyin,
   KEYWORDS,
