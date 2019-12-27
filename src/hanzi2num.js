@@ -554,11 +554,9 @@ function hanzi2numstr(s) {
 
   let tokens = tokenize(s);
   if (tokens === undefined) {
-    console.log(`hanzi2num tokenization failed: ${s}`);
     return;
   }
   let str = parse(tokens);
-  console.log(`hanzi2num: ${s} = ${str} = ${Number(str)}`);
   return str;
 }
 
