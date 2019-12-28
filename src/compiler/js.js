@@ -1,6 +1,5 @@
-try {
-  var Base = require("./base");
-} catch (e) {}
+var Base = require("./base");
+
 class JSCompiler extends Base {
   compile(options = {}) {
     var imports = options.imports || [];
@@ -303,6 +302,5 @@ class JSCompiler extends Base {
   }
 }
 const JS = JSCompiler;
-try {
-  module.exports = JS;
-} catch (e) {}
+module.exports = JS;
+

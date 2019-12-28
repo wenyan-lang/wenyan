@@ -5,7 +5,11 @@ const { render, unrender } = require("./render");
 const path = require("path");
 const commander = require("commander");
 
-var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
+var Logo = `\
+ ,_ ,_
+ |/ ==
+ /| []
+`.replace(/\|/g, "\\");
 
 const program = new commander.Command();
 program

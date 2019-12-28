@@ -1,9 +1,7 @@
-try {
-  var fs = require("fs");
-  var { semantic } = require("./highlight");
-  var { num2hanzi } = require("./hanzi2num");
-  var parser = require("./parser");
-} catch (e) {}
+var fs = require("fs");
+var { semantic } = require("./highlight");
+var { num2hanzi } = require("./hanzi2num");
+var parser = require("./parser");
 
 const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"; //"Source Han Serif TC"
 const RED = "#E53";

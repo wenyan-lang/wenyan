@@ -10,7 +10,11 @@ function remotelib(urls) {
 }
 
 function catsrc() {
-  var s = "";
+  var s = `
+  ;
+  if (typeof require !== 'function') { require = function() { return undefined; } }
+  if (typeof module !== 'object') { module = {} }
+  ;`;
   var rootPath = "../src/";
   var compilerPath = "../src/compiler/";
   var compilerList = ["base", "js", "py", "rb", "compilers"];
@@ -20,13 +24,16 @@ function catsrc() {
   var srcs = fs.readdirSync(rootPath).map(filename => rootPath + filename);
   srcs = srcs.concat(compilerList);
 
+  // "Pacify" the source: don't require anything and don't exclusively declare anything
   for (var i = 0; i < srcs.length; i++) {
     if (srcs[i].endsWith(".js") && !srcs[i].includes("cli")) {
       s +=
         fs
           .readFileSync(srcs[i])
           .toString()
-          .replace(/const\s/g, "var ") + ";\n";
+          .replace(/(const|let)\s/g, "var ")
+          .replace(/^\s*var\s([{},\s\w]+)\s=\srequire(\("[^"]+"\));?$/gm, "/* $1 = REQ $2 */;");
+      s += ";\n";
     }
   }
   return s;

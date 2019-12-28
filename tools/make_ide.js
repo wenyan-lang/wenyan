@@ -1,6 +1,4 @@
-try {
-  process.chdir("./tools");
-} catch (e) {} //make sure we're in tools directory
+process.chdir(__dirname); //make sure we're in tools directory
 
 var fs = require("fs");
 var execSync = require("child_process").execSync;

@@ -258,6 +258,4 @@ function num2hanzi(n, nfrac = 6) {
   }
 }
 
-try {
-  module.exports = { hanzi2num, num2hanzi };
-} catch (e) {}
+module.exports = { hanzi2num, num2hanzi };
