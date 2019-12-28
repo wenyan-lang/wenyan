@@ -112,6 +112,4 @@ if (!Object.fromEntries) {
 }
 var KEYWORDS = Object.fromEntries(ke);
 
-try {
-  module.exports = { NUMBER_KEYWORDS, KEYWORDS };
-} catch (e) {}
+module.exports = { NUMBER_KEYWORDS, KEYWORDS };

@@ -1,6 +1,4 @@
-try {
-  process.chdir("./tools");
-} catch (e) {}
+process.chdir(__dirname); //make sure we're in tools directory
 
 var fs = require("fs");
 var parser = require("../src/parser");

@@ -1,11 +1,9 @@
-try {
-  var { hanzi2num, num2hanzi } = require("./hanzi2num");
-  var hanzi2pinyin = require("./hanzi2pinyin");
-  var STDLIB = require("./stdlib");
-  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-  var version = require("./version");
-  var compilers = require("./compiler/compilers");
-} catch (e) {}
+var { hanzi2num, num2hanzi } = require("./hanzi2num");
+var hanzi2pinyin = require("./hanzi2pinyin");
+var STDLIB = require("./stdlib");
+var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+var version = require("./version");
+var compilers = require("./compiler/compilers");
 
 function wy2tokens(txt) {
   var tokens = [];
@@ -714,6 +712,10 @@ function compile(
   return targ;
 }
 
+if (typeof version === 'undefined') {
+  let version = 'web-unknown';
+}
+
 var parser = {
   compile,
   version,
@@ -726,6 +728,4 @@ var parser = {
   NUMBER_KEYWORDS,
   STDLIB
 };
-try {
-  module.exports = parser;
-} catch (e) {}
+module.exports = parser;

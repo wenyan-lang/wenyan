@@ -1,6 +1,5 @@
-try {
-  var Base = require("./base");
-} catch (e) {}
+var Base = require("./base");
+
 class PYCompiler extends Base {
   compile(options = {}) {
     var imports = options.imports || [];
@@ -331,6 +330,5 @@ class Ctnr():
 `;
 
 const PY = PYCompiler;
-try {
-  module.exports = PY;
-} catch (e) {}
+module.exports = PY;
+

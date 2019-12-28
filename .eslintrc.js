@@ -9,7 +9,7 @@ module.exports = {
   },
   extends: [
     /* disbale rules temporary, before the codebase refactored with module system */
-    // "eslint:recommended",
+    "eslint:recommended",
     "prettier",
     "prettier/babel"
   ]

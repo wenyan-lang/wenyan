@@ -1,5 +1,8 @@
 try {
-  const package = require("../package.json");
+  var package = require("../package.json");
+} catch (e) {
+  var package = { version: 'Unknown' };
+}
 
-  module.exports = package.version;
-} catch (e) {}
+module.exports = package.version;
+

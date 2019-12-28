@@ -1,6 +1,4 @@
-try {
-  process.chdir("./tools");
-} catch (e) {} //make sure we're in tools directory
+process.chdir(__dirname); //make sure we're in tools directory
 
 const fs = require("fs");
 const utils = require("./utils");
@@ -148,7 +146,7 @@ pre{
 #bg{
   width: 100%;
   height: 400px;
-  // overflow: scroll;
+  /*overflow: scroll;*/
   overflow: hidden;
   position: absolute;
   left: 0px;

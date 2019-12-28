@@ -1,7 +1,5 @@
-try {
-  var { num2hanzi } = require("./hanzi2num");
-  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-} catch (e) {}
+var { num2hanzi } = require("./hanzi2num");
+var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
 
 var DEFAULT_COLORS = {
   ctrl: "#F92672",

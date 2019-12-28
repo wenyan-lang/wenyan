@@ -19,6 +19,4 @@ class BaseCompiler {
   }
 }
 var Base = BaseCompiler;
-try {
-  module.exports = Base;
-} catch (e) {}
+module.exports = BaseCompiler;
