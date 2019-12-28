@@ -1,6 +1,6 @@
-# API Specification
-
 [Back to README](../README.md)
+
+# Compiler API Specification
 
 > 🚧 Please note this project is still under heavy development. The API might be changed frequently and this doc any not be always update to date. If you get any questions, feel free to raise an issue.
 

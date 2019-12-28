@@ -95,7 +95,7 @@ You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://g
 
 ### Advance Usage
 
-[API Specification](./documentation/API.md)
+[Compiler API Specification](./documentation/Compiler-API.md)
 
 ## Syntax Cheatsheet
 
@@ -197,11 +197,16 @@ Arrays are 1-indexed.
 |`注曰。「「文言備矣」」。` | `/*文言備矣*/` |
 |`疏曰。「「居第一之位故稱初。以其陽爻故稱九」」。` | `/*居第一之位故稱初。以其陽爻故稱九*/` |
 
+### Advance Features
+
+- [Try...Catch](./documentation/Try-Catch.md)
+- [Nested Function Calls](./documentation/Nested-Function-Calls.md)
+- [Importing and Standard Library](./documentation/Importing.md)
 
 ## Renderer
 
 ```bash
-wenyan examples/turing.wy --render 圖靈機 --output .
+wenyan examples/turing.wy --render --title 圖靈機
 ```
 
 Render a wenyan script into an image that resembles pages from historical printed books. 
