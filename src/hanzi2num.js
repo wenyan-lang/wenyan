@@ -116,13 +116,20 @@ const eDigitState = {
   ZERO_MULT_AMBIG: "ZERO_MULT_AMBIG"  // 零十 (ambiguous: 零一十 or 零十 or 〇十)
 };
 
+const RESULT_2_TO_63 = {
+  sign: 1,
+  exp: 0,
+  digits: "9223372036854775808".split("").reverse()
+};
+
 function hanzi2numstr(s) {
-  function tokenize(s, assert) {
+  // returns array of tokens on success, null on invalid string
+  function tokenize(s) {
     let result = [{ type: eTokenType.BEGIN }];
     for (let i = 0; i < s.length; ++i) {
       let tokenStr = s.charAt(i);
       if (!NUM_TOKENS.hasOwnProperty(tokenStr)) {
-        return;
+        return null;
       }
       result.push(NUM_TOKENS[tokenStr]);
     }
@@ -130,8 +137,17 @@ function hanzi2numstr(s) {
     return result;
   }
 
-  // parses the number string backwards, from lowest to highest digit
+  // returns:
+  //   on success: {
+  //     sign:   +1/-1/+Infinity/-Infinity/NaN,
+  //     exp:    power of 10,
+  //     digits: array of digits from lowest to highest, with leading and trailing zeros
+  //   }
+  //   on invalid string: null
+  // result = sign * {digits[length-1..0]} * 10^exp
+  // e.g. 負零又五毫零絲 = { sign: -1, exp: -4, digits: [0, 5, 0, 0, 0] } = -00050e-4 = -0.005
   function parse(tokens) {
+    // parses the number string backwards, from lowest to highest digit
     // parser state
     let digitState = eDigitState.NONE;
 
@@ -179,7 +195,7 @@ function hanzi2numstr(s) {
       _expAdd: 0
     };
 
-    // result
+    // result, with different convension of exp for internal use
     let result = {
       sign: function () {
         return this._sign;
@@ -194,13 +210,18 @@ function hanzi2numstr(s) {
       applySign: function (newSign) {
         this._sign *= newSign;
       },
+      // digit: number or array of numbers
       push: function (digit) {
-        this._digits.push(digit);
-        ++this._exp;
+        if (Array.isArray(digit)) {
+          this._digits = this._digits.concat(digit);
+          this._exp += digit.length;
+        } else {
+          this._digits.push(digit);
+          ++this._exp;
+        }
       },
       fillZeros: function (newExp) {
-        this._digits = this._digits.concat(Array(newExp - this._exp).fill(0));
-        this._exp = newExp;
+        this.push(Array(newExp - this._exp).fill(0));
       },
       resetExp: function (newExp) {
         this._exp = newExp;
@@ -218,7 +239,7 @@ function hanzi2numstr(s) {
 
       // sign should be the first char
       if (multStack.state() == eMultState.SIGN && token.type != eTokenType.BEGIN) {
-        return;
+        return null;
       }
 
       // disambiguate omitted 一
@@ -229,7 +250,7 @@ function hanzi2numstr(s) {
             // 負(一?)十 -> 負一十
             // 又(一?)十 -> 又一十
             // ·(一?)十 -> ·一十
-            // 分(一?)萬 -> 分一萬
+            // 分(一?)十絲 -> 分一十絲
             case eTokenType.BEGIN:
             case eTokenType.SIGN:
             case eTokenType.DELIM:
@@ -268,37 +289,54 @@ function hanzi2numstr(s) {
 
         case eDigitState.ZERO_MULT_AMBIG:
           switch (token.type) {
-            // <BEGIN>(零一|〇)十 -> <BEGIN>〇十
-            // 負(零一|〇)十 -> 負〇十
-            // 一(零一|〇)十 -> 一〇十
-            // 又(零一|〇)十 -> 又〇十
-            // ·(零一|〇)十 -> ·〇十
-            // 分(零一|〇)十 -> 分〇十 (error)
-            // 零(零一|〇)十 -> 〇〇十
+            // <BEGIN>(零一|零|〇)十 -> <BEGIN>〇十
+            // 負(零一|零|〇)十 -> 負〇十
+            // 一(零一|零|〇)十 -> 一〇十
+            // 又(零一|零|〇)十 -> 又〇十
+            // 零(零一|零|〇)十 -> 〇〇十
             case eTokenType.BEGIN:
             case eTokenType.SIGN:
             case eTokenType.DIGIT:
-            case eTokenType.DECIMAL:
-            case eTokenType.FRAC_MULT:
             case eTokenType.DELIM:
             case eTokenType.ZERO:
               result.push(0);
               digitState = eDigitState.DIGIT_WITH_ZERO;
               break;
 
-            // 百(零一|〇)十 -> 百〇十
-            // 千(零一|〇)十 -> 千零一十
-            // 百(零一|〇)萬 -> 百零萬
+            // ·(零一|零|〇)十絲 -> ·零一十絲
+            // ·(零一|零|〇)十釐 -> ·〇十釐
+            // ·(零一|零|〇)十分 -> error
+            // ·(零一|零|〇)百分 -> error
+            // 分(零一|零|〇)十絲 -> 分零一十絲
+            // 分(零一|零|〇)十毫 -> 分〇十絲
+            // 分(零一|零|〇)十釐 -> error
+            // 分(零一|零|〇)十分 -> error
+            case eTokenType.DECIMAL:
+            case eTokenType.FRAC_MULT:
+              if (multStack.total() + 1 < token.exp) {
+                result.push(1);
+                result.push(0);
+                digitState = eDigitState.ZERO;
+              } else if (multStack.total() + 1 == token.exp) {
+                result.push(0);
+                digitState = eDigitState.DIGIT_WITH_ZERO;
+              } else {
+                return null;
+              }
+              break;
+
+            // 千(零一|零|〇)十 -> 千零一十
+            // 百(零一|零|〇)十 -> 百〇十
+            // 萬(零一|零|〇)萬 -> 萬零萬
+            // 百(零一|零|〇)萬 -> 百零萬
             case eTokenType.INT_MULT:
-              if (multStack.top() < token.exp) {
-                if (multStack.top() == token.exp - 1) {
-                  result.push(0);
-                  digitState = eDigitState.DIGIT_WITH_ZERO;
-                } else {
-                  result.push(1);
-                  result.push(0);
-                  digitState = eDigitState.ZERO;
-                }
+              if (multStack.top() + 1 < token.exp) {
+                result.push(1);
+                result.push(0);
+                digitState = eDigitState.ZERO;
+              } else if (multStack.top() + 1 == token.exp) {
+                result.push(0);
+                digitState = eDigitState.DIGIT_WITH_ZERO;
               } else {
                 result.push(0);
                 digitState = eDigitState.ZERO;
@@ -340,7 +378,7 @@ function hanzi2numstr(s) {
               // <BEGIN>微 -> error
               // 負微 -> error
               case eDigitState.MULT:
-                return;
+                return null;
 
               default:
                 multStack.markDone();
@@ -365,7 +403,7 @@ function hanzi2numstr(s) {
             switch (digitState) {
               // 又又 -> error
               case eDigitState.DELIM:
-                return;
+                return null;
 
               default:
                 return result.exp();
@@ -378,7 +416,7 @@ function hanzi2numstr(s) {
           case eTokenType.DECIMAL:
           case eTokenType.FRAC_MULT:
             if (digitState == eDigitState.MULT) {
-              return;
+              return null;
             } else {
               multStack.clear();
               multStack.push(token.exp);
@@ -421,13 +459,13 @@ function hanzi2numstr(s) {
             return multStack.total();
         }
       }();
-      if (currExp === undefined) {
-        return;
+      if (currExp == null) {
+        return null;
       }
 
       // check for overlapping decimal places
       if (currExp < result.exp()) {
-        return;
+        return null;
       }
 
       // check for disallowed missing decimal places
@@ -449,7 +487,7 @@ function hanzi2numstr(s) {
         };
 
         if (!check()) {
-          return;
+          return null;
         }
         if (multStack.state() != eMultState.DONE) {
           result.fillZeros(currExp);
@@ -515,49 +553,116 @@ function hanzi2numstr(s) {
       }
     }
 
-    // build decimal string
-    const digits = result.digits();
-    if (digits.length == 0) {
-      return;
+    if (result.digits().length == 0) {
+      return null;
     }
+    return {
+      sign: result.sign(),
+      exp: result.exp() - result.digits().length,
+      digits: result.digits()
+    };
+  }
 
-    const sign = result.sign();
-    if (!Number.isFinite(sign)) {
-      return sign.toString();
+  function getDigit(result, exp) {
+    const idx = exp - result.exp;
+    if (idx >= 0 && idx < result.digits.length) {
+      return result.digits[idx];
+    } else {
+      return 0;
     }
-    let str = sign < 0 ? "-" : "";
+  }
 
-    const rend = digits.findIndex(x => x != 0);
-    if (rend < 0) {
-      str += "0e+0";
-      return str;
+  function compareMagnitude(resultA, resultB) {
+    const getMaxExp = result => result.exp + (result.digits.length - 1);
+
+    const maxExp = Math.max(getMaxExp(resultA), getMaxExp(resultB));
+    for (let i = maxExp; i >= resultA.exp || i >= resultB.exp; --i) {
+      const digitA = getDigit(resultA, i);
+      const digitB = getDigit(resultB, i);
+      if (digitA > digitB) {
+        return 1;
+      } else if (digitA < digitB) {
+        return -1;
+      }
     }
+    return 0;
+  }
 
-    let rbegin = digits.length;
-    while (digits[rbegin - 1] == 0) {
-      --rbegin;
+  // parse
+  let tokens = tokenize(s);
+  if (tokens == null) {
+    return null;
+  }
+  let result = parse(tokens);
+  if (result == null) {
+    return null;
+  }
+
+  // build decimal string
+  if (!Number.isFinite(result.sign)) {
+    // infinity/NaN
+    return result.sign.toString();
+  }
+  let str = result.sign < 0 ? "-" : "";
+
+  // no fractional digits (including zero) and fits in int64?
+  const printAsInt = function () {
+    if (result.exp < 0) {
+      return false;
     }
-    str += digits[rbegin - 1].toString();
+    const c = compareMagnitude(result, RESULT_2_TO_63);
+    return result.sign < 0 ? c <= 0 : c < 0;
+  }();
 
+  // digit range, leading and trailing zeros trimmed
+  const rend = result.digits.findIndex(x => x != 0);
+  if (rend < 0) {
+    str += "0";
+    return str;
+  }
+  const rendExp = result.exp + rend;
+
+  let rbegin = result.digits.length;
+  while (result.digits[rbegin - 1] == 0) {
+    --rbegin;
+  }
+  const rbeginExp = result.exp + rbegin;
+
+  // compute length of fixed and scientific format
+  let expStr = "";
+  let printAsScientific = false;
+  if (!printAsInt) {
+    const scientificExp = result.exp + (rbegin - 1);
+    expStr = (scientificExp < 0 ? "e-" : "e+") + Math.abs(scientificExp).toString();
+    const fixedLen = rendExp < 0 ? (Math.max(rbeginExp, 1) - rendExp + 1) : rbeginExp;
+    const scientificMagLen = rbegin - rend > 1 ? (rbegin - rend + 1) : 1;
+    if (scientificMagLen + expStr.length < fixedLen) {
+      printAsScientific = true;
+    }
+  }
+
+  if (printAsScientific) {
+    str += result.digits[rbegin - 1].toString();
     if (rbegin - 1 > rend) {
       str += ".";
       for (let i = rbegin - 1; i > rend; --i) {
-        str += digits[i - 1].toString();
+        str += result.digits[i - 1].toString();
       }
     }
-
-    const exp = result.exp() - (digits.length - rbegin) - 1;
-    str += exp < 0 ? "e-" : "e+";
-    str += Math.abs(exp).toString();
+    str += expStr;
+    return str;
+  } else {
+    for (let i = Math.max(rbeginExp, 1); i > 0; --i) {
+      str += getDigit(result, i - 1).toString();
+    }
+    if (rendExp < 0) {
+      str += ".";
+      for (let i = 0; i > rendExp; --i) {
+        str += getDigit(result, i - 1).toString();
+      }
+    }
     return str;
   }
-
-  let tokens = tokenize(s);
-  if (tokens === undefined) {
-    return;
-  }
-  let str = parse(tokens);
-  return str;
 }
 
 function hanzi2num(s) {
