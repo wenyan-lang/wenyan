@@ -16,7 +16,7 @@ class JSCompiler extends Base {
     var errcurlvls = [];
 
     function getval(x) {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -31,16 +31,16 @@ class JSCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = a.values[j][1];
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "[]";
             } else if (a.type == "num") {
@@ -265,7 +265,7 @@ class JSCompiler extends Base {
         strayvar = [];
       } else if (a.op == "catcherr") {
         var ec = errcurlvls[errcurlvls.length - 1];
-        if (a.error == undefined) {
+        if (a.error === undefined) {
           var vname = this.nextTmpVar();
           strayvar.push(vname);
           if (curlvl != ec[0]) {

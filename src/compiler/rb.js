@@ -99,14 +99,14 @@ class RBCompiler extends Base {
         return ans;
       }
       if (x[0] == "iden") return this.rename(x[1]);
-      if (x[1] == undefined) return "nil";
+      if (x[1] === undefined) return "nil";
       return x[1];
     };
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
       if (a.op == "var") {
         for (let j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           let name = a.names[j];
@@ -115,7 +115,7 @@ class RBCompiler extends Base {
             continue;
           }
           let value = getval(a.values[j]);
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }

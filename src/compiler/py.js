@@ -17,7 +17,7 @@ class PYCompiler extends Base {
     var strayvar = [];
     var took = 0;
     const getval = x => {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -25,7 +25,7 @@ class PYCompiler extends Base {
         strayvar = [];
         return ans;
       }
-      if (x[1] == undefined) {
+      if (x[1] === undefined) {
         return undefined;
       }
       if (x[1].toString() == "true") {
@@ -41,16 +41,16 @@ class PYCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = getval(a.values[j]);
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "Ctnr()";
             } else if (a.type == "num") {

@@ -1,5 +1,5 @@
 try {
-  var { hanzi2num, num2hanzi } = require("./hanzi2num");
+  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
@@ -7,7 +7,10 @@ try {
   var compilers = require("./compiler/compilers");
 } catch (e) {}
 
-function wy2tokens(txt) {
+function wy2tokens(
+  txt,
+  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
+) {
   var tokens = [];
   var tok = "";
   var idt = false;
@@ -26,7 +29,9 @@ function wy2tokens(txt) {
   }
   function endnum() {
     if (num) {
-      tokens.push(["num", hanzi2num(tok), i]);
+      const numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr, i]);
       tok = "";
       num = false;
     }
@@ -141,11 +146,13 @@ function wy2tokens(txt) {
   }
   if (tok.length) {
     if (num) {
-      tokens.push(["num", hanzi2num(tok)]);
+      const numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr]);
     } else if (data) {
       tokens.push(["data", tok]);
     } else {
-      console.log("[Tokenizer Error] Unterminated identifier.");
+      assert("Unterminated identifier.", i, false);
     }
   }
   return tokens;
@@ -180,7 +187,7 @@ function tokenRomanize(tokens, method) {
     if (tokens[i][0] == "iden" && !isRoman(tokens[i][1])) {
       var r = idenMap[tokens[i][1]];
       var key = tokens[i][1];
-      if (r != undefined) {
+      if (r !== undefined) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
@@ -206,7 +213,7 @@ function tokenRomanize(tokens, method) {
 
 function tokens2asc(
   tokens,
-  assert = (msg, pos, b) => console.log(`ERROR@${pos}: ${msg}`)
+  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
 ) {
   var asc = [];
   var i = 0;
@@ -215,7 +222,7 @@ function tokens2asc(
     var cmd = gettok(i, 0);
 
     function gettok(idx, jdx) {
-      if (tokens[idx] == undefined) {
+      if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
       return tokens[idx][jdx];
@@ -236,12 +243,14 @@ function tokens2asc(
       gettok(i, 0) == "decl" &&
       (gettok(i, 1) == "uninit" || gettok(i, 1) == "public")
     ) {
-      typeassert(i + 1, ["num", "iden"], "variable count");
+      typeassert(i + 1, ["num"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
+      const cnt = Number(gettok(i + 1, 1));
+      assert(`Invalid variable count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
 
       var x = {
         op: "var",
-        count: gettok(i + 1, 1),
+        count: cnt,
         type: gettok(i + 2, 1),
         values: [],
         names: [],
@@ -279,7 +288,7 @@ function tokens2asc(
         pos
       };
       i += 3;
-      if (tokens[i] != undefined && gettok(i, 0) == "name") {
+      if (tokens[i] !== undefined && gettok(i, 0) == "name") {
         x.names = [gettok(i + 1, 1)];
         i += 2;
       }
@@ -306,19 +315,19 @@ function tokens2asc(
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
         while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "funbody")) {
-          if (gettok(i, 0) == "num") {
-            typeassert(i + 1, ["type"], "argument type");
-            var typ = gettok(i + 1, 1);
-            var cnt = gettok(i, 1);
-            x.arity += cnt;
-            i += 2;
-            for (var j = 0; j < cnt; j++) {
-              typeassert(i + j * 2, ["assgn"], "another argument");
-              typeassert(i + j * 2 + 1, ["iden"], "argument");
-              x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
-            }
-            i += cnt * 2;
+          typeassert(i, ["num"], "argument count");
+          typeassert(i + 1, ["type"], "argument type");
+          var typ = gettok(i + 1, 1);
+          var cnt = Number(gettok(i, 1));
+          assert(`Invalid argument count ${cnt}.`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+          x.arity += cnt;
+          i += 2;
+          for (var j = 0; j < cnt; j++) {
+            typeassert(i + j * 2, ["assgn"], "another argument");
+            typeassert(i + j * 2 + 1, ["iden"], "argument");
+            x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
           }
+          i += cnt * 2;
         }
       }
       asc.push(x);
@@ -538,7 +547,10 @@ function tokens2asc(
       asc.push({ op: "discard", pos });
       i++;
     } else if (gettok(i, 0) == "take") {
-      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      typeassert(i + 1, ["num"], "argument count");
+      const cnt = Number(gettok(i + 1, 1));
+      assert(`Invalid argument count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+      asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
@@ -623,21 +635,12 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = typeof STDLIB == undefined ? {} : STDLIB,
+    lib = typeof STDLIB == "undefined" ? {} : STDLIB,
     reader = defaultReader
   } = {}
 ) {
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
-
-  var tokens = wy2tokens(txt);
-
-  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
-  logCallback(tokens);
-
-  if (romanizeIdentifiers != "none") {
-    tokenRomanize(tokens, romanizeIdentifiers);
-  }
 
   var txtlines = txt.split("\n");
   function assert(msg, pos, b) {
@@ -663,6 +666,15 @@ function compile(
       return errmsg;
     }
     return 0;
+  }
+
+  var tokens = wy2tokens(txt, assert);
+
+  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
+  logCallback(tokens);
+
+  if (romanizeIdentifiers != "none") {
+    tokenRomanize(tokens, romanizeIdentifiers);
   }
 
   var asc = tokens2asc(tokens, assert);
@@ -720,6 +732,7 @@ var parser = {
   wy2tokens,
   tokens2asc,
   hanzi2num,
+  hanzi2numstr,
   num2hanzi,
   hanzi2pinyin,
   KEYWORDS,
