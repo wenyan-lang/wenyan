@@ -1,43 +1,3 @@
-var NUMS = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-var MULTS1 = ["十", "百", "千"];
-var MULTS4 = [
-  "萬",
-  "億",
-  "兆",
-  "京",
-  "垓",
-  "秭",
-  "穰",
-  "溝",
-  "澗",
-  "正",
-  "載",
-  "極",
-  "恆河沙",
-  "阿僧祇",
-  "那由他",
-  "不可思議",
-  "無量大數"
-];
-var FRACS1 = ["分", "釐", "毫", "絲", "忽", "微", "纖", "沙"];
-var FRACS4 = [
-  "塵",
-  "埃",
-  "渺",
-  "漠",
-  "模糊",
-  "逡巡",
-  "須臾",
-  "瞬息",
-  "彈指",
-  "剎那",
-  "六德",
-  "虛",
-  "空",
-  "清",
-  "淨"
-];
-
 const eTokenType = {
   SIGN: "SIGN",           // 負
   DIGIT: "DIGIT",         // 一二三...
@@ -95,6 +55,62 @@ const NUM_TOKENS = {
   "埃": { type: eTokenType.FRAC_MULT, exp: -10 },
   "渺": { type: eTokenType.FRAC_MULT, exp: -11 },
   "漠": { type: eTokenType.FRAC_MULT, exp: -12 }
+};
+
+const NEG_WORD = "負";
+const INF_WORD = "無限大數";
+const NAN_WORD = "不可算數";
+
+const DECIMAL_WORD = {
+  "readout": "又"
+};
+
+const DIGIT_WORDS = {
+  "readout": {
+    "0": "零",
+    "1": "一",
+    "2": "二",
+    "3": "三",
+    "4": "四",
+    "5": "五",
+    "6": "六",
+    "7": "七",
+    "8": "八",
+    "9": "九"
+  }
+};
+
+const MULT_WORDS = {
+  "readout": [
+    { str: "極", exp: 48 },
+    { str: "載", exp: 44 },
+    { str: "正", exp: 40 },
+    { str: "澗", exp: 36 },
+    { str: "溝", exp: 32 },
+    { str: "穰", exp: 28 },
+    { str: "秭", exp: 24 },
+    { str: "垓", exp: 20 },
+    { str: "京", exp: 16 },
+    { str: "兆", exp: 12 },
+    { str: "億", exp: 8 },
+    { str: "萬", exp: 4 },
+    { str: "千", exp: 3 },
+    { str: "百", exp: 2 },
+    { str: "十", exp: 1 },
+    { str: "", exp: 0 },
+    { str: "分", exp: -1 },
+    { str: "釐", exp: -2 },
+    { str: "毫", exp: -3 },
+    { str: "絲", exp: -4 },
+    { str: "忽", exp: -5 },
+    { str: "微", exp: -6 },
+    { str: "纖", exp: -7 },
+    { str: "沙", exp: -8 },
+    { str: "塵", exp: -9 },
+    { str: "埃", exp: -10 },
+    { str: "渺", exp: -11 },
+    { str: "漠", exp: -12 }
+  ]
 };
 
 const eMultState = {
@@ -666,97 +682,149 @@ function hanzi2numstr(s) {
 }
 
 function hanzi2num(s) {
-  return Number(hanzi2numstr(s));
+  const str = hanzi2numstr(s);
+  if (str == null) {
+    return NaN;
+  } else {
+    return Number(str);
+  }
 }
 
-function num2hanzi(n, nfrac = 6) {
-  function int2hanzi(n) {
-    if (n < 10) {
-      return NUMS[n];
+function num2hanzi(n, format = "", precision = undefined) {
+  if (!Number.isFinite(n)) {
+    if (n == Infinity) {
+      return INF_WORD;
+    } else if (n == -Infinity) {
+      return NEG_WORD + INF_WORD;
+    } else {
+      return NAN_WORD;
     }
-    var s = "";
-    var z = -1;
-    for (var i = MULTS4.length - 1; i >= 0; i--) {
-      var m = Math.pow(10000, i + 1);
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n = n % m;
-        s += int2hanzi(k) + MULTS4[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    for (var i = MULTS1.length - 1; i >= 0; i--) {
-      var m = Math.pow(10, i + 1);
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n = n % m;
-        s += int2hanzi(k) + MULTS1[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    if (n) {
-      s += int2hanzi(n);
-    }
-    if (s[s.length - 1] == "零") {
-      s = s.slice(0, s.length - 1);
-    }
-    return s;
-  }
-  function frac2hanzi(n) {
-    var mfrac = Math.pow(0.1, nfrac);
-    var s = "";
-    var z = -1;
-    for (var i = 0; i < FRACS1.length; i++) {
-      var m = Math.pow(0.1, i + 1);
-      if (m < mfrac) {
-        break;
-      }
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n -= k * m;
-        s += int2hanzi(k) + FRACS1[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    for (var i = 0; i < FRACS4.length; i++) {
-      var m = Math.pow(0.0001, i + 1) * 1e-8;
-      if (m < mfrac) {
-        break;
-      }
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n -= k * m;
-        s += int2hanzi(k) + FRACS4[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    if (s[s.length - 1] == "零") {
-      s = s.slice(0, s.length - 1);
-    }
-    return s;
   }
 
-  if (n < 0) {
-    return "負" + num2hanzi(-n);
+  // the same format as hanzi2numstr.parse
+  function parseNumStr(str) {
+    function myIndexOf(str, val) {
+      const idx = str.indexOf(val);
+      return idx < 0 ? str.length : idx;
+    }
+    const sign = str.charAt(0) == "-" ? -1 : 1;
+    const digitIndex = "+-".includes(str.charAt(0)) ? 1 : 0;
+    const expIndex = myIndexOf(str, "e");
+    const scientificExp = expIndex == str.length ? 0 : Number(str.substring(expIndex + 1));
+    const decimalIndex = myIndexOf(str.substring(0, expIndex), ".");
+    const intStr = str.substring(digitIndex, decimalIndex);
+    const intDigits = intStr.split("").reverse();
+    const fracStr = str.substring(Math.min(decimalIndex + 1, expIndex), expIndex);
+    const fracDigits = fracStr.split("").reverse();
+    return {
+      sign: sign,
+      exp: scientificExp - fracDigits.length,
+      digits: fracDigits.concat(intDigits)
+    };
   }
-  var intn = Math.floor(n);
-  if (intn == n) {
-    return int2hanzi(n);
-  } else {
-    return int2hanzi(intn) + "又" + frac2hanzi(n - intn);
+
+  // reserved for future extension
+  const chineseFormat = "readout";
+  const multWords = MULT_WORDS[chineseFormat];
+  const digitWords = DIGIT_WORDS[chineseFormat];
+  const decimalWord = DECIMAL_WORD[chineseFormat];
+
+  let numStr = precision === undefined ? n.toString() : n.toFixed(precision);
+  let result = parseNumStr(numStr);
+  let signStr = result.sign < 0 ? NEG_WORD : "";
+  let rend = result.digits.findIndex(x => x != "0");
+  if (rend < 0) {
+    return signStr + digitWords["0"];
   }
+  let rbegin = result.digits.length;
+  while (result.digits[rbegin - 1] == "0") {
+    --rbegin;
+  }
+
+  // is this beyond the lowest fractional unit we can represent?
+  const minMultExp = multWords[multWords.length - 1].exp;
+  if (result.exp + rend < minMultExp) {
+    // cap to lowest fractional unit and retry
+    numStr = n.toFixed(-minMultExp);
+    result = parseNumStr(numStr);
+    signStr = result.sign < 0 ? NEG_WORD : "";
+    rend = result.digits.findIndex(x => x != "0");
+    if (rend < 0) {
+      return signStr + digitWords["0"];
+    }
+    rbegin = result.digits.length;
+    while (result.digits[rbegin - 1] == "0") {
+      --rbegin;
+    }
+  }
+
+  // convert digits to readout format
+  let str = signStr;
+  let pendingZero = false;
+  let i = rbegin;
+  const intToReadout = function (expBias = 0) {
+    let hasOutput = false;
+    while (i != rend) {
+      const mult = multWords.find(x => x.exp + expBias <= result.exp + (i - 1));
+      if (mult === undefined || mult.exp < 0) {
+        // done with int part
+        break;
+      } else if (mult.exp > 0) {
+        // needs higher multiplier
+        if (intToReadout(expBias + mult.exp)) {
+          // 零 is omitted here (100 0000 -> 一百萬)
+          pendingZero = false;
+          // write the multiplier
+          str += mult.str;
+          hasOutput = true;
+        }
+      } else if (mult.exp == 0) {
+        if (result.digits[i - 1] != "0") {
+          // insert 零 if necessary
+          if (pendingZero) {
+            str += digitWords["0"];
+            pendingZero = false;
+          }
+          // write the digit
+          str += digitWords[result.digits[i - 1]];
+          hasOutput = true;
+        } else {
+          // mark that there are zero(s) not written yet
+          // 零 will be added later if necessary
+          pendingZero = true;
+        }
+        --i;
+        break;
+      }
+    }
+    return hasOutput;
+  };
+  const fracToReadout = function () {
+    while (i != rend) {
+      const mult = multWords.find(x => x.exp <= result.exp + (i - 1));
+      if (mult === undefined) {
+        break;
+      }
+      if (intToReadout(mult.exp)) {
+        str += mult.str;
+        pendingZero = false;
+      }
+    }
+  };
+
+  const hasInt = intToReadout();
+  pendingZero = false;
+  if (i != rend) {
+    if (hasInt) {
+      str += decimalWord;
+    }
+    // avoid 又零
+    while (i != rend && result.digits[i - 1] == "0") {
+      --i;
+    }
+    fracToReadout();
+  }
+  return str;
 }
 
 try {
