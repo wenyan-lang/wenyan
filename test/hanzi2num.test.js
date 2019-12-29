@@ -1,5 +1,5 @@
 var assert = require("assert");
-var { num2hanzi, hanzi2num } = require("../src/hanzi2num");
+var { num2hanzi, hanzi2num, hanzi2numstr } = require("../src/hanzi2num");
 
 describe("hanzi2num", () => {
   describe("num2hanzi(0.53212121222)", () => {
@@ -33,9 +33,9 @@ describe("hanzi2num", () => {
     });
   });
 
-  describe("num2hanzi(-(10**10+99))", () => {
+  describe("num2hanzi(-(1e+10 + 99))", () => {
     it("should translate small negative float numner to hanzi", () => {
-      assert.equal(num2hanzi(-(10 ** 10 + 99)), "負一百億零九十九");
+      assert.equal(num2hanzi(-(1e+10 + 99)), "負一百億零九十九");
     });
   });
 
@@ -63,14 +63,38 @@ describe("hanzi2num", () => {
     });
   });
 
-  describe('hanzi2num("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")', () => {
+  describe('hanzi2numstr("二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一")', () => {
     it("should translate hanzi to number correctly", () => {
       assert.equal(
-        hanzi2num(
+        hanzi2numstr(
           "二十一京二千三百四十五兆六千七百八十億零九百萬零二百五十有一"
         ),
-        212345678009000260
+        "212345678009000251"
       );
+    });
+  });
+
+  describe('hanzi2numstr("一極零二")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.equal(
+        hanzi2numstr("一極零二"),
+        "1000000000000000000000000000000000000000000000002");
+    });
+  });
+
+  describe('hanzi2numstr("一極零二又三漠")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.equal(
+        hanzi2numstr("一極零二又三漠"),
+        "1000000000000000000000000000000000000000000000002.000000000003");
+    });
+  });
+
+  describe('hanzi2numstr("一極零二京")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.equal(
+        hanzi2numstr("一極零二京"),
+        "1.00000000000000000000000000000002e+48");
     });
   });
 
