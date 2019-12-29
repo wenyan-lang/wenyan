@@ -46,7 +46,7 @@ function runAll(lang) {
 }
 
 // runExample("js", "import");
-runAll("js");
+// runAll("js");
 
-// runExample("js", "../../../Downloads/local_test");
+runExample("js", "../../../Downloads/local_test");
 // runExample("js", "import");
