@@ -246,7 +246,7 @@ function tokens2asc(
       typeassert(i + 1, ["num"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
       const cnt = Number(gettok(i + 1, 1));
-      assert(`Invalid variable count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt >= 0);
+      assert(`Invalid variable count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
 
       var x = {
         op: "var",
@@ -319,7 +319,7 @@ function tokens2asc(
           typeassert(i + 1, ["type"], "argument type");
           var typ = gettok(i + 1, 1);
           var cnt = Number(gettok(i, 1));
-          assert(`Invalid argument count ${cnt}.`, pos, Number.isSafeInteger(cnt) && cnt >= 0);
+          assert(`Invalid argument count ${cnt}.`, pos, Number.isSafeInteger(cnt) && cnt > 0);
           x.arity += cnt;
           i += 2;
           for (var j = 0; j < cnt; j++) {
@@ -549,7 +549,7 @@ function tokens2asc(
     } else if (gettok(i, 0) == "take") {
       typeassert(i + 1, ["num"], "argument count");
       const cnt = Number(gettok(i + 1, 1));
-      assert(`Invalid argument count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt >= 0);
+      assert(`Invalid argument count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
       asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
