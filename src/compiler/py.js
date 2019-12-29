@@ -17,7 +17,7 @@ class PYCompiler extends Base {
     var strayvar = [];
     var took = 0;
     const getval = x => {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -25,7 +25,7 @@ class PYCompiler extends Base {
         strayvar = [];
         return ans;
       }
-      if (x[1] == undefined) {
+      if (x[1] === undefined) {
         return undefined;
       }
       if (x[1].toString() == "true") {
@@ -41,16 +41,16 @@ class PYCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = getval(a.values[j]);
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "Ctnr()";
             } else if (a.type == "num") {
@@ -172,20 +172,22 @@ class PYCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          py += `${vname}=${a.fun}` + jj + ";";
+          py += `${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          py += `${vname}=${a.fun}(${a.args.map(x => getval(x)).join(")(")});`;
+          py += `${vname}=${getval(a.fun)}(${a.args
+            .map(x => getval(x))
+            .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
         var idx = getval(a.value);
         var vname = this.nextTmpVar();
         if (idx == "rest") {
-          py += `${vname}=${a.container}.slice(1);`;
+          py += `${vname}=${getval(a.container)}.slice(1);`;
         } else {
-          py += `${vname}=${a.container}[${idx}${
+          py += `${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
         }
@@ -202,12 +204,12 @@ class PYCompiler extends Base {
         strayvar.push(vname);
       } else if (a.op == "push") {
         py += "\t".repeat(curlvl);
-        py += `${a.container}.push(${a.values
+        py += `${getval(a.container)}.push(${a.values
           .map(x => getval(x))
           .join(",")})\n`;
       } else if (a.op == "for") {
         py += "\t".repeat(curlvl);
-        py += `for ${a.iterator} in ${a.container}:\n`;
+        py += `for ${a.iterator} in ${getval(a.container)}:\n`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         py += "\t".repeat(curlvl);
@@ -252,7 +254,7 @@ class PYCompiler extends Base {
         imports.push(f);
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        py += `${vname}=${a.container}.length;`;
+        py += `${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "comment") {
         py += "\t".repeat(curlvl);

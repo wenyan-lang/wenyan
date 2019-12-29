@@ -32,14 +32,14 @@ function catsrc() {
   return s;
 }
 
-function loadlib() {
+function loadlib(pth = "../lib/") {
   var lib = {};
-  var srcs = fs.readdirSync("../lib/");
+  var srcs = fs.readdirSync(pth);
   for (var i = 0; i < srcs.length; i++) {
     if (srcs[i].endsWith(".wy")) {
-      lib[srcs[i].split(".")[0]] = fs
-        .readFileSync("../lib/" + srcs[i])
-        .toString();
+      lib[srcs[i].split(".")[0]] = fs.readFileSync(pth + srcs[i]).toString();
+    } else if (fs.lstatSync(pth + srcs[i]).isDirectory()) {
+      lib[srcs[i]] = loadlib((path = pth + srcs[i] + "/"));
     }
   }
   return lib;

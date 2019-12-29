@@ -16,7 +16,7 @@ class JSCompiler extends Base {
     var errcurlvls = [];
 
     function getval(x) {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -31,16 +31,16 @@ class JSCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = a.values[j][1];
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "[]";
             } else if (a.type == "num") {
@@ -166,11 +166,11 @@ class JSCompiler extends Base {
           if (!jj.length) {
             jj = "()";
           }
-          js += `var ${vname}=${a.fun}` + jj + ";";
+          js += `var ${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.fun}(${a.args
+          js += `var ${vname}=${getval(a.fun)}(${a.args
             .map(x => getval(x))
             .join(")(")});`;
           strayvar.push(vname);
@@ -179,11 +179,11 @@ class JSCompiler extends Base {
         var idx = getval(a.value);
         if (idx == "rest") {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}.slice(1);`;
+          js += `var ${vname}=${getval(a.container)}.slice(1);`;
           strayvar.push(vname);
         } else {
           var vname = this.nextTmpVar();
-          js += `var ${vname}=${a.container}[${idx}${
+          js += `var ${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
           strayvar.push(vname);
@@ -199,9 +199,11 @@ class JSCompiler extends Base {
           ");";
         strayvar.push(vname);
       } else if (a.op == "push") {
-        js += `${a.container}.push(${a.values.map(x => getval(x)).join(",")});`;
+        js += `${getval(a.container)}.push(${a.values
+          .map(x => getval(x))
+          .join(",")});`;
       } else if (a.op == "for") {
-        js += `for (var ${a.iterator} of ${a.container}){`;
+        js += `for (var ${a.iterator} of ${getval(a.container)}){`;
         curlvl++;
       } else if (a.op == "whiletrue") {
         js += "while (true){";
@@ -237,7 +239,7 @@ class JSCompiler extends Base {
         }
       } else if (a.op == "length") {
         var vname = this.nextTmpVar();
-        js += `var ${vname}=${a.container}.length;`;
+        js += `var ${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "temp") {
         var vname = this.nextTmpVar();
@@ -263,7 +265,7 @@ class JSCompiler extends Base {
         strayvar = [];
       } else if (a.op == "catcherr") {
         var ec = errcurlvls[errcurlvls.length - 1];
-        if (a.error == undefined) {
+        if (a.error === undefined) {
           var vname = this.nextTmpVar();
           strayvar.push(vname);
           if (curlvl != ec[0]) {

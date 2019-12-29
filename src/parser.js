@@ -1,5 +1,5 @@
 try {
-  var { hanzi2num, num2hanzi } = require("./hanzi2num");
+  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
@@ -7,11 +7,15 @@ try {
   var compilers = require("./compiler/compilers");
 } catch (e) {}
 
-function wy2tokens(txt) {
+function wy2tokens(
+  txt,
+  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
+) {
   var tokens = [];
   var tok = "";
   var idt = false;
   var num = false;
+  var litlvl = 0;
   var data = false;
 
   var i = 0;
@@ -25,7 +29,9 @@ function wy2tokens(txt) {
   }
   function endnum() {
     if (num) {
-      tokens.push(["num", hanzi2num(tok), i]);
+      const numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr, i]);
       tok = "";
       num = false;
     }
@@ -34,6 +40,7 @@ function wy2tokens(txt) {
   while (i < txt.length) {
     if (
       txt[i] == "。" ||
+      txt[i] == "、" ||
       txt[i] == "\n" ||
       txt[i] == "\r" ||
       txt[i] == "\t" ||
@@ -42,64 +49,95 @@ function wy2tokens(txt) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if (txt[i] == "「" && txt[i + 1] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-      i++;
-    } else if (txt[i] == "」" && txt[i + 1] == "」") {
-      tokens.push(["lit", `"${tok}"`, i + 1]);
-      idt = false;
-      tok = "";
-      i++;
-    } else if (txt[i] == "「") {
-      enddata();
-      endnum();
-      idt = true;
-      tok = "";
-    } else if (txt[i] == "」") {
-      tokens.push(["iden", tok, i]);
-      idt = false;
-      tok = "";
-    } else {
-      if (idt) {
-        tok += txt[i];
-      } else if (num) {
-        if (NUMBER_KEYWORDS.includes(txt[i])) {
-          tok += txt[i];
-        } else {
-          endnum();
-          i--;
-        }
+    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+      var is_sin = txt[i] == "「";
+      if (litlvl == 0) {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
       } else {
-        var ok = false;
-        for (var k in KEYWORDS) {
-          ok = true;
-          for (var j = 0; j < k.length; j++) {
-            if (txt[i + j] != k[j]) {
-              ok = false;
+        tok += txt[i];
+        if (is_sin) {
+          tok += txt[i + 1];
+        }
+      }
+      litlvl++;
+      if (is_sin) {
+        i++;
+      }
+    } else if (
+      (txt[i] == "」" &&
+        txt[i + 1] == "」" &&
+        (txt[i + 2] != "」" || txt[i + 3] == "」")) ||
+      txt[i] == "』"
+    ) {
+      var is_sin = txt[i] == "」";
+      litlvl--;
+      if (litlvl == 0) {
+        tokens.push(["lit", `"${tok}"`, i + 1]);
+        idt = false;
+        tok = "";
+      } else {
+        tok += txt[i];
+        if (is_sin) {
+          tok += txt[i + 1];
+        }
+      }
+      if (is_sin) {
+        i++;
+      }
+    } else if (litlvl > 0) {
+      tok += txt[i];
+    } else {
+      if (txt[i] == "「") {
+        enddata();
+        endnum();
+        idt = true;
+        tok = "";
+      } else if (txt[i] == "」") {
+        tokens.push(["iden", tok, i]);
+        idt = false;
+        tok = "";
+      } else {
+        if (idt) {
+          tok += txt[i];
+        } else if (num) {
+          if (NUMBER_KEYWORDS.includes(txt[i])) {
+            tok += txt[i];
+          } else {
+            endnum();
+            i--;
+          }
+        } else {
+          var ok = false;
+          for (var k in KEYWORDS) {
+            ok = true;
+            for (var j = 0; j < k.length; j++) {
+              if (txt[i + j] != k[j]) {
+                ok = false;
+                break;
+              }
+            }
+            if (ok) {
+              enddata();
+              var kinfo = KEYWORDS[k];
+              while (kinfo.length < 2) {
+                kinfo.push(undefined);
+              }
+              i += k.length - 1;
+              tokens.push(kinfo.concat([i]));
               break;
             }
           }
-          if (ok) {
-            enddata();
-            var kinfo = KEYWORDS[k];
-            while (kinfo.length < 2) {
-              kinfo.push(undefined);
+          if (!ok) {
+            if (NUMBER_KEYWORDS.includes(txt[i])) {
+              num = true;
+              tok = txt[i];
+            } else {
+              tok += txt[i];
+              data = true;
             }
-            i += k.length - 1;
-            tokens.push(kinfo.concat([i]));
-            break;
-          }
-        }
-        if (!ok) {
-          if (NUMBER_KEYWORDS.includes(txt[i])) {
-            num = true;
-            tok = txt[i];
-          } else {
-            tok += txt[i];
-            data = true;
           }
         }
       }
@@ -108,11 +146,13 @@ function wy2tokens(txt) {
   }
   if (tok.length) {
     if (num) {
-      tokens.push(["num", hanzi2num(tok)]);
+      const numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr]);
     } else if (data) {
       tokens.push(["data", tok]);
     } else {
-      console.log("[Tokenizer Error] Unterminated identifier.");
+      assert("Unterminated identifier.", i, false);
     }
   }
   return tokens;
@@ -147,7 +187,7 @@ function tokenRomanize(tokens, method) {
     if (tokens[i][0] == "iden" && !isRoman(tokens[i][1])) {
       var r = idenMap[tokens[i][1]];
       var key = tokens[i][1];
-      if (r != undefined) {
+      if (r !== undefined) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
@@ -173,7 +213,7 @@ function tokenRomanize(tokens, method) {
 
 function tokens2asc(
   tokens,
-  assert = (msg, pos, b) => console.log(`ERROR@${pos}: ${msg}`)
+  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
 ) {
   var asc = [];
   var i = 0;
@@ -182,7 +222,7 @@ function tokens2asc(
     var cmd = gettok(i, 0);
 
     function gettok(idx, jdx) {
-      if (tokens[idx] == undefined) {
+      if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
       return tokens[idx][jdx];
@@ -203,12 +243,14 @@ function tokens2asc(
       gettok(i, 0) == "decl" &&
       (gettok(i, 1) == "uninit" || gettok(i, 1) == "public")
     ) {
-      typeassert(i + 1, ["num", "iden"], "variable count");
+      typeassert(i + 1, ["num"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
+      const cnt = Number(gettok(i + 1, 1));
+      assert(`Invalid variable count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
 
       var x = {
         op: "var",
-        count: gettok(i + 1, 1),
+        count: cnt,
         type: gettok(i + 2, 1),
         values: [],
         names: [],
@@ -246,7 +288,7 @@ function tokens2asc(
         pos
       };
       i += 3;
-      if (tokens[i] != undefined && gettok(i, 0) == "name") {
+      if (tokens[i] !== undefined && gettok(i, 0) == "name") {
         x.names = [gettok(i + 1, 1)];
         i += 2;
       }
@@ -273,19 +315,19 @@ function tokens2asc(
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
         while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "funbody")) {
-          if (gettok(i, 0) == "num") {
-            typeassert(i + 1, ["type"], "argument type");
-            var typ = gettok(i + 1, 1);
-            var cnt = gettok(i, 1);
-            x.arity += cnt;
-            i += 2;
-            for (var j = 0; j < cnt; j++) {
-              typeassert(i + j * 2, ["assgn"], "another argument");
-              typeassert(i + j * 2 + 1, ["iden"], "argument");
-              x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
-            }
-            i += cnt * 2;
+          typeassert(i, ["num"], "argument count");
+          typeassert(i + 1, ["type"], "argument type");
+          var typ = gettok(i + 1, 1);
+          var cnt = Number(gettok(i, 1));
+          assert(`Invalid argument count ${cnt}.`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+          x.arity += cnt;
+          i += 2;
+          for (var j = 0; j < cnt; j++) {
+            typeassert(i + j * 2, ["assgn"], "another argument");
+            typeassert(i + j * 2 + 1, ["iden"], "argument");
+            x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
           }
+          i += cnt * 2;
         }
       }
       asc.push(x);
@@ -361,7 +403,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: gettok(i + 1, 1), args: [], pos };
+      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -370,14 +412,14 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "l") {
-      asc.push({ op: "call", pop: true, fun: gettok(i + 1, 1), pos });
+      asc.push({ op: "call", pop: true, fun: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
       var x = {
         op: "push",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         values: [tokens[i + 3]],
         pos
       };
@@ -393,10 +435,10 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "subs"
     ) {
-      typeassert(i + 1, ["iden", "lit"]);
+      typeassert(i + 1, ["iden", "lit", "ans"]);
       var x = {
         op: "subscript",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         value: tokens[i + 3],
         pos
       };
@@ -408,8 +450,8 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctnr" &&
       gettok(i + 2, 1) == "len"
     ) {
-      typeassert(i + 1, ["iden", "lit"]);
-      var x = { op: "length", container: gettok(i + 1, 1), pos };
+      typeassert(i + 1, ["iden", "lit", "subs"]);
+      var x = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -444,7 +486,7 @@ function tokens2asc(
     ) {
       var x = {
         op: "for",
-        container: gettok(i + 1, 1),
+        container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
         pos
       };
@@ -505,7 +547,10 @@ function tokens2asc(
       asc.push({ op: "discard", pos });
       i++;
     } else if (gettok(i, 0) == "take") {
-      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      typeassert(i + 1, ["num"], "argument count");
+      const cnt = Number(gettok(i + 1, 1));
+      assert(`Invalid argument count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+      asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
@@ -590,21 +635,12 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = typeof STDLIB == undefined ? {} : STDLIB,
+    lib = typeof STDLIB == "undefined" ? {} : STDLIB,
     reader = defaultReader
   } = {}
 ) {
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
-
-  var tokens = wy2tokens(txt);
-
-  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
-  logCallback(tokens);
-
-  if (romanizeIdentifiers != "none") {
-    tokenRomanize(tokens, romanizeIdentifiers);
-  }
 
   var txtlines = txt.split("\n");
   function assert(msg, pos, b) {
@@ -632,6 +668,15 @@ function compile(
     return 0;
   }
 
+  var tokens = wy2tokens(txt, assert);
+
+  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
+  logCallback(tokens);
+
+  if (romanizeIdentifiers != "none") {
+    tokenRomanize(tokens, romanizeIdentifiers);
+  }
+
   var asc = tokens2asc(tokens, assert);
 
   logCallback("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
@@ -641,6 +686,7 @@ function compile(
   var imports = [];
   var mwrapper = jsWrapModule;
   if (!compilers[lang]) {
+    console.log(compilers);
     return logCallback("Target language not supported.");
   }
   var klass = compilers[lang];
@@ -654,7 +700,9 @@ function compile(
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
-    if (imports[i] in lib) {
+    if (imports[i] in lib[lang]) {
+      isrc = lib[lang][imports[i]];
+    } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
       isrc = reader(imports[i]);
@@ -684,6 +732,7 @@ var parser = {
   wy2tokens,
   tokens2asc,
   hanzi2num,
+  hanzi2numstr,
   num2hanzi,
   hanzi2pinyin,
   KEYWORDS,
