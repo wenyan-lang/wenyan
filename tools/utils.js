@@ -1,6 +1,8 @@
 const fs = require("fs");
 var execSync = require("child_process").execSync;
 
+const catsrcIgnore = "/* wenyan-catsrc-ignore */";
+
 function remotelib(urls) {
   var src = urls
     .map(url => execSync(`curl -s ${url}`, { encoding: "utf-8" }).toString())
@@ -22,11 +24,10 @@ function catsrc() {
 
   for (var i = 0; i < srcs.length; i++) {
     if (srcs[i].endsWith(".js") && !srcs[i].includes("cli")) {
-      s +=
-        fs
-          .readFileSync(srcs[i])
-          .toString()
-          .replace(/const\s/g, "var ") + ";\n";
+      const raw = fs.readFileSync(srcs[i], "utf-8");
+
+      if (!raw.startsWith(catsrcIgnore))
+        s += raw.replace(/const\s/g, "var ") + ";\n";
     }
   }
   return s;

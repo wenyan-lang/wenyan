@@ -56,6 +56,7 @@ const Utils = {
   ...Default(),
   entry: {
     render: './src/render.js',
+    runtime: './src/browser_runtime.js',
   }
 }
 

@@ -7,14 +7,9 @@ const root = path.resolve(__dirname, "..");
 const distRoot = path.resolve(__dirname, "../dist");
 const npmOrganization = "@wenyanlang";
 
-const packages = ["cli", "core", "render"];
+const packages = ["cli", "core", "render", "runtime"];
 
-const fileToCopy = [
-  "README.md",
-  "README.zh-Hans.md",
-  "README.zh-Hant.md",
-  "LICENSE"
-];
+const fileToCopy = ["README.md", "CHANGELOG.md", "LICENSE"];
 
 const fieldsInPackageJSONToRemove = [
   "devDependencies",
@@ -47,6 +42,7 @@ async function MakePackageJSON() {
     const json = JSON.parse(JSON.stringify(packageJSON));
     json.name = `${npmOrganization}/${package}`;
     json.main = "./index.min.js";
+    json.unpkg = "./index.min.js";
 
     for (const field of fieldsInPackageJSONToRemove) delete json[field];
 
