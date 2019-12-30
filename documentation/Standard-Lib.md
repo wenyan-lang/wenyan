@@ -4,7 +4,7 @@
 
 # Standard Library Cheatsheet
 
-Last updated: Mon, 30 Dec 2019 13:42:21 GMT
+Last updated: Mon, 30 Dec 2019 15:32:37 GMT
 
 
 ## Usage
@@ -64,14 +64,6 @@ Last updated: Mon, 30 Dec 2019 13:42:21 GMT
 
 | Wenyan | Javascript Equivalent |
 |---|---|
-| [`左移`](../lib/js/位經.wy#L1) | `x<<y` |
-| [`右移`](../lib/js/位經.wy#L6) | `x>>y` |
-| [`補零右移`](../lib/js/位經.wy#L11) | `x>>>y` |
-| [`位与`](../lib/js/位經.wy#L16) | `x&y` |
-| [`位或`](../lib/js/位經.wy#L21) | `x\|y` |
-| [`异或`](../lib/js/位經.wy#L26) | `x^y` |
-| [`与非`](../lib/js/位經.wy#L31) | `~(x&y)` |
-| [`位變`](../lib/js/位經.wy#L36) | `~x` |
 
 
 
@@ -82,7 +74,7 @@ This cheatsheet is generated direct from stdlibs. There are still a lot of funct
 
 Add comments in the stdlib files (one line above the function/value), the format should look like this:
 ```
-疏曰「「餘弦。同犀之Math.cos也。」」
+注曰「「餘弦。同Javascript之Math.cos也。」」
 ```
 
 After you fill the comments, you need to update the document by running

@@ -6,7 +6,7 @@ const StdlibDocFilePath = path.resolve(
   __dirname,
   "../documentation/Standard-Lib.md"
 );
-const DocRegex = /疏曰「「(.+?)。同犀之(.+?)也。」」/g;
+const DocRegex = /注曰「「(.+?)。同Javascript之(.+?)也。」」/g;
 const GithubRoot = "..";
 
 const HEAD = `<!-- GENERATED FILE, DO NOT MODIFY-->
@@ -32,7 +32,7 @@ This cheatsheet is generated direct from stdlibs. There are still a lot of funct
 
 Add comments in the stdlib files (one line above the function/value), the format should look like this:
 \`\`\`
-疏曰「「餘弦。同犀之Math.cos也。」」
+注曰「「餘弦。同Javascript之Math.cos也。」」
 \`\`\`
 
 After you fill the comments, you need to update the document by running
