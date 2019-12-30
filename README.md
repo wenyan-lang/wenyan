@@ -95,6 +95,12 @@ You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://g
 - [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
 - [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
 
+### Browser Runtime
+
+You can now run Wenyan scripts right in your html file.
+
+Please refer to [Browser Runtime](./documentation/Runtime.md)
+
 ### Advance Usage
 
 [Compiler API Specification](./documentation/Compiler-API.md)
