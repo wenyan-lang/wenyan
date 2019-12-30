@@ -7,7 +7,7 @@ const StdlibDocFilePath = path.resolve(
   "../documentation/Standard-Lib.md"
 );
 const DocRegex = /疏曰「「(.+?)。同犀之(.+?)也。」」/g;
-const GithubRoot = "https://github.com/LingDong-/wenyan-lang/blob/master";
+const GithubRoot = "..";
 
 const HEAD = `<!-- GENERATED FILE, DO NOT MODIFY-->
 
