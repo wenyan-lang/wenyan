@@ -30,5 +30,6 @@ module.exports = {
   sieve: "埃氏篩",
   sqrt_newton: "牛頓求根法",
   turing: "圖靈機",
-  try: "異常處理示例"
+  try: "異常處理示例",
+  macro: "宏示例"
 };
