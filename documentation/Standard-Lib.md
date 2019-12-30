@@ -4,7 +4,7 @@
 
 # Standard Library Cheatsheet
 
-Last updated: Mon, 30 Dec 2019 12:00:50 GMT
+Last updated: Mon, 30 Dec 2019 12:04:13 GMT
 
 
 ## Usage
@@ -52,7 +52,7 @@ Last updated: Mon, 30 Dec 2019 12:00:50 GMT
 | [`右移`](../lib/js/位經.wy#L6) | `x>>y` |
 | [`補零右移`](../lib/js/位經.wy#L11) | `x>>>y` |
 | [`位与`](../lib/js/位經.wy#L16) | `x&y` |
-| [`位或`](../lib/js/位經.wy#L21) | `x|y` |
+| [`位或`](../lib/js/位經.wy#L21) | `x\|y` |
 | [`异或`](../lib/js/位經.wy#L26) | `x^y` |
 | [`与非`](../lib/js/位經.wy#L31) | `~(x&y)` |
 | [`位變`](../lib/js/位經.wy#L36) | `~x` |

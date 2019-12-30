@@ -44,6 +44,10 @@ to update the document.
 Then you can submit a pull request. Thank you!
 `;
 
+function escapeMarkdown(text) {
+  return text.replace(/\|/g, "\\|").replace(/`/g, "\\`");
+}
+
 function getLineIndexes(text) {
   let previous = 0;
   var lines = [];
@@ -88,7 +92,8 @@ function readFile(filepath, relativePath) {
   markdown += `| Wenyan | Javascript Equivalent |\n|---|---|\n`;
 
   for (const { wenyan, js, line } of results) {
-    markdown += `| [\`${wenyan}\`](${GithubPath}#L${line + 1}) | \`${js}\` |\n`;
+    markdown += `| [\`${escapeMarkdown(wenyan)}\`](${GithubPath}#L${line +
+      1}) | \`${escapeMarkdown(js)}\` |\n`;
   }
 
   return markdown + "\n";
