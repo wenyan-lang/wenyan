@@ -35,13 +35,12 @@ Add comments in the stdlib files (one line above the function/value), the format
 疏曰「「餘弦。同犀之Math.cos也。」」
 \`\`\`
 
-After you fill the comments, you need to run
+After you fill the comments, you need to update the document by running
 \`\`\`bash
 npm run docs:update
 \`\`\`
-to update the document.
 
-Then you can submit a pull request. Thank you!
+Check the output document out and submit a pull request. Thank you!
 `;
 
 function escapeMarkdown(text) {

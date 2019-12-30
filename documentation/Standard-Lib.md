@@ -4,7 +4,7 @@
 
 # Standard Library Cheatsheet
 
-Last updated: Mon, 30 Dec 2019 12:04:13 GMT
+Last updated: Mon, 30 Dec 2019 13:42:21 GMT
 
 
 ## Usage
@@ -23,20 +23,36 @@ Last updated: Mon, 30 Dec 2019 12:04:13 GMT
 | Wenyan | Javascript Equivalent |
 |---|---|
 | [`圓周率`](../lib/算經.wy#L166) | `Math.PI` |
-| [`正弦`](../lib/算經.wy#L460) | `Math.sin` |
-| [`餘弦`](../lib/算經.wy#L490) | `Math.cos` |
-| [`反正弦`](../lib/算經.wy#L498) | `Math.asin` |
-| [`反餘弦`](../lib/算經.wy#L525) | `Math.acos` |
-| [`正切`](../lib/算經.wy#L532) | `Math.tan` |
-| [`反正切`](../lib/算經.wy#L569) | `Math.atan` |
-| [`對數`](../lib/算經.wy#L656) | `Math.log` |
-| [`冪`](../lib/算經.wy#L734) | `Math.pow` |
-| [`平方根`](../lib/算經.wy#L758) | `Math.sqrt` |
-| [`絕對`](../lib/算經.wy#L819) | `Math.abs` |
-| [`取頂`](../lib/算經.wy#L824) | `Math.ceil` |
-| [`取底`](../lib/算經.wy#L829) | `Math.floor` |
-| [`取整`](../lib/算經.wy#L844) | `Math.round` |
-| [`取整`](../lib/算經.wy#L858) | `Math.trunc` |
+| [`倍圓周率`](../lib/算經.wy#L169) | `Math.PI * 2` |
+| [`半圓周率`](../lib/算經.wy#L172) | `Math.PI / 2` |
+| [`四分圓周率`](../lib/算經.wy#L175) | `Math.PI / 4` |
+| [`自然常數`](../lib/算經.wy#L177) | `Math.E` |
+| [`歐拉常數`](../lib/算經.wy#L179) | `0.5772156649015329` |
+| [`黃金分割數`](../lib/算經.wy#L181) | `1.618033988749895` |
+| [`二之平方根`](../lib/算經.wy#L183) | `Math.SQRT2` |
+| [`二之對數`](../lib/算經.wy#L185) | `Math.LN2` |
+| [`十之對數`](../lib/算經.wy#L187) | `Math.LN10` |
+| [`不可算數乎`](../lib/算經.wy#L190) | `Number.isNaN` |
+| [`浮點移位`](../lib/算經.wy#L392) | `x * Math.pow(2, y), y is integer` |
+| [`析浮點數`](../lib/算經.wy#L428) | `N/A` |
+| [`正弦`](../lib/算經.wy#L472) | `Math.sin` |
+| [`餘弦`](../lib/算經.wy#L502) | `Math.cos` |
+| [`反正弦`](../lib/算經.wy#L510) | `Math.asin` |
+| [`反餘弦`](../lib/算經.wy#L537) | `Math.acos` |
+| [`正切`](../lib/算經.wy#L544) | `Math.tan` |
+| [`反正切`](../lib/算經.wy#L581) | `Math.atan` |
+| [`勾股求角`](../lib/算經.wy#L615) | `Math.atan2` |
+| [`勾股求弦`](../lib/算經.wy#L633) | `Math.hypot` |
+| [`對數`](../lib/算經.wy#L670) | `Math.log` |
+| [`指數`](../lib/算經.wy#L713) | `Math.exp` |
+| [`冪`](../lib/算經.wy#L749) | `Math.pow` |
+| [`平方根`](../lib/算經.wy#L773) | `Math.sqrt` |
+| [`絕對`](../lib/算經.wy#L834) | `Math.abs` |
+| [`取頂`](../lib/算經.wy#L839) | `Math.ceil` |
+| [`取底`](../lib/算經.wy#L844) | `Math.floor` |
+| [`取整`](../lib/算經.wy#L859) | `Math.round, but rounded away from zero when the fractional part is exactly 0.5` |
+| [`捨餘`](../lib/算經.wy#L873) | `Math.trunc` |
+| [`正負`](../lib/算經.wy#L883) | `Math.sign` |
 
 ## [籌經](../lib/籌經.wy)
 
@@ -66,13 +82,12 @@ This cheatsheet is generated direct from stdlibs. There are still a lot of funct
 
 Add comments in the stdlib files (one line above the function/value), the format should look like this:
 ```
-疏曰「「下溢。同犀之Math.floor也。」」
+疏曰「「餘弦。同犀之Math.cos也。」」
 ```
 
-After you fill the comments, you need to run
+After you fill the comments, you need to update the document by running
 ```bash
 npm run docs:update
 ```
-to update the document.
 
-Then you can submit a pull request. Thank you!
+Check the output document out and submit a pull request. Thank you!
