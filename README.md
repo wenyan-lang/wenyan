@@ -207,9 +207,10 @@ Arrays are 1-indexed.
 
 ### Advance Features
 
+- [Standard Library](./documentation/Standard-Lib.md)
 - [Try...Catch](./documentation/Try-Catch.md)
 - [Nested Function Calls](./documentation/Nested-Function-Calls.md)
-- [Importing and Standard Library](./documentation/Importing.md)
+- [Importing](./documentation/Importing.md)
 
 ## Renderer
 
