@@ -32,7 +32,7 @@ This cheatsheet is generated direct from stdlibs. There are still a lot of funct
 
 Add comments in the stdlib files (one line above the function/value), the format should look like this:
 \`\`\`
-疏曰「「下溢。同犀之Math.floor也。」」
+疏曰「「餘弦。同犀之Math.cos也。」」
 \`\`\`
 
 After you fill the comments, you need to run
