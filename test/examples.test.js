@@ -11,6 +11,8 @@ const python = getPythonExecutable();
 const examplesContainsRandom = ["divination"];
 const examplesBrokenByNewFeatures = ["quine", "quine2"];
 
+const testSkippingComments = "注曰。skip_test";
+
 function getPythonExecutable() {
   try {
     const output = execSync(`python3 -V`).toString();
@@ -25,6 +27,8 @@ function getPythonExecutable() {
 
 function runExample(lang, name, options = {}) {
   var txt = fs.readFileSync(path.join(exampleDir, name + ".wy")).toString();
+  if (txt.startsWith(testSkippingComments)) return;
+
   var compiled = parser.compile(lang, txt, {
     logCallback: () => {},
     ...options
