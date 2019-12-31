@@ -4,7 +4,10 @@ var { num2hanzi, hanzi2num, hanzi2numstr } = require("../src/hanzi2num");
 describe("hanzi2num", () => {
   describe("num2hanzi(0.53212121222)", () => {
     it("should translate float number to hanzi correctly", () => {
-      assert.strictEqual(num2hanzi(0.53212121222), "五分三釐二毫一絲二忽一微二纖一沙二塵二埃二渺");
+      assert.strictEqual(
+        num2hanzi(0.53212121222),
+        "五分三釐二毫一絲二忽一微二纖一沙二塵二埃二渺"
+      );
     });
   });
 
@@ -35,7 +38,7 @@ describe("hanzi2num", () => {
 
   describe("num2hanzi(-(1e+10 + 99))", () => {
     it("should translate small negative float numner to hanzi", () => {
-      assert.strictEqual(num2hanzi(-(1e+10 + 99)), "負一百億零九十九");
+      assert.strictEqual(num2hanzi(-(1e10 + 99)), "負一百億零九十九");
     });
   });
 
@@ -53,7 +56,10 @@ describe("hanzi2num", () => {
 
   describe('hanzi2num("負一又二分三釐四毫五絲六忽七微")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("負一又二分三釐四毫五絲六忽七微"), -1.234567);
+      assert.strictEqual(
+        hanzi2num("負一又二分三釐四毫五絲六忽七微"),
+        -1.234567
+      );
     });
   });
 
@@ -78,7 +84,8 @@ describe("hanzi2num", () => {
     it("should translate hanzi to number correctly", () => {
       assert.strictEqual(
         hanzi2numstr("一極零二"),
-        "1000000000000000000000000000000000000000000000002");
+        "1000000000000000000000000000000000000000000000002"
+      );
     });
   });
 
@@ -86,7 +93,8 @@ describe("hanzi2num", () => {
     it("should translate hanzi to number correctly", () => {
       assert.strictEqual(
         hanzi2numstr("一極零二又三漠"),
-        "1000000000000000000000000000000000000000000000002.000000000003");
+        "1000000000000000000000000000000000000000000000002.000000000003"
+      );
     });
   });
 
@@ -94,13 +102,14 @@ describe("hanzi2num", () => {
     it("should translate hanzi to number correctly", () => {
       assert.strictEqual(
         hanzi2numstr("一極零二京"),
-        "1.00000000000000000000000000000002e+48");
+        "1.00000000000000000000000000000002e+48"
+      );
     });
   });
 
   describe('hanzi2num("極")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("極"), 1e+48);
+      assert.strictEqual(hanzi2num("極"), 1e48);
     });
   });
 
@@ -118,6 +127,44 @@ describe("hanzi2num", () => {
       );
     });
   });
+
+  //渺、埃、尘、沙、纤、微
+  describe('hanzi2num("一微")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一微"), 1e-6);
+    });
+  });
+
+  describe('hanzi2num("一纤")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一纤"), 1e-7);
+    });
+  });
+
+  describe('hanzi2num("一沙")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一沙"), 1e-8);
+    });
+  });
+
+  describe('hanzi2num("一尘")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一尘"), 1e-9);
+    });
+  });
+
+  describe('hanzi2num("一埃")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一埃"), 1e-10);
+    });
+  });
+
+  describe('hanzi2num("一渺")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一渺"), 1e-11);
+    });
+  });
+  // ended 渺、埃、尘、沙、纤、微
 
   describe('hanzi2num("一漠")', () => {
     it("should translate hanzi to number correctly", () => {
@@ -187,7 +234,7 @@ describe("hanzi2num", () => {
 
   describe('hanzi2num("十萬")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("十萬"), 1e+5);
+      assert.strictEqual(hanzi2num("十萬"), 1e5);
     });
   });
 
@@ -199,7 +246,7 @@ describe("hanzi2num", () => {
 
   describe('hanzi2num("萬億")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("萬億"), 1e+12);
+      assert.strictEqual(hanzi2num("萬億"), 1e12);
     });
   });
 
@@ -211,13 +258,16 @@ describe("hanzi2num", () => {
 
   describe('hanzi2num("三·一四一五九二六五三五八九七九三")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("三·一四一五九二六五三五八九七九三"), Math.PI);
+      assert.strictEqual(
+        hanzi2num("三·一四一五九二六五三五八九七九三"),
+        Math.PI
+      );
     });
   });
 
   describe('hanzi2num("一二京三四五六兆七〇〇〇億")', () => {
     it("should translate hanzi to number correctly", () => {
-      assert.strictEqual(hanzi2num("一二京三四五六兆七〇〇〇億"), 1.234567e+17);
+      assert.strictEqual(hanzi2num("一二京三四五六兆七〇〇〇億"), 1.234567e17);
     });
   });
 
