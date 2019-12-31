@@ -211,6 +211,7 @@ Arrays are 1-indexed.
 - [Try...Catch](./documentation/Try-Catch.md)
 - [Nested Function Calls](./documentation/Nested-Function-Calls.md)
 - [Importing](./documentation/Importing.md)
+- [Macros](./documentation/Macros.md)
 
 ## Renderer
 
