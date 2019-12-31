@@ -691,9 +691,9 @@ function compile(
   var macros = extractMacros(lang, txt, { lib, reader });
   txt = expandMacros(txt, macros);
 
-  console.log("\n\n=== [PASS 0] EXPAND-MACROS ===");
-  console.log(macros);
-  // console.log(txt);
+  logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
+  logCallback(macros);
+  // logCallback(txt);
 
   var tokens = wy2tokens(txt, assert);
 
