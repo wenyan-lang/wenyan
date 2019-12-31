@@ -3,6 +3,7 @@ module.exports = {
   collatz: "考拉兹猜想",
   collatz2: "考拉兹猜想二",
   divination: "春秋古筮法",
+  draw_heart: "畫心",
   eightqueens: "八皇后問題",
   euclidean: "歐幾里得法",
   factorial: "階乘",
@@ -15,6 +16,7 @@ module.exports = {
   import: "導入示例",
   mandelbrot: "曼德博集",
   mergesort: "歸併排序",
+  macro: "宏示例",
   misc: "雜項",
   modinv: "大衍求一術",
   multiplication_table: "乘算口訣",
@@ -30,6 +32,7 @@ module.exports = {
   sieve: "埃氏篩",
   sqrt_newton: "牛頓求根法",
   turing: "圖靈機",
-  try: "異常處理示例",
-  macro: "宏示例"
+  tree: "畫樹",
+  tree2: "畫樹二",
+  try: "異常處理示例"
 };
