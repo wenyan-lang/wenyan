@@ -105,10 +105,8 @@ const MULT_WORDS = {
     { str: "忽", exp: -5 },
     { str: "微", exp: -6 },
     { str: "纖", exp: -7 },
-    { str: "纤", exp: -7 },
-    //{ str: "沙", exp: -8 },
+    { str: "沙", exp: -8 },
     { str: "塵", exp: -9 },
-    //{ str: "尘", exp: -9 },
     { str: "埃", exp: -10 },
     { str: "渺", exp: -11 },
     { str: "漠", exp: -12 }
