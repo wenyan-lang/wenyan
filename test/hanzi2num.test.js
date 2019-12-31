@@ -128,7 +128,7 @@ describe("hanzi2num", () => {
     });
   });
 
-  //渺、埃、尘 (塵)、沙、纤、微
+  //渺、埃、尘 (塵)、沙、纤(纖)、微
   describe('hanzi2num("一微")', () => {
     it("should translate hanzi to number correctly", () => {
       assert.strictEqual(hanzi2num("一微"), 1e-6);
@@ -138,6 +138,12 @@ describe("hanzi2num", () => {
   describe('hanzi2num("一纤")', () => {
     it("should translate hanzi to number correctly", () => {
       assert.strictEqual(hanzi2num("一纤"), 1e-7);
+    });
+  });
+
+  describe('hanzi2num("一纖")', () => {
+    it("should translate hanzi to number correctly", () => {
+      assert.strictEqual(hanzi2num("一纖"), 1e-7);
     });
   });
 
