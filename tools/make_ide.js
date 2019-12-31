@@ -6,7 +6,7 @@ var fs = require("fs");
 var execSync = require("child_process").execSync;
 var parser = require("../src/parser");
 var utils = require("./utils");
-const examplesAlias = require("./examples_alias");
+const { examplesAlias } = require("./examples_info");
 
 var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
 var prgms = {};
