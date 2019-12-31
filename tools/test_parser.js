@@ -45,7 +45,7 @@ function runAll(lang) {
   }
 }
 
-runExample("js", "macro");
+runExample("js", "tree");
 // runAll("js");
 
 // runExample("js", "../../../Downloads/local_test");
