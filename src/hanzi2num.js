@@ -50,10 +50,8 @@ const NUM_TOKENS = {
   忽: { type: eTokenType.FRAC_MULT, exp: -5 },
   微: { type: eTokenType.FRAC_MULT, exp: -6 },
   纖: { type: eTokenType.FRAC_MULT, exp: -7 },
-  //纤: { type: eTokenType.FRAC_MULT, exp: -7 },
   沙: { type: eTokenType.FRAC_MULT, exp: -8 },
   塵: { type: eTokenType.FRAC_MULT, exp: -9 },
-  //尘: { type: eTokenType.FRAC_MULT, exp: -9 },
   埃: { type: eTokenType.FRAC_MULT, exp: -10 },
   渺: { type: eTokenType.FRAC_MULT, exp: -11 },
   漠: { type: eTokenType.FRAC_MULT, exp: -12 }
