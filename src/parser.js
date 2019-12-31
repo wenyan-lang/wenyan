@@ -618,7 +618,11 @@ function tokens2asc(
 }
 
 function jsWrapModule(name, src) {
-  return `var ${name} = new function(){ ${src} };`;
+  return `/*___wenyan_module_${name}_start___*/var ${name} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
+}
+function pyWrapModule(name, src) {
+  // return `#/*___wenyan_module_${name}_start___*/\nclass ${name}:\n${src.split("\n").map(x=>"\t"+x).join("\n")}\n#/*___wenyan_module_${name}_end___*/\n`;
+  return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
 function defaultReader(x) {
@@ -711,7 +715,7 @@ function compile(
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var imports = [];
-  var mwrapper = jsWrapModule;
+  var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
   if (!compilers[lang]) {
     console.log(compilers);
     return logCallback("Target language not supported.");
@@ -721,7 +725,6 @@ function compile(
   var result = compiler.compile({ imports });
   var { imports, result } = result;
   var targ = result;
-  if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
@@ -735,7 +738,6 @@ function compile(
       isrc = reader(imports[i]);
     }
     targ =
-      `/*___wenyan_module_${imports[i]}_start___*/` +
       mwrapper(
         imports[i],
         compile(lang, isrc, {
@@ -745,9 +747,7 @@ function compile(
           errorCallback,
           lib
         })
-      ) +
-      `/*___wenyan_module_${imports[i]}_end___*/` +
-      targ;
+      ) + targ;
   }
 
   return targ;
