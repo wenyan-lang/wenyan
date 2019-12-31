@@ -82,9 +82,13 @@ function extractMacros(lang, txt, { lib, reader }) {
         var ins = s0.match(/「[甲乙丙丁戊己庚辛壬癸]」/g);
         var ous = s1.match(/「[甲乙丙丁戊己庚辛壬癸]」/g);
 
-        for (var k = 0; k < ous.length; k++) {
-          var ii = ins.indexOf(ous[k]);
-          s1 = s1.replace(new RegExp(ous[k], "g"), `\$${ii + 1}`);
+        if (ins !== null && ous !== null) {
+          for (var k = 0; k < ous.length; k++) {
+            var ii = ins.indexOf(ous[k]);
+            if (ii >= 0) {
+              s1 = s1.replace(new RegExp(ous[k], "g"), `\$${ii + 1}`);
+            }
+          }
         }
         s0 = s0.replace(/「[甲乙丙丁戊己庚辛壬癸]」/g, "(.*?)");
         macs.push([s0, s1]);
