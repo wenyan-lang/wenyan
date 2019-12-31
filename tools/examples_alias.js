@@ -21,6 +21,7 @@ module.exports = {
   nested_fun: "嵌套調用示例",
   obj: "对象示例",
   pi_leibniz: "萊布尼茲圓周率估算",
+  pi_liuhui: "劉徽割圓術求圓周率",
   quicksort: "快速排序",
   quicksort_inplace: "快速排序二",
   quine: "自產生程式",
@@ -29,5 +30,6 @@ module.exports = {
   sieve: "埃氏篩",
   sqrt_newton: "牛頓求根法",
   turing: "圖靈機",
-  try: "異常處理示例"
+  try: "異常處理示例",
+  macro: "宏示例"
 };

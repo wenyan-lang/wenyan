@@ -1,60 +1,60 @@
 const eTokenType = {
-  SIGN: "SIGN",           // 負
-  DIGIT: "DIGIT",         // 一二三...
-  DECIMAL: "DECIMAL",     // ·
-  INT_MULT: "INT_MULT",   // 十百千萬億...
+  SIGN: "SIGN", // 負
+  DIGIT: "DIGIT", // 一二三...
+  DECIMAL: "DECIMAL", // ·
+  INT_MULT: "INT_MULT", // 十百千萬億...
   FRAC_MULT: "FRAC_MULT", // 分釐毫...
-  DELIM: "DELIM",         // 又
-  ZERO: "ZERO",           // 零
+  DELIM: "DELIM", // 又
+  ZERO: "ZERO", // 零
 
   // pseudo tokens
-  BEGIN: "BEGIN",         // <BEGIN>
-  END: "END"              // <END>
+  BEGIN: "BEGIN", // <BEGIN>
+  END: "END" // <END>
 };
 
 const NUM_TOKENS = {
-  "負": { type: eTokenType.SIGN, sign: -1 },
+  負: { type: eTokenType.SIGN, sign: -1 },
   "·": { type: eTokenType.DECIMAL, exp: 0 }, // U+00B7 Middle Dot
-  "又": { type: eTokenType.DELIM },
-  "有": { type: eTokenType.DELIM },
-  "零": { type: eTokenType.ZERO, digit: "0" },
-  "〇": { type: eTokenType.DIGIT, digit: "0" }, // U+3007 Ideographic Number Zero
-  "一": { type: eTokenType.DIGIT, digit: "1" },
-  "二": { type: eTokenType.DIGIT, digit: "2" },
-  "三": { type: eTokenType.DIGIT, digit: "3" },
-  "四": { type: eTokenType.DIGIT, digit: "4" },
-  "五": { type: eTokenType.DIGIT, digit: "5" },
-  "六": { type: eTokenType.DIGIT, digit: "6" },
-  "七": { type: eTokenType.DIGIT, digit: "7" },
-  "八": { type: eTokenType.DIGIT, digit: "8" },
-  "九": { type: eTokenType.DIGIT, digit: "9" },
-  "十": { type: eTokenType.INT_MULT, exp: 1 },
-  "百": { type: eTokenType.INT_MULT, exp: 2 },
-  "千": { type: eTokenType.INT_MULT, exp: 3 },
-  "萬": { type: eTokenType.INT_MULT, exp: 4 },
-  "億": { type: eTokenType.INT_MULT, exp: 8 },
-  "兆": { type: eTokenType.INT_MULT, exp: 12 },
-  "京": { type: eTokenType.INT_MULT, exp: 16 },
-  "垓": { type: eTokenType.INT_MULT, exp: 20 },
-  "秭": { type: eTokenType.INT_MULT, exp: 24 },
-  "穰": { type: eTokenType.INT_MULT, exp: 28 },
-  "溝": { type: eTokenType.INT_MULT, exp: 32 },
-  "澗": { type: eTokenType.INT_MULT, exp: 36 },
-  "正": { type: eTokenType.INT_MULT, exp: 40 },
-  "載": { type: eTokenType.INT_MULT, exp: 44 },
-  "極": { type: eTokenType.INT_MULT, exp: 48 },
-  "分": { type: eTokenType.FRAC_MULT, exp: -1 },
-  "釐": { type: eTokenType.FRAC_MULT, exp: -2 },
-  "毫": { type: eTokenType.FRAC_MULT, exp: -3 },
-  "絲": { type: eTokenType.FRAC_MULT, exp: -4 },
-  "忽": { type: eTokenType.FRAC_MULT, exp: -5 },
-  "微": { type: eTokenType.FRAC_MULT, exp: -6 },
-  "纖": { type: eTokenType.FRAC_MULT, exp: -7 },
-  "沙": { type: eTokenType.FRAC_MULT, exp: -8 },
-  "塵": { type: eTokenType.FRAC_MULT, exp: -9 },
-  "埃": { type: eTokenType.FRAC_MULT, exp: -10 },
-  "渺": { type: eTokenType.FRAC_MULT, exp: -11 },
-  "漠": { type: eTokenType.FRAC_MULT, exp: -12 }
+  又: { type: eTokenType.DELIM },
+  有: { type: eTokenType.DELIM },
+  零: { type: eTokenType.ZERO, digit: "0" },
+  〇: { type: eTokenType.DIGIT, digit: "0" }, // U+3007 Ideographic Number Zero
+  一: { type: eTokenType.DIGIT, digit: "1" },
+  二: { type: eTokenType.DIGIT, digit: "2" },
+  三: { type: eTokenType.DIGIT, digit: "3" },
+  四: { type: eTokenType.DIGIT, digit: "4" },
+  五: { type: eTokenType.DIGIT, digit: "5" },
+  六: { type: eTokenType.DIGIT, digit: "6" },
+  七: { type: eTokenType.DIGIT, digit: "7" },
+  八: { type: eTokenType.DIGIT, digit: "8" },
+  九: { type: eTokenType.DIGIT, digit: "9" },
+  十: { type: eTokenType.INT_MULT, exp: 1 },
+  百: { type: eTokenType.INT_MULT, exp: 2 },
+  千: { type: eTokenType.INT_MULT, exp: 3 },
+  萬: { type: eTokenType.INT_MULT, exp: 4 },
+  億: { type: eTokenType.INT_MULT, exp: 8 },
+  兆: { type: eTokenType.INT_MULT, exp: 12 },
+  京: { type: eTokenType.INT_MULT, exp: 16 },
+  垓: { type: eTokenType.INT_MULT, exp: 20 },
+  秭: { type: eTokenType.INT_MULT, exp: 24 },
+  穰: { type: eTokenType.INT_MULT, exp: 28 },
+  溝: { type: eTokenType.INT_MULT, exp: 32 },
+  澗: { type: eTokenType.INT_MULT, exp: 36 },
+  正: { type: eTokenType.INT_MULT, exp: 40 },
+  載: { type: eTokenType.INT_MULT, exp: 44 },
+  極: { type: eTokenType.INT_MULT, exp: 48 },
+  分: { type: eTokenType.FRAC_MULT, exp: -1 },
+  釐: { type: eTokenType.FRAC_MULT, exp: -2 },
+  毫: { type: eTokenType.FRAC_MULT, exp: -3 },
+  絲: { type: eTokenType.FRAC_MULT, exp: -4 },
+  忽: { type: eTokenType.FRAC_MULT, exp: -5 },
+  微: { type: eTokenType.FRAC_MULT, exp: -6 },
+  纖: { type: eTokenType.FRAC_MULT, exp: -7 },
+  沙: { type: eTokenType.FRAC_MULT, exp: -8 },
+  塵: { type: eTokenType.FRAC_MULT, exp: -9 },
+  埃: { type: eTokenType.FRAC_MULT, exp: -10 },
+  渺: { type: eTokenType.FRAC_MULT, exp: -11 },
+  漠: { type: eTokenType.FRAC_MULT, exp: -12 }
 };
 
 const NEG_WORD = "負";
@@ -62,11 +62,11 @@ const INF_WORD = "無限大數";
 const NAN_WORD = "不可算數";
 
 const DECIMAL_WORD = {
-  "readout": "又"
+  readout: "又"
 };
 
 const DIGIT_WORDS = {
-  "readout": {
+  readout: {
     "0": "零",
     "1": "一",
     "2": "二",
@@ -81,7 +81,7 @@ const DIGIT_WORDS = {
 };
 
 const MULT_WORDS = {
-  "readout": [
+  readout: [
     { str: "極", exp: 48 },
     { str: "載", exp: 44 },
     { str: "正", exp: 40 },
@@ -114,22 +114,22 @@ const MULT_WORDS = {
 };
 
 const eMultState = {
-  NONE: "NONE",   // <END>, 一 (ambiguous: 一萬一 or 一十一 or 一·一 or 一絲一)
-  FRAC: "FRAC",   // ...微
-  INT: "INT",     // ...萬, ...·,
-  DONE: "DONE"    // 負一
+  NONE: "NONE", // <END>, 一 (ambiguous: 一萬一 or 一十一 or 一·一 or 一絲一)
+  FRAC: "FRAC", // ...微
+  INT: "INT", // ...萬, ...·,
+  DONE: "DONE" // 負一
 };
 
 const eDigitState = {
-  NONE: "NONE",                       // <END>, ·
-  MULT: "MULT",                       // 微
-  MULT_AMBIG: "MULT_AMBIG",           // 十 (ambiguous: ...十 or 一十)
-  DIGIT: "DIGIT",                     // 一
+  NONE: "NONE", // <END>, ·
+  MULT: "MULT", // 微
+  MULT_AMBIG: "MULT_AMBIG", // 十 (ambiguous: ...十 or 一十)
+  DIGIT: "DIGIT", // 一
   DIGIT_WITH_ZERO: "DIGIT_WITH_ZERO", // 一...零, 零零， 零一...零,
-  DELIM: "DELIM",                     // 又
-  ZERO: "ZERO",                       // 零<END>, 零·, 零又, 零微, 零一
-  SIGN: "SIGN",                       // 負
-  ZERO_MULT_AMBIG: "ZERO_MULT_AMBIG"  // 零十 (ambiguous: 零一十 or 零十 or 〇十)
+  DELIM: "DELIM", // 又
+  ZERO: "ZERO", // 零<END>, 零·, 零又, 零微, 零一
+  SIGN: "SIGN", // 負
+  ZERO_MULT_AMBIG: "ZERO_MULT_AMBIG" // 零十 (ambiguous: 零一十 or 零十 or 〇十)
 };
 
 const RESULT_2_TO_63 = {
@@ -169,16 +169,16 @@ function hanzi2numstr(s) {
 
     // multiplier stack, keep track of all active multiplier exponents
     let multStack = {
-      isEmpty: function () {
+      isEmpty: function() {
         return this._exps.length == 0;
       },
-      total: function () {
+      total: function() {
         return this._expAdd;
       },
-      top: function () {
+      top: function() {
         return this._exps[this._exps.length - 1];
       },
-      state: function () {
+      state: function() {
         if (this.isEmpty()) {
           return eMultState.NONE;
         } else if (this._exps[0] < 0) {
@@ -190,19 +190,19 @@ function hanzi2numstr(s) {
         }
       },
 
-      push: function (exp) {
+      push: function(exp) {
         this._expAdd += exp;
         this._exps.push(exp);
       },
-      pop: function () {
+      pop: function() {
         this._expAdd -= this.top();
         this._exps.pop();
       },
-      clear: function () {
+      clear: function() {
         this._expAdd = 0;
         this._exps = [];
       },
-      markDone: function () {
+      markDone: function() {
         this.clear();
         this.push(Infinity);
       },
@@ -213,21 +213,21 @@ function hanzi2numstr(s) {
 
     // result, with different convension of exp for internal use
     let result = {
-      sign: function () {
+      sign: function() {
         return this._sign;
       },
-      exp: function () {
+      exp: function() {
         return this._exp;
       },
-      digits: function () {
+      digits: function() {
         return this._digits;
       },
 
-      applySign: function (newSign) {
+      applySign: function(newSign) {
         this._sign *= newSign;
       },
       // digit: number or array of numbers
-      push: function (digit) {
+      push: function(digit) {
         if (Array.isArray(digit)) {
           this._digits = this._digits.concat(digit);
           this._exp += digit.length;
@@ -236,16 +236,16 @@ function hanzi2numstr(s) {
           ++this._exp;
         }
       },
-      fillZeros: function (newExp) {
+      fillZeros: function(newExp) {
         this.push(Array(newExp - this._exp).fill("0"));
       },
-      resetExp: function (newExp) {
+      resetExp: function(newExp) {
         this._exp = newExp;
       },
 
       // the result is sign * 0.{digits[length-1..0]} * 10^exp
-      _sign: 1,   // +1/-1
-      _exp: 0,    // one plus exponent of the highest digit
+      _sign: 1, // +1/-1
+      _exp: 0, // one plus exponent of the highest digit
       _digits: [] // lowest to highest
     };
 
@@ -254,7 +254,10 @@ function hanzi2numstr(s) {
       let token = tokens[i - 1];
 
       // sign should be the first char
-      if (multStack.state() == eMultState.SIGN && token.type != eTokenType.BEGIN) {
+      if (
+        multStack.state() == eMultState.SIGN &&
+        token.type != eTokenType.BEGIN
+      ) {
         return null;
       }
 
@@ -386,7 +389,7 @@ function hanzi2numstr(s) {
       }
 
       // determine the current exponent and update exponent stack
-      let currExp = function () {
+      let currExp = (function() {
         switch (token.type) {
           case eTokenType.BEGIN:
           case eTokenType.SIGN:
@@ -466,7 +469,11 @@ function hanzi2numstr(s) {
               case eDigitState.DIGIT_WITH_ZERO:
               case eDigitState.ZERO:
               case eDigitState.ZERO_MULT_AMBIG:
-                while (!multStack.isEmpty() && multStack.top() < token.exp && multStack.top() >= 0) {
+                while (
+                  !multStack.isEmpty() &&
+                  multStack.top() < token.exp &&
+                  multStack.top() >= 0
+                ) {
                   multStack.pop();
                 }
                 multStack.push(token.exp);
@@ -474,7 +481,7 @@ function hanzi2numstr(s) {
             }
             return multStack.total();
         }
-      }();
+      })();
       if (currExp == null) {
         return null;
       }
@@ -486,17 +493,23 @@ function hanzi2numstr(s) {
 
       // check for disallowed missing decimal places
       if (currExp > result.exp()) {
-        let check = function () {
+        let check = function() {
           if (token.type == eTokenType.BEGIN || token.type == eTokenType.SIGN) {
             return true;
           }
-          if (digitState == eDigitState.DELIM || digitState == eDigitState.ZERO) {
+          if (
+            digitState == eDigitState.DELIM ||
+            digitState == eDigitState.ZERO
+          ) {
             return true;
           }
           if (token.type == eTokenType.INT_MULT) {
             return true;
           }
-          if (token.type == eTokenType.FRAC_MULT || token.type == eTokenType.DECIMAL) {
+          if (
+            token.type == eTokenType.FRAC_MULT ||
+            token.type == eTokenType.DECIMAL
+          ) {
             return true;
           }
           return false;
@@ -522,7 +535,10 @@ function hanzi2numstr(s) {
 
         case eTokenType.DIGIT:
           result.push(token.digit);
-          if (digitState == eDigitState.ZERO || digitState == eDigitState.DIGIT_WITH_ZERO) {
+          if (
+            digitState == eDigitState.ZERO ||
+            digitState == eDigitState.DIGIT_WITH_ZERO
+          ) {
             digitState = eDigitState.DIGIT_WITH_ZERO;
           } else {
             digitState = eDigitState.DIGIT;
@@ -622,13 +638,13 @@ function hanzi2numstr(s) {
   let str = result.sign < 0 ? "-" : "";
 
   // no fractional digits (including zero) and fits in int64?
-  const printAsInt = function () {
+  const printAsInt = (function() {
     if (result.exp < 0) {
       return false;
     }
     const c = compareMagnitude(result, RESULT_2_TO_63);
     return result.sign < 0 ? c <= 0 : c < 0;
-  }();
+  })();
 
   // digit range, leading and trailing zeros trimmed
   const rend = result.digits.findIndex(x => x != "0");
@@ -649,9 +665,11 @@ function hanzi2numstr(s) {
   let printAsScientific = false;
   if (!printAsInt) {
     const scientificExp = result.exp + (rbegin - 1);
-    expStr = (scientificExp < 0 ? "e-" : "e+") + Math.abs(scientificExp).toString();
-    const fixedLen = rendExp < 0 ? (Math.max(rbeginExp, 1) - rendExp + 1) : rbeginExp;
-    const scientificMagLen = rbegin - rend > 1 ? (rbegin - rend + 1) : 1;
+    expStr =
+      (scientificExp < 0 ? "e-" : "e+") + Math.abs(scientificExp).toString();
+    const fixedLen =
+      rendExp < 0 ? Math.max(rbeginExp, 1) - rendExp + 1 : rbeginExp;
+    const scientificMagLen = rbegin - rend > 1 ? rbegin - rend + 1 : 1;
     if (scientificMagLen + expStr.length < fixedLen) {
       printAsScientific = true;
     }
@@ -710,11 +728,15 @@ function num2hanzi(n, format = "", precision = undefined) {
     const sign = str.charAt(0) == "-" ? -1 : 1;
     const digitIndex = "+-".includes(str.charAt(0)) ? 1 : 0;
     const expIndex = myIndexOf(str, "e");
-    const scientificExp = expIndex == str.length ? 0 : Number(str.substring(expIndex + 1));
+    const scientificExp =
+      expIndex == str.length ? 0 : Number(str.substring(expIndex + 1));
     const decimalIndex = myIndexOf(str.substring(0, expIndex), ".");
     const intStr = str.substring(digitIndex, decimalIndex);
     const intDigits = intStr.split("").reverse();
-    const fracStr = str.substring(Math.min(decimalIndex + 1, expIndex), expIndex);
+    const fracStr = str.substring(
+      Math.min(decimalIndex + 1, expIndex),
+      expIndex
+    );
     const fracDigits = fracStr.split("").reverse();
     return {
       sign: sign,
@@ -762,7 +784,7 @@ function num2hanzi(n, format = "", precision = undefined) {
   let str = signStr;
   let pendingZero = false;
   let i = rbegin;
-  const intToReadout = function (expBias = 0) {
+  const intToReadout = function(expBias = 0) {
     let hasOutput = false;
     while (i != rend) {
       const mult = multWords.find(x => x.exp + expBias <= result.exp + (i - 1));
@@ -799,7 +821,7 @@ function num2hanzi(n, format = "", precision = undefined) {
     }
     return hasOutput;
   };
-  const fracToReadout = function () {
+  const fracToReadout = function() {
     while (i != rend) {
       const mult = multWords.find(x => x.exp <= result.exp + (i - 1));
       if (mult === undefined) {
@@ -829,4 +851,4 @@ function num2hanzi(n, format = "", precision = undefined) {
 
 try {
   module.exports = { hanzi2num, hanzi2numstr, num2hanzi };
-} catch (e) { }
+} catch (e) {}

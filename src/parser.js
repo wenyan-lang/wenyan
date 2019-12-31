@@ -5,11 +5,15 @@ try {
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
   var version = require("./version");
   var compilers = require("./compiler/compilers");
+
+  var { expandMacros, extractMacros } = require("./macro.js");
 } catch (e) {}
 
 function wy2tokens(
   txt,
-  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
+  assert = (msg, pos, b) => {
+    if (!b) console.log(`ERROR@${pos}: ${msg}`);
+  }
 ) {
   var tokens = [];
   var tok = "";
@@ -213,7 +217,9 @@ function tokenRomanize(tokens, method) {
 
 function tokens2asc(
   tokens,
-  assert = (msg, pos, b) => { if (!b) console.log(`ERROR@${pos}: ${msg}`); }
+  assert = (msg, pos, b) => {
+    if (!b) console.log(`ERROR@${pos}: ${msg}`);
+  }
 ) {
   var asc = [];
   var i = 0;
@@ -246,7 +252,11 @@ function tokens2asc(
       typeassert(i + 1, ["num"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
       const cnt = Number(gettok(i + 1, 1));
-      assert(`Invalid variable count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+      assert(
+        `Invalid variable count ${cnt}`,
+        pos,
+        Number.isSafeInteger(cnt) && cnt > 0
+      );
 
       var x = {
         op: "var",
@@ -319,7 +329,11 @@ function tokens2asc(
           typeassert(i + 1, ["type"], "argument type");
           var typ = gettok(i + 1, 1);
           var cnt = Number(gettok(i, 1));
-          assert(`Invalid argument count ${cnt}.`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+          assert(
+            `Invalid argument count ${cnt}.`,
+            pos,
+            Number.isSafeInteger(cnt) && cnt > 0
+          );
           x.arity += cnt;
           i += 2;
           for (var j = 0; j < cnt; j++) {
@@ -549,7 +563,11 @@ function tokens2asc(
     } else if (gettok(i, 0) == "take") {
       typeassert(i + 1, ["num"], "argument count");
       const cnt = Number(gettok(i + 1, 1));
-      assert(`Invalid argument count ${cnt}`, pos, Number.isSafeInteger(cnt) && cnt > 0);
+      assert(
+        `Invalid argument count ${cnt}`,
+        pos,
+        Number.isSafeInteger(cnt) && cnt > 0
+      );
       asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
@@ -588,6 +606,8 @@ function tokens2asc(
       i += 3;
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
+      i += 2;
+    } else if (gettok(i, 0) == "macro") {
       i += 2;
     } else {
       //console.log("Unrecognized",tokens[i])
@@ -667,6 +687,13 @@ function compile(
     }
     return 0;
   }
+
+  var macros = extractMacros(lang, txt, { lib, reader });
+  txt = expandMacros(txt, macros);
+
+  logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
+  logCallback(macros);
+  // logCallback(txt);
 
   var tokens = wy2tokens(txt, assert);
 

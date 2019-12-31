@@ -96,6 +96,9 @@ var KEYWORDS_DEFINE = {
   不知何禍歟: ["try", "catchall"],
   乃作罷: ["try", "end"],
 
+  或云: ["macro", "from"],
+  蓋謂: ["macro", "to"],
+
   注曰: ["comment"],
   疏曰: ["comment"],
   批曰: ["comment"]

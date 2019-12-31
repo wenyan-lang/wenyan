@@ -25,15 +25,16 @@
 | [nested_fun.wy][22]              | 函数                    |
 | [obj.wy][23]                     | 对象                    |
 | [pi_leibniz.wy][24]              | 萊布尼茲圓周率估算      |
-| [quicksort.wy][25]               | 快速排序                |
-| [quicksort_inplace.wy][26]       | 快速排序2               |
-| [quine.wy][27]                   | [自產生程式][2]         |
-| [quine2.wy][28]                  | 自產生程式2             |
-| [selectionsort.wy][29]           | 選擇排序                |
-| [sieve.wy][30]                   | 埃氏篩                  |
-| [sqrt_newton.wy][31]             | 牛頓求根法              |
-| [turing.wy][32]                  | 圖靈機                  |
-| [draw_heart.wy][33]               | 畫心                    |
+| [pi_liuhui.wy][25]              | 劉徽割圓術求圓周率      |
+| [quicksort.wy][26]               | 快速排序                |
+| [quicksort_inplace.wy][27]       | 快速排序2               |
+| [quine.wy][28]                   | [自產生程式][2]         |
+| [quine2.wy][29]                  | 自產生程式2             |
+| [selectionsort.wy][30]           | 選擇排序                |
+| [sieve.wy][31]                   | 埃氏篩                  |
+| [sqrt_newton.wy][32]             | 牛頓求根法              |
+| [turing.wy][33]                  | 圖靈機                  |
+| [draw_heart.wy][34]               | 畫心                    |
 
 [1]: https://en.wikipedia.org/wiki/Fizz_buzz "Fizz buzz"
 [2]: https://zh.wikipedia.org/wiki/自產生程式 "自產生程式"
@@ -59,12 +60,13 @@
 [22]: nested_fun.wy
 [23]: obj.wy
 [24]: pi_leobniz.wy
-[25]: quicksort.wy
-[26]: quicksort_inplace.wy
-[27]: quine.wy
-[28]: quine2.wy
-[29]: selectionsort.wy
-[30]: sieve.wy
-[31]: sqrt_newton.wy
-[32]: turing.wy
-[33]: draw_heart.wy
+[25]: pi_liuhui.wy
+[26]: quicksort.wy
+[27]: quicksort_inplace.wy
+[28]: quine.wy
+[29]: quine2.wy
+[30]: selectionsort.wy
+[31]: sieve.wy
+[32]: sqrt_newton.wy
+[33]: turing.wy
+[34]: draw_heart.wy
