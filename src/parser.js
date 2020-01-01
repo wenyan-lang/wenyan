@@ -1,5 +1,5 @@
 try {
-  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
+  var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
@@ -761,6 +761,7 @@ var parser = {
   hanzi2num,
   hanzi2numstr,
   num2hanzi,
+  bool2hanzi,
   hanzi2pinyin,
   KEYWORDS,
   NUMBER_KEYWORDS,
