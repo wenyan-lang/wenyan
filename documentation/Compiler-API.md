@@ -27,7 +27,7 @@ import { compile } from '@wenyanlang/core'
 
 ### Browsers
 
-You can add following lind to the head of your html body.
+You can add the following line to the head of your html body.
 
 ```html
 <script src='https://unpkg.com/@wenyanlang/core/index.min.js'></script>
