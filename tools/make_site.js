@@ -87,6 +87,8 @@ function main() {
     for (var i = 1; i < arguments.length; i++) {
       if (typeof arguments[i] == "number") {
         outdiv.innerText += num2hanzi(arguments[i]);
+      } else if (typeof arguments[i] == "boolean") {
+        outdiv.innerText += bool2hanzi(arguments[i]);
       } else {
         outdiv.innerText += arguments[i];
       }
