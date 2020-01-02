@@ -136,9 +136,11 @@ function main() {
   selr.onchange = run;
 
   var hidestd = document.getElementById("hide-std");
+  var outputHanzi = document.getElementById("output-hanzi");
   var outdiv = document.getElementById("out");
 
   hidestd.onchange = run;
+  outputHanzi.onchange = run;
 
   function run() {
     highlightCode();
@@ -158,6 +160,7 @@ function main() {
     hljs.highlightBlock(document.getElementById("js"));
 
     evalCompiled(code, {
+      outputHanzi: outputHanzi.checked,
       output: (...args) => {
         outdiv.innerText += args.join(" ") + "\n";
       }
@@ -185,7 +188,19 @@ pre{tab-size: 4;}
 <script>${utils.catsrc()}</script>
 <body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
   <h2><i>wenyan-lang</i></h2>
-<table><tr><td><select id="pick-example"></select><button id="run">Run</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Romanization</small><select id="pick-roman"></select></td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+<table><tr><td>
+<select id="pick-example"></select><button id="run">Run</button>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" id="output-hanzi" checked=""/><small>Output Hanzi</small>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<small>Romanization</small><select id="pick-roman"></select>
+
+</td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
 <script>var STDLIB = ${JSON.stringify(lib)};</script>
 <script>var prgms = ${JSON.stringify(prgms)};</script>
 <script>var examplesAlias = ${JSON.stringify(examplesAlias)};</script>

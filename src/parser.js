@@ -790,9 +790,9 @@ function hanzinize(value) {
   }
 }
 
-function outputHanziWrapper(log) {
+function outputHanziWrapper(log, outputHanzi) {
   return function output(...args) {
-    log(...args.map(i => hanzinize(i)));
+    log(...args.map(i => (outputHanzi ? hanzinize(i) : i)));
   };
 }
 
@@ -810,9 +810,7 @@ function evalCompiled(compiledCode, options = {}) {
 
   (() => {
     const _console_log = console.log;
-    if (outputHanzi) {
-      console.log = outputHanziWrapper(output);
-    }
+    console.log = outputHanziWrapper(output, outputHanzi);
     try {
       if (!scoped && "window" in this) {
         window.eval(code);
@@ -822,7 +820,7 @@ function evalCompiled(compiledCode, options = {}) {
     } catch (e) {
       throw e;
     } finally {
-      if (outputHanzi) console.log = _console_log;
+      console.log = _console_log;
     }
   })();
 }
