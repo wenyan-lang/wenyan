@@ -4,13 +4,7 @@
 
 This project uses [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/) for unit testing and snapshot testing.
 
-You will need to build first
-
-```bash
-npm run build
-```
-
-Then you can run all the tests by
+You can run all the tests by
 
 ```bash
 npm test

@@ -44,28 +44,53 @@ const compiled = Wenyan.compile('吾有一言。曰「「問天地好在。」�
 
 - core
   - [compile](#compile)
+  - [execute](#execute)
 
-### Compile
+### Execute
 
 [Source](../src/parser.js)
 
 ```ts
-function compile(targetLang: string, source: string, options?: CompilerOptions)
+function execute(source: string, options?: ExecuteOptions)
 ```
 
 **Parameters**
 
 | Name | Type | Note |
 | --- | --- | --- |
-| targetLang | string | Can be `js`, `py` or `rb` |
+| source | string | The Wenyan source code |
+| options | object | [Execute Options](#Execute-Options) |
+
+### Compile
+
+[Source](../src/parser.js)
+
+```ts
+function compile(source: string, options?: CompilerOptions)
+```
+
+**Parameters**
+
+| Name | Type | Note |
+| --- | --- | --- |
 | source | string | The Wenyan source code |
 | options | object | [Compiler Options](#Compiler-Options) |
 
-### Compiler Options
+#### Compiler Options
 
 | Fields | Default Value | Note |
 | --- | --- | --- |
+| lang | `js` | Target language, can be `js`, `py` or `rb` |
 | romanizeIdentifiers | none | Romanize variable identifiers (e.g. `甲` to `JIA2`) |
 | resetVarCnt | false | Reset temporary variable counter |
 | logCallback | console.log | Get verbose debug log | 
 | errorLog | process.exit | Error log |
+
+#### Execute Options
+
+Execute Options extends all field in [Compiler Options](#Compiler-Options)
+
+| Fields | Default Value | Note |
+| --- | --- | --- |
+| outputHanzi | true | Convert numbers and bools to Hanzi |
+| output | `console.log` | You can redirect the output if you don't want to use `console.log` |
