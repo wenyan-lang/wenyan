@@ -1,9 +1,11 @@
 var fs = require("fs-extra");
 var path = require("path");
-var parser = require("../dist/core/index.min.js");
+var utils = require("../tools/utils");
 var execSync = require("child_process").execSync;
 var { expect } = require("chai");
+var { compile, evalCompiled } = require("../src/parser");
 
+var lib = utils.loadlib();
 const exampleDir = path.resolve(__dirname, "../examples/");
 const outputDir = path.resolve(__dirname, "../test/temp/examples/");
 const python = getPythonExecutable();
@@ -26,29 +28,36 @@ function getPythonExecutable() {
   return undefined;
 }
 
-function runExample(lang, name, options = {}) {
-  var txt = fs.readFileSync(path.join(exampleDir, name + ".wy")).toString();
+function readOtherExample(x) {
+  console.log(x);
+  return fs
+    .readFileSync(path.resolve(__dirname, "../examples/" + x + ".wy"), "utf-8")
+    .toString();
+}
 
-  var compiled = parser.compile(lang, txt, {
+function runExample(lang, name, options = {}) {
+  var code = fs
+    .readFileSync(path.join(exampleDir, name + ".wy"), "utf-8")
+    .toString();
+
+  var compiled = compile(lang, code, {
     logCallback: () => {},
+    reader: readOtherExample,
+    lib: lib,
     ...options
   });
-  // expect(compiled).to.matchSnapshot();
-  const filename = `${outputDir}${name}.${lang}`;
-  fs.writeFileSync(filename, compiled, "utf-8");
 
   if (ignoreExamples.includes(name)) return;
 
-  let output = undefined;
-  if (lang == "py") {
-    output = execSync(`${python} ${filename}`, {
-      encoding: "utf-8"
-    }).toString();
-  } else if (lang == "js") {
-    output = execSync(`node ${filename}`, {
-      encoding: "utf-8"
-    }).toString();
-  }
+  let output = "";
+
+  evalCompiled(compiled, {
+    scoped: true,
+    lang,
+    output: (...args) => (output += args.join(" ") + "\n"),
+    ...options
+  });
+
   expect(output).to.matchSnapshot();
 }
 

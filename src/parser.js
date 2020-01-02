@@ -653,10 +653,8 @@ function defaultReader(x) {
   }
 }
 
-function compile(
-  lang,
-  txt,
-  {
+function compile(lang, txt, options = {}) {
+  const {
     romanizeIdentifiers = "none",
     resetVarCnt,
     logCallback = x =>
@@ -666,8 +664,8 @@ function compile(
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
     reader = defaultReader
-  } = {}
-) {
+  } = options;
+
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
 

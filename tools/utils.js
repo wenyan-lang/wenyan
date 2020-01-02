@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 var execSync = require("child_process").execSync;
 
 const catsrcIgnore = "/* wenyan-catsrc-ignore */";
@@ -33,14 +34,15 @@ function catsrc() {
   return s;
 }
 
-function loadlib(pth = "../lib/") {
+function loadlib(libDir = path.resolve(__dirname, "../lib/")) {
   var lib = {};
-  var srcs = fs.readdirSync(pth);
+  var srcs = fs.readdirSync(libDir);
   for (var i = 0; i < srcs.length; i++) {
+    const subPath = path.join(libDir, srcs[i]);
     if (srcs[i].endsWith(".wy")) {
-      lib[srcs[i].split(".")[0]] = fs.readFileSync(pth + srcs[i]).toString();
-    } else if (fs.lstatSync(pth + srcs[i]).isDirectory()) {
-      lib[srcs[i]] = loadlib((path = pth + srcs[i] + "/"));
+      lib[srcs[i].split(".")[0]] = fs.readFileSync(subPath).toString();
+    } else if (fs.lstatSync(subPath).isDirectory()) {
+      lib[srcs[i]] = loadlib(subPath);
     }
   }
   return lib;
