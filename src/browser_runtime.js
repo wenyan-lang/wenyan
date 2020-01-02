@@ -7,6 +7,10 @@
 
   async function run(script) {
     const scoped = !!script.attributes.scoped;
+    const outputHanzi = !(
+      script.attributes.outputHanzi &&
+      script.attributes.outputHanzi.value === "false"
+    );
     let code = script.innerText;
     if (script.src) {
       const response = await fetch(script.src);
@@ -14,6 +18,7 @@
     }
     execute(code, {
       scoped,
+      outputHanzi,
       logCallback: isDev ? console.log : () => {},
       resetVarCnt: false
     });
