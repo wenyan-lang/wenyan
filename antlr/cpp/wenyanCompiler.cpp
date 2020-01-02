@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     wenyanLexer lexer(&input);
     antlr4::CommonTokenStream tokens(&lexer);
 
-    WenyanParserErrorListener errorListner;
+    WenyanParserErrorListener parserErrorListner;
 
     
     tokens.fill();
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     wenyanParser parser(&tokens);
     parser.removeErrorListeners();
-    parser.addErrorListener(&errorListner);
+    parser.addErrorListener(&parserErrorListner);
     /* Type Checking */
     try {
         wenyanVisitor visitor;

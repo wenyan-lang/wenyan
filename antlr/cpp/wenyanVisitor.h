@@ -2,11 +2,31 @@
 
 #include "antlr4-runtime.h"
 #include "wenyanParser.h"
+#include "symbolTable.h"
+#include "hanzi2num.h"
+
+class WenyanVisitorErrorHandler {
+public:
+    void syntaxError(
+        size_t line,
+        size_t charPositionInLine,
+        const std::string &msg) {
+            std::ostrstream s;
+            s << "Line(" << line << ":" << charPositionInLine << ") Error(" << msg << ")";
+            throw std::invalid_argument(s.str());
+        }
+};
 
 
 class  wenyanVisitor : public antlr4::tree::AbstractParseTreeVisitor {
+    typedef std::string Symbol;
+    typedef std::string Type;
+private:
+    SymbolTable<Symbol, Type> symTable;
+    WenyanVisitorErrorHandler _err_handler;
 public:
     antlrcpp::Any visitProgram(wenyanParser::ProgramContext *ctx) {
+        symTable.enter_scope();
         std::cout << "visit program" << std::endl;
         for (wenyanParser::StatementContext* statement : ctx->statement()) {
             bool result = visitStatement(statement);
@@ -14,6 +34,7 @@ public:
                 return false;
             }
         }
+        symTable.exit_scope();
         return true;
     }
 
@@ -111,6 +132,22 @@ public:
     antlrcpp::Any visitBinary_if_expression(wenyanParser::Binary_if_expressionContext *context);
 
     antlrcpp::Any visitDeclare_statement(wenyanParser::Declare_statementContext *ctx) {
+        antlr4::tree::TerminalNode* declare_num_node = ctx->INT_NUM();
+        antlr4::tree::TerminalNode* declare_type_node = ctx->TYPE();
+        std::string declare_num_str = declare_num_node->getText();
+        std::string declare_type_str = declare_type_node->getText();
+        std::cout << "str: " << declare_num_str << " : " << declare_type_str << std::endl;
+        int64_t declare_num;
+        try {
+            declare_num = hanzi2int(declare_num_str);
+        }
+        catch (std::string msg) {
+            _err_handler.syntaxError(declare_num_node->getSymbol()->getLine(),
+                                     declare_num_node->getSymbol()->getCharPositionInLine(),
+                                     std::string("[Error] Declare statement: ") + msg);
+        }
+
+        std::cout << "declare number: " << declare_num << std::endl;
         return true;
     }
 
