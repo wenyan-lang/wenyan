@@ -818,7 +818,7 @@ function evalCompiled(compiledCode, options = {}) {
 function execute(source, options = {}) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
-  const compiled = compile(options.lang, source, options);
+  const compiled = compile(lang, source, options);
   evalCompiled(compiled, options);
 }
 
