@@ -136,6 +136,8 @@ function main() {
   selr.onchange = run;
 
   var hidestd = document.getElementById("hide-std");
+  var outdiv = document.getElementById("out");
+
   hidestd.onchange = run;
 
   function run() {
@@ -153,27 +155,16 @@ function main() {
 
     document.getElementById("js").innerText = js_beautify(showcode);
     hljs.highlightBlock(document.getElementById("js"));
-    code = code.replace(/console.log\(/g, `log2div(`);
-    eval(code);
-  }
 
-  // document.getElementById("in").append(ln);
-  document.getElementById("in").append(ed);
-
-  document.getElementById("run").onclick = run;
-  function log2div() {
-    var outdiv = document.getElementById("out");
-    for (var i = 0; i < arguments.length; i++) {
-      if (typeof arguments[i] == "number") {
-        outdiv.innerText += num2hanzi(arguments[i]);
-      } else if (typeof arguments[i] == "boolean") {
-        outdiv.innerText += bool2hanzi(arguments[i]);
-      } else {
-        outdiv.innerText += arguments[i];
+    evalCompiled(code, {
+      output: (...args) => {
+        outdiv.innerText += args.join(" ") + "\n";
       }
-    }
-    outdiv.innerText += "\n";
+    });
   }
+
+  document.getElementById("in").append(ed);
+  document.getElementById("run").onclick = run;
   run();
 }
 

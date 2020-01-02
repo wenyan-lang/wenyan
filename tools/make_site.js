@@ -25,7 +25,6 @@ function load_svg(pth) {
   svg = svg.replace(/(\d+)\.(\d)\d*/g, `$1.$2`);
   svg = svg.replace(/width=".+?"/, `width="100%"`);
   svg = svg.replace(/height=".+?"/, ``);
-  console.log(svg);
   return svg;
 }
 
@@ -45,7 +44,7 @@ function main() {
       romanizeIdentifiers: "none",
       errorCallback: function(x) {
         hasError = true;
-        log2div(i, x);
+        louts[i].innerText = x;
       }
     });
     if (i == 0) {
@@ -64,36 +63,14 @@ function main() {
       document.getElementById("rb").innerText =
         "# Ruby\n" + rb.split("#####\n")[1];
     }
-    // hljs.highlightBlock(document.getElementById("js"));
-    if (!hasError) {
-      code = code.replace(/console.log\(/g, `log2div(` + i + ",");
-      eval(code);
-    }
-  }
 
-  function log2div() {
-    // alert(arguments[1])
-    if (arguments[1] instanceof Array && arguments.length == 2) {
-      var l = [];
-      for (var i = 0; i < arguments[1].length; i++) {
-        if (i != 0) {
-          l.push("。");
+    if (!hasError) {
+      evalCompiled(code, {
+        output: (...args) => {
+          outs[i].innerText += args.join(" ") + "\n";
         }
-        l.push(arguments[1][i]);
-      }
-      return log2div(arguments[0], ...l);
+      });
     }
-    var outdiv = outs[arguments[0]];
-    for (var i = 1; i < arguments.length; i++) {
-      if (typeof arguments[i] == "number") {
-        outdiv.innerText += num2hanzi(arguments[i]);
-      } else if (typeof arguments[i] == "boolean") {
-        outdiv.innerText += bool2hanzi(arguments[i]);
-      } else {
-        outdiv.innerText += arguments[i];
-      }
-    }
-    outdiv.innerText += "\n";
   }
 
   function loop() {

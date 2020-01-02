@@ -772,7 +772,7 @@ function hanzinize(value) {
   } else if (typeof value == "boolean") {
     return bool2hanzi(value);
   } else if (Array.isArray(value)) {
-    return value.map(i => hanzinize(i));
+    return value.map(i => hanzinize(i)).join("。");
   } else {
     return value;
   }
@@ -785,7 +785,12 @@ function outputHanziWrapper(log) {
 }
 
 function evalCompiled(compiledCode, options = {}) {
-  const { outputHanzi = true, scoped = false, lang = "js" } = options;
+  const {
+    outputHanzi = true,
+    scoped = false,
+    lang = "js",
+    output = console.log
+  } = options;
 
   isLangSupportedForEval(lang);
 
@@ -794,7 +799,7 @@ function evalCompiled(compiledCode, options = {}) {
   (() => {
     const _console_log = console.log;
     if (outputHanzi) {
-      console.log = outputHanziWrapper(_console_log);
+      console.log = outputHanziWrapper(output);
     }
     try {
       if (!scoped && "window" in this) {
