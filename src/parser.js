@@ -653,8 +653,21 @@ function defaultReader(x) {
   }
 }
 
-function compile(lang, txt, options = {}) {
+function compile(arg1, arg2, arg3) {
+  let options = {};
+  let txt = "";
+
+  if (typeof arg2 === "string") {
+    // backward compatible
+    txt = arg2;
+    options = { ...arg3, lang: arg1 };
+  } else {
+    txt = arg1;
+    options = arg2;
+  }
+
   const {
+    lang = "js",
     romanizeIdentifiers = "none",
     resetVarCnt,
     logCallback = x =>
@@ -695,7 +708,7 @@ function compile(lang, txt, options = {}) {
     return 0;
   }
 
-  var macros = extractMacros(lang, txt, { lib, reader });
+  var macros = extractMacros(txt, { lib, reader, lang });
   txt = expandMacros(txt, macros);
 
   logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
@@ -743,7 +756,8 @@ function compile(lang, txt, options = {}) {
     targ =
       mwrapper(
         imports[i],
-        compile(lang, isrc, {
+        compile(isrc, {
+          lang,
           romanizeIdentifiers,
           resetVarCnt: false,
           logCallback,
@@ -816,7 +830,7 @@ function evalCompiled(compiledCode, options = {}) {
 function execute(source, options = {}) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
-  const compiled = compile(lang, source, options);
+  const compiled = compile(source, options);
   evalCompiled(compiled, options);
 }
 

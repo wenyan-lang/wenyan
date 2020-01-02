@@ -40,7 +40,8 @@ function main() {
     highlight([ed]);
     out.innerText = "";
     var hasError = false;
-    var code = compile("js", ed.innerText, {
+    var code = compile(ed.innerText, {
+      lang: "js",
       romanizeIdentifiers: "none",
       errorCallback: function(x) {
         hasError = true;
@@ -50,13 +51,15 @@ function main() {
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-      var py = compile("py", ed.innerText, {
+      var py = compile(ed.innerText, {
+        lang: "py",
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("py").innerText =
         "# Python\n" + py.split("#####\n")[1];
-      var rb = compile("rb", ed.innerText, {
+      var rb = compile(ed.innerText, {
+        lang: "rb",
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });

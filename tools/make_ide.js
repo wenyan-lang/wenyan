@@ -143,10 +143,11 @@ function main() {
   function run() {
     highlightCode();
     document.getElementById("out").innerText = "";
-    var code = compile("js", ed.innerText, {
+    var code = compile(ed.innerText, {
+      lang: "js",
       romanizeIdentifiers: selr.value,
       resetVarCnt: true,
-      errorCallback: log2div,
+      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       lib: STDLIB,
       reader: x => prgms[x]
     });
