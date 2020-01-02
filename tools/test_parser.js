@@ -14,7 +14,7 @@ function readOtherExample(x) {
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
   var sourceCode = parser.compile(lang, txt, {
-    romanizeIdentifiers: true,
+    romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
     reader: readOtherExample
   });
@@ -36,17 +36,21 @@ function runExample(lang, name) {
   }
 }
 
-function runAll(lang) {
+function runAll(lang, skips = []) {
   var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
   console.log(files);
   for (var i = 0; i < files.length; i++) {
+    if (skips.includes(files[i].split(".")[0])) {
+      console.log("SKIPPED");
+      continue;
+    }
     console.log(`======= Progress ${i + 1}/${files.length} =======`);
     runExample(lang, files[i].split(".")[0]);
   }
 }
 
-runExample("js", "tree");
-// runAll("js");
+// runExample("js", "tree");
+runAll("py", ["quine", "quine2", "tree", "tree2", "try"]);
 
 // runExample("js", "../../../Downloads/local_test");
-// runExample("js", "import");
+// runExample("py", "draw_heart");

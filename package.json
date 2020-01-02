@@ -26,6 +26,7 @@
     "publish:ci": "node ./tools/publish.js",
     "release": "bump --commit --tag && git push --follow-tags",
     "docs:update": "node ./tools/stdlib_doc.js",
+    "make_examples_readme": "node ./tools/make_examples_readme.js",
     "make_ide": "node ./tools/make_ide.js",
     "make_site": "node ./tools/make_site.js",
     "ide:dev": "nodemon --ignore build,dist ./tools/make_ide.js",

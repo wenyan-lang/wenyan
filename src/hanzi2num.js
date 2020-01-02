@@ -849,6 +849,13 @@ function num2hanzi(n, format = "", precision = undefined) {
   return str;
 }
 
+function bool2hanzi(b) {
+  if (b) {
+    return "陽";
+  }
+  return "陰";
+}
+
 try {
-  module.exports = { hanzi2num, hanzi2numstr, num2hanzi };
+  module.exports = { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi };
 } catch (e) {}
