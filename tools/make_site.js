@@ -25,7 +25,6 @@ function load_svg(pth) {
   svg = svg.replace(/(\d+)\.(\d)\d*/g, `$1.$2`);
   svg = svg.replace(/width=".+?"/, `width="100%"`);
   svg = svg.replace(/height=".+?"/, ``);
-  console.log(svg);
   return svg;
 }
 
@@ -41,57 +40,40 @@ function main() {
     highlight([ed]);
     out.innerText = "";
     var hasError = false;
-    var code = compile("js", ed.innerText, {
+    var code = compile(ed.innerText, {
+      lang: "js",
       romanizeIdentifiers: "none",
       errorCallback: function(x) {
         hasError = true;
-        log2div(i, x);
+        louts[i].innerText = x;
       }
     });
     if (i == 0) {
       document.getElementById("js").innerText =
         "// JavaScript\n" + js_beautify(code);
-      var py = compile("py", ed.innerText, {
+      var py = compile(ed.innerText, {
+        lang: "py",
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("py").innerText =
         "# Python\n" + py.split("#####\n")[1];
-      var rb = compile("rb", ed.innerText, {
+      var rb = compile(ed.innerText, {
+        lang: "rb",
         romanizeIdentifiers: "none",
         errorCallback: () => 0
       });
       document.getElementById("rb").innerText =
         "# Ruby\n" + rb.split("#####\n")[1];
     }
-    // hljs.highlightBlock(document.getElementById("js"));
-    if (!hasError) {
-      code = code.replace(/console.log\(/g, `log2div(` + i + ",");
-      eval(code);
-    }
-  }
 
-  function log2div() {
-    // alert(arguments[1])
-    if (arguments[1] instanceof Array && arguments.length == 2) {
-      var l = [];
-      for (var i = 0; i < arguments[1].length; i++) {
-        if (i != 0) {
-          l.push("。");
+    if (!hasError) {
+      evalCompiled(code, {
+        output: (...args) => {
+          outs[i].innerText += args.join(" ") + "\n";
         }
-        l.push(arguments[1][i]);
-      }
-      return log2div(arguments[0], ...l);
+      });
     }
-    var outdiv = outs[arguments[0]];
-    for (var i = 1; i < arguments.length; i++) {
-      if (typeof arguments[i] == "number") {
-        outdiv.innerText += num2hanzi(arguments[i]);
-      } else {
-        outdiv.innerText += arguments[i];
-      }
-    }
-    outdiv.innerText += "\n";
   }
 
   function loop() {

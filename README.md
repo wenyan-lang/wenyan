@@ -2,6 +2,9 @@
 
 # 文言 wenyan-lang
 
+[![npm](https://img.shields.io/npm/v/@wenyanlang/core)](https://www.npmjs.com/package/@wenyanlang/core)
+[![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
+
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
 English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)

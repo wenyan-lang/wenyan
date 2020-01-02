@@ -1,6 +1,6 @@
 const fs = require("fs");
 const version = require("./version");
-const { compile } = require("./parser");
+const { compile, evalCompiled } = require("./parser");
 const { render, unrender } = require("./render");
 const path = require("path");
 const commander = require("commander");
@@ -38,6 +38,7 @@ program
     "--roman [method]",
     'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
   )
+  .option("--outputHanzi", "Convert output to hanzi", true)
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
   .helpOption("-h, --help", "Display help");
@@ -192,17 +193,11 @@ function exec() {
     );
     process.exit(1);
   }
-  if (program.lang === "js") {
-    eval(getCompiled());
-  } else if (program.lang === "py") {
-    var execSync = require("child_process").execSync;
-    fs.writeFileSync("tmp.py", out);
-    var ret = execSync(
-      "which python3; if [ $? == 0 ]; then python3 tmp.py; else python tmp.py; fi; rm tmp.py",
-      { encoding: "utf-8" }
-    );
-    console.log(ret);
-  }
+
+  evalCompiled(getCompiled(), {
+    outputHanzi: program.outputHanzi,
+    lang: program.lang
+  });
 }
 
 function replscope() {
