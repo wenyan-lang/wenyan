@@ -4,7 +4,7 @@
 
 You can now run Wenyan as normal Javscript script right in your html.
 
-[**Check out the demo**](https://jsfiddle.net/antfu/u532ny49/2/)
+[**Check out the demo**](https://jsfiddle.net/antfu/u532ny49/)
 
 ## Installation
 
@@ -45,6 +45,16 @@ You can import remote scripts as you will do for Javascript.
 
 ```html
 <script type="application/wenyan" src="https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/fizzbuzz.wy"></script>
+```
+
+### Outputing Hanzi
+
+By default, it will convert numbers and bools to hanzi. If you want to output raw numbers, you can specify `ouputHanzi="false"` in attr of script tag.
+
+```html
+<script type="application/wenyan" ouputHanzi="false">
+吾有一數。曰三。書之。
+</script>
 ```
 
 ### DOM Hacks

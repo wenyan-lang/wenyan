@@ -1,4 +1,4 @@
-function extractMacros(lang, txt, { lib, reader }) {
+function extractMacros(txt, { lib, reader, lang }) {
   function getImports() {
     var imps = [];
     for (var i = 0; i < txt.length; i++) {
@@ -108,7 +108,7 @@ function extractMacros(lang, txt, { lib, reader }) {
     } else {
       isrc = reader(imports[i]);
     }
-    macros = macros.concat(extractMacros(lang, isrc, { lib, reader }));
+    macros = macros.concat(extractMacros(isrc, { lib, reader, lang }));
   }
   return macros;
 }
