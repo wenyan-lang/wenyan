@@ -1,3 +1,36 @@
+# v0.2.0
+
+## ⚠ BREAKING CHANGE: `compile` API change
+The first argument lang move to option, please switch to new API.
+
+```js
+//before
+compile('js', source, { ... })
+// after
+compile(source, { lang: 'js', ... })
+```
+
+The old API is still functional for temporary backward compatible, the support **will be REMOVED in the next minor update.**
+
+## Wenyan Snippets Site, #459
+
+Please do check it out. Any feedbacks are welcome!
+
+![](https://user-images.githubusercontent.com/7929704/71650125-049f4800-2ce2-11ea-9f44-31c9b7e626d7.png)
+
+## New Execute API
+Check out [API Document](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Compiler-API.md) and #473
+
+
+### Fixes
+- Fix compiler crash with 0-argument macros (PR #453, thanks @statementreply)
+- stdlib: Improve sin, cos and tan (^/1/3) (PR #457, thanks @statementreply)
+- bool2hanzi (PR #465, thanks @Fros1er)
+
+### Docs
+- Auto generates examples for README.md (PR #448, thanks @cuixiping)
+
+
 # v0.1.3
 
 ## Macros (Experimental)
