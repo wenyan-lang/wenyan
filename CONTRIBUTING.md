@@ -12,6 +12,6 @@ npm run build
 
 npm t
 
-If all runs successfully, make changes to the code to contribute. Once commited and pushed youir local chnages to the branch, cretae a PR to be merged to the master branch.
+If all runs successfully, make changes to the code to contribute. Once you have committed and pushed your local changes to the branch, createe a PR, which will hopefully be merged to the master branch.
 
 
