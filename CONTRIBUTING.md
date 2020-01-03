@@ -1,10 +1,12 @@
 If you wanted to contribute:
 
-First fork this code repo
+First fork this repo
+
 Create a branch, for example: feature/very-cool-macro-for-suanjing
+
 git clone the branch code locally
 
-Rin this to get started:
+Run this to get started:
 
 npm i
 
