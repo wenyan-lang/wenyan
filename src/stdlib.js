@@ -1,24 +1,20 @@
-const STDLIB = {};
+/* wenyan-catsrc-ignore */
 
-try {
-  function loadStdlib() {
-    const STDLIB = {};
+function loadStdlib() {
+  let STDLIB = {};
 
-    const raw = require.context("../lib", true, /.*\.wy$/);
+  const raw = require.context("../lib", true, /.*\.wy$/);
 
-    raw.keys().forEach(key => {
-      const parts = key.slice(2, -3).split("/");
-      const data = raw(key).default;
-      let lib = STDLIB;
-      for (const part of parts.slice(0, -1)) {
-        if (!lib[part]) lib[part] = {};
-        lib = lib[part];
-      }
-      lib[parts[parts.length - 1]] = data;
-    });
+  raw.keys().forEach(key => {
+    const parts = key.slice(2, -3).split("/");
+    const data = raw(key).default;
+    for (const part of parts.slice(0, -1)) {
+      if (!STDLIB[part]) STDLIB[part] = {};
+      STDLIB = STDLIB[part];
+    }
+    STDLIB[parts[parts.length - 1]] = data;
+  });
+  return STDLIB;
+}
 
-    return STDLIB;
-  }
-  STDLIB = loadStdlib();
-  module.exports = STDLIB;
-} catch (e) {}
+module.exports = loadStdlib();
