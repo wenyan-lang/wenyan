@@ -661,5 +661,6 @@ function typecheck(
   // process.exit()
   return signature;
 }
-
-module.exports = { typecheck, printType, printSignature };
+try {
+  module.exports = { typecheck, printType, printSignature };
+} catch (e) {}

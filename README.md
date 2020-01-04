@@ -92,6 +92,10 @@ wenyan examples/helloworld.wy
 
 You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://github.com/zxch3n/wenyanizer) by [zxch3n](https://github.com/zxch3n).
 
+### 3rd Party Compilers
+
+- [JVM compiler](https://github.com/MagicLu550/wenyan-lang_jvm) by [MagicLu550](https://github.com/MagicLu550)
+
 ### Text Editor Plugins
 
 - [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
@@ -261,3 +265,5 @@ If you could help implement a feature with a `√` under `help needed`, please f
 |---|---|---|---|
 |[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
 |[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
+
+
