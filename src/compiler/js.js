@@ -57,6 +57,8 @@ class JSCompiler extends Base {
               value = "{}";
               prevobj = name;
               prevobjpublic = a.public;
+            } else if (a.type == "any") {
+              value = "undefined";
             }
           }
           js += `${a.public ? `var ${name} = this.` : "var "}${name}=${value};`;

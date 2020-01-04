@@ -16,7 +16,9 @@ function runExample(lang, name) {
   var sourceCode = parser.compile(lang, txt, {
     romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
-    reader: readOtherExample
+    reader: readOtherExample,
+    strict: true
+    // logCallback: ()=>0,
   });
   console.log("=== COMPILED ===");
   console.log(sourceCode);
@@ -26,7 +28,7 @@ function runExample(lang, name) {
       console.log(utils.pyeval(sourceCode));
       break;
     case "js":
-      eval(sourceCode);
+      // eval(sourceCode);
       break;
     case "rb":
       console.log(utils.rbeval(sourceCode));
@@ -49,8 +51,11 @@ function runAll(lang, skips = []) {
   }
 }
 
-// runExample("js", "tree");
-runAll("py", ["quine", "quine2", "tree", "tree2", "try"]);
+// runExample("js", "turing");
+// runExample("js", "../lib/js/畫譜");
+// runExample("js", "../lib/列經");
+runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
+// runAll("js", ["quine"]);
 
 // runExample("js", "../../../Downloads/local_test");
 // runExample("py", "draw_heart");

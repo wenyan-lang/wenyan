@@ -13,6 +13,7 @@ var KEYWORDS_DEFINE = {
   術: ["type", "fun"],
   爻: ["type", "bol"],
   物: ["type", "obj"],
+  量: ["type", "any"],
   書之: ["print"],
   名之曰: ["name"],
   施: ["call", "r"],
