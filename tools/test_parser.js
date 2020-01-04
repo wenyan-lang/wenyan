@@ -14,9 +14,11 @@ function readOtherExample(x) {
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
   var sourceCode = parser.compile(lang, txt, {
-    romanizeIdentifiers: true,
+    romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
-    reader: readOtherExample
+    reader: readOtherExample,
+    strict: true
+    // logCallback: ()=>0,
   });
   console.log("=== COMPILED ===");
   console.log(sourceCode);
@@ -26,7 +28,7 @@ function runExample(lang, name) {
       console.log(utils.pyeval(sourceCode));
       break;
     case "js":
-      eval(sourceCode);
+      // eval(sourceCode);
       break;
     case "rb":
       console.log(utils.rbeval(sourceCode));
@@ -36,17 +38,24 @@ function runExample(lang, name) {
   }
 }
 
-function runAll(lang) {
+function runAll(lang, skips = []) {
   var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
   console.log(files);
   for (var i = 0; i < files.length; i++) {
+    if (skips.includes(files[i].split(".")[0])) {
+      console.log("SKIPPED");
+      continue;
+    }
     console.log(`======= Progress ${i + 1}/${files.length} =======`);
     runExample(lang, files[i].split(".")[0]);
   }
 }
 
-runExample("js", "tree");
-// runAll("js");
+// runExample("js", "turing");
+// runExample("js", "../lib/js/畫譜");
+// runExample("js", "../lib/列經");
+runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
+// runAll("js", ["quine"]);
 
 // runExample("js", "../../../Downloads/local_test");
-// runExample("js", "import");
+// runExample("py", "draw_heart");

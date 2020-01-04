@@ -2,6 +2,9 @@
 
 # 文言 wenyan-lang
 
+[![npm](https://img.shields.io/npm/v/@wenyanlang/core)](https://www.npmjs.com/package/@wenyanlang/core)
+[![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
+
 [http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
 
 English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
@@ -88,6 +91,10 @@ wenyan examples/helloworld.wy
 ### [The Decompiler](https://zxch3n.github.io/wenyanizer/)
 
 You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://github.com/zxch3n/wenyanizer) by [zxch3n](https://github.com/zxch3n).
+
+### 3rd Party Compilers
+
+- [JVM compiler](https://github.com/MagicLu550/wenyan-lang_jvm) by [MagicLu550](https://github.com/MagicLu550)
 
 ### Text Editor Plugins
 
@@ -258,3 +265,5 @@ If you could help implement a feature with a `√` under `help needed`, please f
 |---|---|---|---|
 |[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
 |[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
+
+

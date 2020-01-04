@@ -1,3 +1,5 @@
+const STDLIB = {};
+
 try {
   function loadStdlib() {
     const STDLIB = {};
@@ -17,6 +19,6 @@ try {
 
     return STDLIB;
   }
-
-  module.exports = loadStdlib();
+  STDLIB = loadStdlib();
+  module.exports = STDLIB;
 } catch (e) {}

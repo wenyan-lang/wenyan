@@ -156,268 +156,859 @@ h2{
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/vs.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
 
-<script>var NUMS = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-var MULTS1 = ["十", "百", "千"];
-var MULTS4 = [
-  "萬",
-  "億",
-  "兆",
-  "京",
-  "垓",
-  "秭",
-  "穣",
-  "溝",
-  "澗",
-  "正",
-  "載",
-  "極",
-  "恆河沙",
-  "阿僧祇",
-  "那由他",
-  "不可思議",
-  "無量大數"
-];
-var FRACS1 = ["分", "釐", "毫", "絲", "忽", "微", "纖", "沙"];
-var FRACS4 = [
-  "塵",
-  "埃",
-  "渺",
-  "漠",
-  "模糊",
-  "逡巡",
-  "須臾",
-  "瞬息",
-  "彈指",
-  "剎那",
-  "六德",
-  "虛",
-  "空",
-  "清",
-  "淨"
-];
+<script>var eTokenType = {
+  SIGN: "SIGN", // 負
+  DIGIT: "DIGIT", // 一二三...
+  DECIMAL: "DECIMAL", // ·
+  INT_MULT: "INT_MULT", // 十百千萬億...
+  FRAC_MULT: "FRAC_MULT", // 分釐毫...
+  DELIM: "DELIM", // 又
+  ZERO: "ZERO", // 零
 
-function hanzi2num(s) {
-  // s = s.replace(/零/g,"")
-  s = s.replace(/有/g, "");
+  // pseudo tokens
+  BEGIN: "BEGIN", // <BEGIN>
+  END: "END" // <END>
+};
 
-  function _sp(s, units) {
-    for (var i = 0; i < units.length; i++) {
-      var u = units[i];
-      s = s.replace(u, ":" + u + ",");
+var NUM_TOKENS = {
+  負: { type: eTokenType.SIGN, sign: -1 },
+  "·": { type: eTokenType.DECIMAL, exp: 0 }, // U+00B7 Middle Dot
+  又: { type: eTokenType.DELIM },
+  有: { type: eTokenType.DELIM },
+  零: { type: eTokenType.ZERO, digit: "0" },
+  "〇": { type: eTokenType.DIGIT, digit: "0" }, // U+3007 Ideographic Number Zero
+  一: { type: eTokenType.DIGIT, digit: "1" },
+  二: { type: eTokenType.DIGIT, digit: "2" },
+  三: { type: eTokenType.DIGIT, digit: "3" },
+  四: { type: eTokenType.DIGIT, digit: "4" },
+  五: { type: eTokenType.DIGIT, digit: "5" },
+  六: { type: eTokenType.DIGIT, digit: "6" },
+  七: { type: eTokenType.DIGIT, digit: "7" },
+  八: { type: eTokenType.DIGIT, digit: "8" },
+  九: { type: eTokenType.DIGIT, digit: "9" },
+  十: { type: eTokenType.INT_MULT, exp: 1 },
+  百: { type: eTokenType.INT_MULT, exp: 2 },
+  千: { type: eTokenType.INT_MULT, exp: 3 },
+  萬: { type: eTokenType.INT_MULT, exp: 4 },
+  億: { type: eTokenType.INT_MULT, exp: 8 },
+  兆: { type: eTokenType.INT_MULT, exp: 12 },
+  京: { type: eTokenType.INT_MULT, exp: 16 },
+  垓: { type: eTokenType.INT_MULT, exp: 20 },
+  秭: { type: eTokenType.INT_MULT, exp: 24 },
+  穰: { type: eTokenType.INT_MULT, exp: 28 },
+  溝: { type: eTokenType.INT_MULT, exp: 32 },
+  澗: { type: eTokenType.INT_MULT, exp: 36 },
+  正: { type: eTokenType.INT_MULT, exp: 40 },
+  載: { type: eTokenType.INT_MULT, exp: 44 },
+  極: { type: eTokenType.INT_MULT, exp: 48 },
+  分: { type: eTokenType.FRAC_MULT, exp: -1 },
+  釐: { type: eTokenType.FRAC_MULT, exp: -2 },
+  毫: { type: eTokenType.FRAC_MULT, exp: -3 },
+  絲: { type: eTokenType.FRAC_MULT, exp: -4 },
+  忽: { type: eTokenType.FRAC_MULT, exp: -5 },
+  微: { type: eTokenType.FRAC_MULT, exp: -6 },
+  纖: { type: eTokenType.FRAC_MULT, exp: -7 },
+  沙: { type: eTokenType.FRAC_MULT, exp: -8 },
+  塵: { type: eTokenType.FRAC_MULT, exp: -9 },
+  埃: { type: eTokenType.FRAC_MULT, exp: -10 },
+  渺: { type: eTokenType.FRAC_MULT, exp: -11 },
+  漠: { type: eTokenType.FRAC_MULT, exp: -12 }
+};
+
+var NEG_WORD = "負";
+var INF_WORD = "無限大數";
+var NAN_WORD = "不可算數";
+
+var DECIMAL_WORD = {
+  readout: "又"
+};
+
+var DIGIT_WORDS = {
+  readout: {
+    "0": "零",
+    "1": "一",
+    "2": "二",
+    "3": "三",
+    "4": "四",
+    "5": "五",
+    "6": "六",
+    "7": "七",
+    "8": "八",
+    "9": "九"
+  }
+};
+
+var MULT_WORDS = {
+  readout: [
+    { str: "極", exp: 48 },
+    { str: "載", exp: 44 },
+    { str: "正", exp: 40 },
+    { str: "澗", exp: 36 },
+    { str: "溝", exp: 32 },
+    { str: "穰", exp: 28 },
+    { str: "秭", exp: 24 },
+    { str: "垓", exp: 20 },
+    { str: "京", exp: 16 },
+    { str: "兆", exp: 12 },
+    { str: "億", exp: 8 },
+    { str: "萬", exp: 4 },
+    { str: "千", exp: 3 },
+    { str: "百", exp: 2 },
+    { str: "十", exp: 1 },
+    { str: "", exp: 0 },
+    { str: "分", exp: -1 },
+    { str: "釐", exp: -2 },
+    { str: "毫", exp: -3 },
+    { str: "絲", exp: -4 },
+    { str: "忽", exp: -5 },
+    { str: "微", exp: -6 },
+    { str: "纖", exp: -7 },
+    { str: "沙", exp: -8 },
+    { str: "塵", exp: -9 },
+    { str: "埃", exp: -10 },
+    { str: "渺", exp: -11 },
+    { str: "漠", exp: -12 }
+  ]
+};
+
+var eMultState = {
+  NONE: "NONE", // <END>, 一 (ambiguous: 一萬一 or 一十一 or 一·一 or 一絲一)
+  FRAC: "FRAC", // ...微
+  INT: "INT", // ...萬, ...·,
+  DONE: "DONE" // 負一
+};
+
+var eDigitState = {
+  NONE: "NONE", // <END>, ·
+  MULT: "MULT", // 微
+  MULT_AMBIG: "MULT_AMBIG", // 十 (ambiguous: ...十 or 一十)
+  DIGIT: "DIGIT", // 一
+  DIGIT_WITH_ZERO: "DIGIT_WITH_ZERO", // 一...零, 零零， 零一...零,
+  DELIM: "DELIM", // 又
+  ZERO: "ZERO", // 零<END>, 零·, 零又, 零微, 零一
+  SIGN: "SIGN", // 負
+  ZERO_MULT_AMBIG: "ZERO_MULT_AMBIG" // 零十 (ambiguous: 零一十 or 零十 or 〇十)
+};
+
+var RESULT_2_TO_63 = {
+  sign: 1,
+  exp: 0,
+  digits: "9223372036854775808".split("").reverse()
+};
+
+function hanzi2numstr(s) {
+  // returns array of tokens on success, null on invalid string
+  function tokenize(s) {
+    let result = [{ type: eTokenType.BEGIN }];
+    for (let i = 0; i < s.length; ++i) {
+      let tokenStr = s.charAt(i);
+      if (!NUM_TOKENS.hasOwnProperty(tokenStr)) {
+        return null;
+      }
+      result.push(NUM_TOKENS[tokenStr]);
     }
-    var s2 = s.split(",");
-    for (var i = 0; i < s2.length; i++) {
-      s2[i] = s2[i].split(":");
-    }
-    return s2;
+    result.push({ type: eTokenType.END });
+    return result;
   }
 
-  function _h2n(s, m1, n1, m4, n4) {
-    var st = _sp(s, m4);
-    var result = 0;
+  // returns:
+  //   on success: {
+  //     sign:   +1/-1/+Infinity/-Infinity/NaN,
+  //     exp:    power of 10,
+  //     digits: array of digit chars from lowest to highest, with leading and trailing zeros
+  //   }
+  //   on invalid string: null
+  // result = sign * {digits[length-1..0]} * 10^exp
+  // e.g. 負零又五毫零絲 = { sign: -1, exp: -4, digits: ["0", "5", "0", "0, "0"] } = -00050e-4 = -0.005
+  function parse(tokens) {
+    // parses the number string backwards, from lowest to highest digit
+    // parser state
+    let digitState = eDigitState.NONE;
 
-    for (var i = 0; i < st.length; i++) {
-      if (st[i].length > 1 && st[i][0] == "零") {
-        st[i][0] = "一";
-      }
-      var stt = _sp(st[i][0], m1);
-
-      var r = 0;
-
-      var lastpow = 10;
-
-      for (var j = 0; j < stt.length; j++) {
-        var shorthand = false;
-        if (stt[j][0][0] == "零") {
-          stt[j][0] = stt[j][0].slice(1);
+    // multiplier stack, keep track of all active multiplier exponents
+    let multStack = {
+      isEmpty: function() {
+        return this._exps.length == 0;
+      },
+      total: function() {
+        return this._expAdd;
+      },
+      top: function() {
+        return this._exps[this._exps.length - 1];
+      },
+      state: function() {
+        if (this.isEmpty()) {
+          return eMultState.NONE;
+        } else if (this._exps[0] < 0) {
+          return eMultState.FRAC;
+        } else if (this._exps[0] < Infinity) {
+          return eMultState.INT;
         } else {
-          shorthand = true;
+          return eMultState.DONE;
         }
-        if (stt[j].length == 1) {
-          if (stt[j][0] != "") {
-            if (shorthand) {
-              r += NUMS.indexOf(stt[j][0]) * (lastpow / 10);
-            } else {
-              r += NUMS.indexOf(stt[j][0]);
+      },
+
+      push: function(exp) {
+        this._expAdd += exp;
+        this._exps.push(exp);
+      },
+      pop: function() {
+        this._expAdd -= this.top();
+        this._exps.pop();
+      },
+      clear: function() {
+        this._expAdd = 0;
+        this._exps = [];
+      },
+      markDone: function() {
+        this.clear();
+        this.push(Infinity);
+      },
+
+      _exps: [],
+      _expAdd: 0
+    };
+
+    // result, with different convension of exp for internal use
+    let result = {
+      sign: function() {
+        return this._sign;
+      },
+      exp: function() {
+        return this._exp;
+      },
+      digits: function() {
+        return this._digits;
+      },
+
+      applySign: function(newSign) {
+        this._sign *= newSign;
+      },
+      // digit: number or array of numbers
+      push: function(digit) {
+        if (Array.isArray(digit)) {
+          this._digits = this._digits.concat(digit);
+          this._exp += digit.length;
+        } else {
+          this._digits.push(digit);
+          ++this._exp;
+        }
+      },
+      fillZeros: function(newExp) {
+        this.push(Array(newExp - this._exp).fill("0"));
+      },
+      resetExp: function(newExp) {
+        this._exp = newExp;
+      },
+
+      // the result is sign * 0.{digits[length-1..0]} * 10^exp
+      _sign: 1, // +1/-1
+      _exp: 0, // one plus exponent of the highest digit
+      _digits: [] // lowest to highest
+    };
+
+    // parses the number string backwards, discarding <END>
+    for (let i = tokens.length - 1; i > 0; --i) {
+      let token = tokens[i - 1];
+
+      // sign should be the first char
+      if (
+        multStack.state() == eMultState.SIGN &&
+        token.type != eTokenType.BEGIN
+      ) {
+        return null;
+      }
+
+      // disambiguate omitted 一
+      switch (digitState) {
+        case eDigitState.MULT_AMBIG:
+          switch (token.type) {
+            // <BEGIN>(一?)十 -> <BEGIN>一十
+            // 負(一?)十 -> 負一十
+            // 又(一?)十 -> 又一十
+            // ·(一?)十 -> ·一十
+            // 分(一?)十絲 -> 分一十絲
+            case eTokenType.BEGIN:
+            case eTokenType.SIGN:
+            case eTokenType.DELIM:
+            case eTokenType.DECIMAL:
+            case eTokenType.FRAC_MULT:
+              result.push("1");
+              digitState = eDigitState.DIGIT;
+              break;
+
+            // 一(一?)十 -> 一十
+            case eTokenType.DIGIT:
+              digitState = eDigitState.MULT;
+              break;
+
+            // 百(一?)十 -> 百一十
+            // 千(一?)十 -> 千一十
+            // 百(一?)萬 -> 百萬
+            case eTokenType.INT_MULT:
+              if (multStack.top() < token.exp) {
+                result.push("1");
+                digitState = eDigitState.DIGIT;
+              } else {
+                digitState = eDigitState.MULT;
+              }
+              break;
+
+            // 零(一?)十 -> 零(一?)十
+            case eTokenType.ZERO:
+              digitState = eDigitState.MULT_AMBIG;
+              break;
+
+            default:
+              break;
+          }
+          break;
+
+        case eDigitState.ZERO_MULT_AMBIG:
+          switch (token.type) {
+            // <BEGIN>(零一|零|〇)十 -> <BEGIN>〇十
+            // 負(零一|零|〇)十 -> 負〇十
+            // 一(零一|零|〇)十 -> 一〇十
+            // 又(零一|零|〇)十 -> 又〇十
+            // 零(零一|零|〇)十 -> 〇〇十
+            case eTokenType.BEGIN:
+            case eTokenType.SIGN:
+            case eTokenType.DIGIT:
+            case eTokenType.DELIM:
+            case eTokenType.ZERO:
+              result.push("0");
+              digitState = eDigitState.DIGIT_WITH_ZERO;
+              break;
+
+            // ·(零一|零|〇)十絲 -> ·零一十絲
+            // ·(零一|零|〇)十釐 -> ·〇十釐
+            // ·(零一|零|〇)十分 -> error
+            // ·(零一|零|〇)百分 -> error
+            // 分(零一|零|〇)十絲 -> 分零一十絲
+            // 分(零一|零|〇)十毫 -> 分〇十絲
+            // 分(零一|零|〇)十釐 -> error
+            // 分(零一|零|〇)十分 -> error
+            case eTokenType.DECIMAL:
+            case eTokenType.FRAC_MULT:
+              if (multStack.total() + 1 < token.exp) {
+                result.push("1");
+                result.push("0");
+                digitState = eDigitState.ZERO;
+              } else if (multStack.total() + 1 == token.exp) {
+                result.push("0");
+                digitState = eDigitState.DIGIT_WITH_ZERO;
+              } else {
+                return null;
+              }
+              break;
+
+            // 千(零一|零|〇)十 -> 千零一十
+            // 百(零一|零|〇)十 -> 百〇十
+            // 萬(零一|零|〇)萬 -> 萬零萬
+            // 百(零一|零|〇)萬 -> 百零萬
+            case eTokenType.INT_MULT:
+              if (multStack.top() + 1 < token.exp) {
+                result.push("1");
+                result.push("0");
+                digitState = eDigitState.ZERO;
+              } else if (multStack.top() + 1 == token.exp) {
+                result.push("0");
+                digitState = eDigitState.DIGIT_WITH_ZERO;
+              } else {
+                result.push("0");
+                digitState = eDigitState.ZERO;
+              }
+              break;
+
+            default:
+              break;
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      // determine the exponent of tail digits
+      if (multStack.state() == eMultState.NONE) {
+        switch (token.type) {
+          case eTokenType.INT_MULT:
+            // exponent is correct
+            break;
+
+          case eTokenType.DECIMAL:
+          case eTokenType.FRAC_MULT:
+            result.resetExp(token.exp);
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      // determine the current exponent and update exponent stack
+      let currExp = (function() {
+        switch (token.type) {
+          case eTokenType.BEGIN:
+          case eTokenType.SIGN:
+            switch (digitState) {
+              // <BEGIN>微 -> error
+              // 負微 -> error
+              case eDigitState.MULT:
+                return null;
+
+              default:
+                multStack.markDone();
+                return multStack.total();
             }
+
+          case eTokenType.DIGIT:
+          case eTokenType.ZERO:
+            switch (digitState) {
+              // 一又 -> 一·
+              // 零又 -> 零·
+              case eDigitState.DELIM:
+                multStack.clear();
+                multStack.push(0);
+                return multStack.total();
+
+              default:
+                return result.exp();
+            }
+
+          case eTokenType.DELIM:
+            switch (digitState) {
+              // 又又 -> error
+              case eDigitState.DELIM:
+                return null;
+
+              default:
+                return result.exp();
+            }
+
+          // ·...絲 -> ·
+          // 釐...絲 -> 釐
+          // ·絲 -> error
+          // 釐絲 -> error
+          case eTokenType.DECIMAL:
+          case eTokenType.FRAC_MULT:
+            if (digitState == eDigitState.MULT) {
+              return null;
+            } else {
+              multStack.clear();
+              multStack.push(token.exp);
+              return multStack.total();
+            }
+
+          case eTokenType.INT_MULT:
+            switch (digitState) {
+              // 百又...絲 -> 百
+              // 萬又...百萬億 -> 萬萬億
+              case eDigitState.DELIM:
+                if (multStack.state() == eMultState.FRAC) {
+                  multStack.clear();
+                  multStack.push(token.exp);
+                } else {
+                  while (!multStack.isEmpty() && multStack.top() < token.exp) {
+                    multStack.pop();
+                  }
+                  multStack.push(token.exp);
+                }
+                break;
+
+              // 萬...百萬億 -> 萬萬億
+              // 萬零...百萬億 -> 萬萬億
+              // 百...十絲 -> 百絲
+              // 千零...十絲 -> 千絲
+              case eDigitState.NONE:
+              case eDigitState.MULT:
+              case eDigitState.MULT_AMBIG:
+              case eDigitState.DIGIT:
+              case eDigitState.DIGIT_WITH_ZERO:
+              case eDigitState.ZERO:
+              case eDigitState.ZERO_MULT_AMBIG:
+                while (
+                  !multStack.isEmpty() &&
+                  multStack.top() < token.exp &&
+                  multStack.top() >= 0
+                ) {
+                  multStack.pop();
+                }
+                multStack.push(token.exp);
+                break;
+            }
+            return multStack.total();
+        }
+      })();
+      if (currExp == null) {
+        return null;
+      }
+
+      // check for overlapping decimal places
+      if (currExp < result.exp()) {
+        return null;
+      }
+
+      // check for disallowed missing decimal places
+      if (currExp > result.exp()) {
+        let check = function() {
+          if (token.type == eTokenType.BEGIN || token.type == eTokenType.SIGN) {
+            return true;
           }
-        } else {
-          if (stt[j][0] == "") {
-            stt[j][0] = "一";
+          if (
+            digitState == eDigitState.DELIM ||
+            digitState == eDigitState.ZERO
+          ) {
+            return true;
           }
-          lastpow = Math.pow(n1, m1.indexOf(stt[j][1]) + 1);
-          r += NUMS.indexOf(stt[j][0]) * lastpow;
+          if (token.type == eTokenType.INT_MULT) {
+            return true;
+          }
+          if (
+            token.type == eTokenType.FRAC_MULT ||
+            token.type == eTokenType.DECIMAL
+          ) {
+            return true;
+          }
+          return false;
+        };
+
+        if (!check()) {
+          return null;
+        }
+        if (multStack.state() != eMultState.DONE) {
+          result.fillZeros(currExp);
         }
       }
-      if (st[i].length == 2) {
-        result += r * Math.pow(n4, m4.indexOf(st[i][1]) + 1);
-      } else {
-        result += r;
-      }
-    }
-    return result;
-  }
-  function _fh2n(s, m1, n1, m4, n4) {
-    var st = _sp(s, m4);
-    var result = 0;
 
-    for (var i = 0; i < st.length; i++) {
-      if (st[i].length > 1 && st[i][0] == "") {
-        st[i][0] = "一";
-      }
-      var stt = _sp(st[i][0], m1);
-      var r = 0;
-      for (var j = 0; j < stt.length; j++) {
-        if (stt[j].length == 1) {
-          if (stt[j][0] != "") {
-            r += NUMS.indexOf(stt[j][0]);
+      // push the digit, update parser state
+      switch (token.type) {
+        case eTokenType.BEGIN:
+          break;
+
+        case eTokenType.SIGN:
+          result.applySign(token.sign);
+          digitState = eDigitState.SIGN;
+          break;
+
+        case eTokenType.DIGIT:
+          result.push(token.digit);
+          if (
+            digitState == eDigitState.ZERO ||
+            digitState == eDigitState.DIGIT_WITH_ZERO
+          ) {
+            digitState = eDigitState.DIGIT_WITH_ZERO;
+          } else {
+            digitState = eDigitState.DIGIT;
           }
-        } else {
-          if (stt[j][0] == "") {
-            stt[j][0] = "一";
+          break;
+
+        case eTokenType.DECIMAL:
+          digitState = eDigitState.NONE;
+          break;
+
+        case eTokenType.INT_MULT:
+          digitState = eDigitState.MULT_AMBIG;
+          break;
+
+        case eTokenType.FRAC_MULT:
+          digitState = eDigitState.MULT;
+          break;
+
+        case eTokenType.DELIM:
+          digitState = eDigitState.DELIM;
+          break;
+
+        case eTokenType.ZERO:
+          switch (digitState) {
+            case eDigitState.NONE:
+            case eDigitState.MULT:
+            case eDigitState.DIGIT:
+            case eDigitState.DELIM:
+              result.push(token.digit);
+              digitState = eDigitState.ZERO;
+              break;
+
+            case eDigitState.DIGIT_WITH_ZERO:
+            case eDigitState.ZERO:
+              result.push(token.digit);
+              digitState = eDigitState.ZERO;
+              break;
+
+            case eDigitState.MULT_AMBIG:
+              digitState = eDigitState.ZERO_MULT_AMBIG;
+              break;
           }
-          r +=
-            NUMS.indexOf(stt[j][0]) * Math.pow(n1, m1.indexOf(stt[j][1]) + 1);
-        }
-      }
-      if (st[i].length == 2) {
-        result += r * Math.pow(n4, m4.indexOf(st[i][1]) + 1);
-      } else {
-        result += r;
+          break;
       }
     }
-    return result;
-  }
-  function hanzi2int(s) {
-    return _h2n("零" + s, MULTS1, 10, MULTS4, 10000);
+
+    if (result.digits().length == 0) {
+      return null;
+    }
+    return {
+      sign: result.sign(),
+      exp: result.exp() - result.digits().length,
+      digits: result.digits()
+    };
   }
 
-  function hanzi2frac(s) {
-    var l = -1;
-    for (var i = 0; i < s.length; i++) {
-      if (FRACS1.includes(s[i])) {
-        l = i;
-      }
-      if (FRACS4.includes(s[i])) {
-        break;
+  function getDigit(result, exp) {
+    var idx = exp - result.exp;
+    if (idx >= 0 && idx < result.digits.length) {
+      return result.digits[idx];
+    } else {
+      return "0";
+    }
+  }
+
+  function compareMagnitude(resultA, resultB) {
+    var getMaxExp = result => result.exp + (result.digits.length - 1);
+
+    var maxExp = Math.max(getMaxExp(resultA), getMaxExp(resultB));
+    for (let i = maxExp; i >= resultA.exp || i >= resultB.exp; --i) {
+      var digitA = Number(getDigit(resultA, i));
+      var digitB = Number(getDigit(resultB, i));
+      if (digitA > digitB) {
+        return 1;
+      } else if (digitA < digitB) {
+        return -1;
       }
     }
-    var n1 = _fh2n(s.slice(0, l + 1), [], 0, FRACS1, 0.1);
-    var n2 =
-      _fh2n(s.slice(l + 1), MULTS1, 10, FRACS4, 0.0001) *
-      Math.pow(0.1, FRACS1.length);
-    return n1 + n2;
+    return 0;
   }
-  if (s[0] == "負") {
-    return -1 * hanzi2num(s.slice(1));
+
+  // parse
+  let tokens = tokenize(s);
+  if (tokens == null) {
+    return null;
   }
-  if (s.includes("又")) {
-    var s0 = s.split("又")[0];
-    var s1 = s.split("又")[1];
-    return hanzi2int(s0) + hanzi2frac(s1);
+  let result = parse(tokens);
+  if (result == null) {
+    return null;
+  }
+
+  // build decimal string
+  if (!Number.isFinite(result.sign)) {
+    // infinity/NaN
+    return result.sign.toString();
+  }
+  let str = result.sign < 0 ? "-" : "";
+
+  // no fractional digits (including zero) and fits in int64?
+  var printAsInt = (function() {
+    if (result.exp < 0) {
+      return false;
+    }
+    var c = compareMagnitude(result, RESULT_2_TO_63);
+    return result.sign < 0 ? c <= 0 : c < 0;
+  })();
+
+  // digit range, leading and trailing zeros trimmed
+  var rend = result.digits.findIndex(x => x != "0");
+  if (rend < 0) {
+    str += "0";
+    return str;
+  }
+  var rendExp = result.exp + rend;
+
+  let rbegin = result.digits.length;
+  while (result.digits[rbegin - 1] == "0") {
+    --rbegin;
+  }
+  var rbeginExp = result.exp + rbegin;
+
+  // compute length of fixed and scientific format
+  let expStr = "";
+  let printAsScientific = false;
+  if (!printAsInt) {
+    var scientificExp = result.exp + (rbegin - 1);
+    expStr =
+      (scientificExp < 0 ? "e-" : "e+") + Math.abs(scientificExp).toString();
+    var fixedLen =
+      rendExp < 0 ? Math.max(rbeginExp, 1) - rendExp + 1 : rbeginExp;
+    var scientificMagLen = rbegin - rend > 1 ? rbegin - rend + 1 : 1;
+    if (scientificMagLen + expStr.length < fixedLen) {
+      printAsScientific = true;
+    }
+  }
+
+  if (printAsScientific) {
+    str += result.digits[rbegin - 1];
+    if (rbegin - 1 > rend) {
+      str += ".";
+      for (let i = rbegin - 1; i > rend; --i) {
+        str += result.digits[i - 1];
+      }
+    }
+    str += expStr;
+    return str;
   } else {
-    var fracs = FRACS1.concat(FRACS4);
-    for (var i = 0; i < fracs.length; i++) {
-      if (s.includes(fracs[i])) {
-        return hanzi2frac(s);
+    for (let i = Math.max(rbeginExp, 1); i > 0; --i) {
+      str += getDigit(result, i - 1);
+    }
+    if (rendExp < 0) {
+      str += ".";
+      for (let i = 0; i > rendExp; --i) {
+        str += getDigit(result, i - 1);
       }
     }
-    return hanzi2int(s);
+    return str;
   }
 }
 
-function num2hanzi(n, nfrac = 6) {
-  function int2hanzi(n) {
-    if (n < 10) {
-      return NUMS[n];
-    }
-    var s = "";
-    var z = -1;
-    for (var i = MULTS4.length - 1; i >= 0; i--) {
-      var m = Math.pow(10000, i + 1);
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n = n % m;
-        s += int2hanzi(k) + MULTS4[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    for (var i = MULTS1.length - 1; i >= 0; i--) {
-      var m = Math.pow(10, i + 1);
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n = n % m;
-        s += int2hanzi(k) + MULTS1[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    if (n) {
-      s += int2hanzi(n);
-    }
-    if (s[s.length - 1] == "零") {
-      s = s.slice(0, s.length - 1);
-    }
-    return s;
+function hanzi2num(s) {
+  var str = hanzi2numstr(s);
+  if (str == null) {
+    return NaN;
+  } else {
+    return Number(str);
   }
-  function frac2hanzi(n) {
-    var mfrac = Math.pow(0.1, nfrac);
-    var s = "";
-    var z = -1;
-    for (var i = 0; i < FRACS1.length; i++) {
-      var m = Math.pow(0.1, i + 1);
-      if (m < mfrac) {
-        break;
-      }
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n -= k * m;
-        s += int2hanzi(k) + FRACS1[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
+}
+
+function num2hanzi(n, format = "", precision = undefined) {
+  if (!Number.isFinite(n)) {
+    if (n == Infinity) {
+      return INF_WORD;
+    } else if (n == -Infinity) {
+      return NEG_WORD + INF_WORD;
+    } else {
+      return NAN_WORD;
     }
-    for (var i = 0; i < FRACS4.length; i++) {
-      var m = Math.pow(0.0001, i + 1) * 1e-8;
-      if (m < mfrac) {
-        break;
-      }
-      var k = Math.floor(n / m);
-      if (k > 0) {
-        n -= k * m;
-        s += int2hanzi(k) + FRACS4[i];
-        z = 0;
-      } else if (z == 0) {
-        s += "零";
-        z = 1;
-      }
-    }
-    if (s[s.length - 1] == "零") {
-      s = s.slice(0, s.length - 1);
-    }
-    return s;
   }
 
-  if (n < 0) {
-    return "負" + num2hanzi(-n);
+  // the same format as hanzi2numstr.parse
+  function parseNumStr(str) {
+    function myIndexOf(str, val) {
+      var idx = str.indexOf(val);
+      return idx < 0 ? str.length : idx;
+    }
+    var sign = str.charAt(0) == "-" ? -1 : 1;
+    var digitIndex = "+-".includes(str.charAt(0)) ? 1 : 0;
+    var expIndex = myIndexOf(str, "e");
+    var scientificExp =
+      expIndex == str.length ? 0 : Number(str.substring(expIndex + 1));
+    var decimalIndex = myIndexOf(str.substring(0, expIndex), ".");
+    var intStr = str.substring(digitIndex, decimalIndex);
+    var intDigits = intStr.split("").reverse();
+    var fracStr = str.substring(
+      Math.min(decimalIndex + 1, expIndex),
+      expIndex
+    );
+    var fracDigits = fracStr.split("").reverse();
+    return {
+      sign: sign,
+      exp: scientificExp - fracDigits.length,
+      digits: fracDigits.concat(intDigits)
+    };
   }
-  var intn = Math.floor(n);
-  if (intn == n) {
-    return int2hanzi(n);
-  } else {
-    return int2hanzi(intn) + "又" + frac2hanzi(n - intn);
+
+  // reserved for future extension
+  var chineseFormat = "readout";
+  var multWords = MULT_WORDS[chineseFormat];
+  var digitWords = DIGIT_WORDS[chineseFormat];
+  var decimalWord = DECIMAL_WORD[chineseFormat];
+
+  let numStr = precision === undefined ? n.toString() : n.toFixed(precision);
+  let result = parseNumStr(numStr);
+  let signStr = result.sign < 0 ? NEG_WORD : "";
+  let rend = result.digits.findIndex(x => x != "0");
+  if (rend < 0) {
+    return signStr + digitWords["0"];
   }
+  let rbegin = result.digits.length;
+  while (result.digits[rbegin - 1] == "0") {
+    --rbegin;
+  }
+
+  // is this beyond the lowest fractional unit we can represent?
+  var minMultExp = multWords[multWords.length - 1].exp;
+  if (result.exp + rend < minMultExp) {
+    // cap to lowest fractional unit and retry
+    numStr = n.toFixed(-minMultExp);
+    result = parseNumStr(numStr);
+    signStr = result.sign < 0 ? NEG_WORD : "";
+    rend = result.digits.findIndex(x => x != "0");
+    if (rend < 0) {
+      return signStr + digitWords["0"];
+    }
+    rbegin = result.digits.length;
+    while (result.digits[rbegin - 1] == "0") {
+      --rbegin;
+    }
+  }
+
+  // convert digits to readout format
+  let str = signStr;
+  let pendingZero = false;
+  let i = rbegin;
+  var intToReadout = function(expBias = 0) {
+    let hasOutput = false;
+    while (i != rend) {
+      var mult = multWords.find(x => x.exp + expBias <= result.exp + (i - 1));
+      if (mult === undefined || mult.exp < 0) {
+        // done with int part
+        break;
+      } else if (mult.exp > 0) {
+        // needs higher multiplier
+        if (intToReadout(expBias + mult.exp)) {
+          // 零 is omitted here (100 0000 -> 一百萬)
+          pendingZero = false;
+          // write the multiplier
+          str += mult.str;
+          hasOutput = true;
+        }
+      } else if (mult.exp == 0) {
+        if (result.digits[i - 1] != "0") {
+          // insert 零 if necessary
+          if (pendingZero) {
+            str += digitWords["0"];
+            pendingZero = false;
+          }
+          // write the digit
+          str += digitWords[result.digits[i - 1]];
+          hasOutput = true;
+        } else {
+          // mark that there are zero(s) not written yet
+          // 零 will be added later if necessary
+          pendingZero = true;
+        }
+        --i;
+        break;
+      }
+    }
+    return hasOutput;
+  };
+  var fracToReadout = function() {
+    while (i != rend) {
+      var mult = multWords.find(x => x.exp <= result.exp + (i - 1));
+      if (mult === undefined) {
+        break;
+      }
+      if (intToReadout(mult.exp)) {
+        str += mult.str;
+        pendingZero = false;
+      }
+    }
+  };
+
+  var hasInt = intToReadout();
+  pendingZero = false;
+  if (i != rend) {
+    if (hasInt) {
+      str += decimalWord;
+    }
+    // avoid 又零
+    while (i != rend && result.digits[i - 1] == "0") {
+      --i;
+    }
+    fracToReadout();
+  }
+  return str;
 }
 
 try {
-  module.exports = { hanzi2num, num2hanzi };
+  module.exports = { hanzi2num, hanzi2numstr, num2hanzi };
 } catch (e) {}
 ;
 var pinyin = {
@@ -33436,7 +34027,7 @@ try {
   };
 } catch (e) {}
 ;
-var NUMBER_KEYWORDS = "負又零一二三四五六七八九十百千萬億兆京垓秭穣溝澗正載極分釐毫絲忽微塵埃渺漠".split(
+var NUMBER_KEYWORDS = "負·又零〇一二三四五六七八九十百千萬億兆京垓秭穰溝澗正載極分釐毫絲忽微纖沙塵埃渺漠".split(
   ""
 );
 
@@ -33534,6 +34125,9 @@ var KEYWORDS_DEFINE = {
   不知何禍歟: ["try", "catchall"],
   乃作罷: ["try", "end"],
 
+  或云: ["macro", "from"],
+  蓋謂: ["macro", "to"],
+
   注曰: ["comment"],
   疏曰: ["comment"],
   批曰: ["comment"]
@@ -33554,16 +34148,185 @@ try {
   module.exports = { NUMBER_KEYWORDS, KEYWORDS };
 } catch (e) {}
 ;
+function extractMacros(lang, txt, { lib, reader }) {
+  function getImports() {
+    var imps = [];
+    for (var i = 0; i < txt.length; i++) {
+      if (txt[i] == "吾" && txt[i + 1] == "嘗" && txt[i + 2] == "觀") {
+        var imp = txt
+          .slice(i + 3)
+          .split(/[」』]/g)[0]
+          .replace(/[「」『』]/g, "");
+        imps.push(imp);
+      }
+    }
+    return imps;
+  }
+  function getMacros() {
+    var macs = [];
+    var qlvl = 0;
+    for (var i = 0; i < txt.length; i++) {
+      if (txt[i] == "「") {
+        qlvl++;
+      } else if (txt[i] == "」") {
+        qlvl--;
+      } else if (txt[i] == "『") {
+        qlvl += 2;
+      } else if (txt[i] == "』") {
+        qlvl -= 2;
+      }
+      if (qlvl != 0) {
+        continue;
+      }
+      if (txt[i] == "或" && txt[i + 1] == "云") {
+        function grabLit() {
+          var lvl = 0;
+          var s = "";
+          while (true) {
+            if (txt[j] == "「") {
+              lvl++;
+            } else if (txt[j] == "」") {
+              lvl--;
+            } else if (txt[j] == "『") {
+              lvl += 2;
+            } else if (txt[j] == "』") {
+              lvl -= 2;
+            }
+            s += txt[j];
+            j++;
+            if (lvl == 0) {
+              break;
+            }
+            if (j >= txt.length) {
+              return s;
+            }
+          }
+          return s;
+        }
+        var j = i + 2;
+        var s0 = grabLit();
+        while (!(txt[j] == "蓋" && txt[j + 1] == "謂")) {
+          j++;
+          if (j >= txt.length) {
+            return macs;
+          }
+        }
+        j += 2;
+        var s1 = grabLit();
+
+        function stripQuotes(s) {
+          if (s[0] == "「") {
+            s = s.slice(2);
+          } else {
+            s = s.slice(1);
+          }
+          if (s[s.length - 1] == "」") {
+            s = s.slice(0, -2);
+          } else {
+            s = s.slice(0, -1);
+          }
+          return s;
+        }
+        s0 = stripQuotes(s0);
+        s1 = stripQuotes(s1);
+        var ins = s0.match(/「[甲乙丙丁戊己庚辛壬癸]」/g);
+        var ous = s1.match(/「[甲乙丙丁戊己庚辛壬癸]」/g);
+
+        if (ins !== null && ous !== null) {
+          for (var k = 0; k < ous.length; k++) {
+            var ii = ins.indexOf(ous[k]);
+            if (ii >= 0) {
+              s1 = s1.replace(new RegExp(ous[k], "g"), `\$${ii + 1}`);
+            }
+          }
+        }
+        s0 = s0.replace(/「[甲乙丙丁戊己庚辛壬癸]」/g, "(.*?)");
+        macs.push([s0, s1]);
+        i = j;
+      }
+    }
+    return macs;
+  }
+  var imports = getImports();
+  var macros = getMacros();
+  for (var i = 0; i < imports.length; i++) {
+    var isrc;
+    if (imports[i] in lib[lang]) {
+      isrc = lib[lang][imports[i]];
+    } else if (imports[i] in lib) {
+      isrc = lib[imports[i]];
+    } else {
+      isrc = reader(imports[i]);
+    }
+    macros = macros.concat(extractMacros(lang, isrc, { lib, reader }));
+  }
+  return macros;
+}
+
+function expandMacros(txt, macros) {
+  function calclmask(ntxt) {
+    var lmask = [];
+    var qlvl = 0;
+    for (var i = 0; i < ntxt.length; i++) {
+      if (ntxt[i] == "「") {
+        qlvl++;
+      } else if (ntxt[i] == "」") {
+        qlvl--;
+      } else if (ntxt[i] == "『") {
+        qlvl += 2;
+      } else if (ntxt[i] == "』") {
+        qlvl -= 2;
+      }
+      lmask.push(qlvl > 0);
+    }
+    return lmask;
+  }
+  for (var i = 0; i < macros.length; i++) {
+    function doit(ntxt) {
+      var lmask = calclmask(ntxt);
+      var re = new RegExp(macros[i][0]);
+      var idx = ntxt.search(re);
+      if (idx == -1) {
+        return ntxt;
+      }
+      if (lmask[idx]) {
+        // console.log("refused to expand macro inside string")
+        var nxtend = idx;
+        while (lmask[nxtend] == true && nxtend < lmask.length) {
+          nxtend++;
+        }
+        nxtend++;
+        ntxt = ntxt.slice(0, nxtend) + doit(ntxt.slice(nxtend));
+      } else {
+        ntxt = doit(ntxt.replace(re, macros[i][1]));
+      }
+      return ntxt;
+    }
+    txt = doit(txt);
+  }
+  return txt;
+}
 try {
-  var { hanzi2num, num2hanzi } = require("./hanzi2num");
+  module.exports = { extractMacros, expandMacros };
+} catch (e) {}
+;
+try {
+  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
   var version = require("./version");
   var compilers = require("./compiler/compilers");
+
+  var { expandMacros, extractMacros } = require("./macro.js");
 } catch (e) {}
 
-function wy2tokens(txt) {
+function wy2tokens(
+  txt,
+  assert = (msg, pos, b) => {
+    if (!b) console.log(`ERROR@${pos}: ${msg}`);
+  }
+) {
   var tokens = [];
   var tok = "";
   var idt = false;
@@ -33582,7 +34345,9 @@ function wy2tokens(txt) {
   }
   function endnum() {
     if (num) {
-      tokens.push(["num", hanzi2num(tok), i]);
+      var numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr, i]);
       tok = "";
       num = false;
     }
@@ -33697,11 +34462,13 @@ function wy2tokens(txt) {
   }
   if (tok.length) {
     if (num) {
-      tokens.push(["num", hanzi2num(tok)]);
+      var numStr = hanzi2numstr(tok);
+      assert(`Invalid number "${tok}".`, i, numStr != null);
+      tokens.push(["num", numStr]);
     } else if (data) {
       tokens.push(["data", tok]);
     } else {
-      console.log("[Tokenizer Error] Unterminated identifier.");
+      assert("Unterminated identifier.", i, false);
     }
   }
   return tokens;
@@ -33736,7 +34503,7 @@ function tokenRomanize(tokens, method) {
     if (tokens[i][0] == "iden" && !isRoman(tokens[i][1])) {
       var r = idenMap[tokens[i][1]];
       var key = tokens[i][1];
-      if (r != undefined) {
+      if (r !== undefined) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
@@ -33762,7 +34529,9 @@ function tokenRomanize(tokens, method) {
 
 function tokens2asc(
   tokens,
-  assert = (msg, pos, b) => console.log(`ERROR@${pos}: ${msg}`)
+  assert = (msg, pos, b) => {
+    if (!b) console.log(`ERROR@${pos}: ${msg}`);
+  }
 ) {
   var asc = [];
   var i = 0;
@@ -33771,7 +34540,7 @@ function tokens2asc(
     var cmd = gettok(i, 0);
 
     function gettok(idx, jdx) {
-      if (tokens[idx] == undefined) {
+      if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
       return tokens[idx][jdx];
@@ -33792,12 +34561,18 @@ function tokens2asc(
       gettok(i, 0) == "decl" &&
       (gettok(i, 1) == "uninit" || gettok(i, 1) == "public")
     ) {
-      typeassert(i + 1, ["num", "iden"], "variable count");
+      typeassert(i + 1, ["num"], "variable count");
       typeassert(i + 2, ["type"], "variable type");
+      var cnt = Number(gettok(i + 1, 1));
+      assert(
+        `Invalid variable count ${cnt}`,
+        pos,
+        Number.isSafeInteger(cnt) && cnt > 0
+      );
 
       var x = {
         op: "var",
-        count: gettok(i + 1, 1),
+        count: cnt,
         type: gettok(i + 2, 1),
         values: [],
         names: [],
@@ -33835,7 +34610,7 @@ function tokens2asc(
         pos
       };
       i += 3;
-      if (tokens[i] != undefined && gettok(i, 0) == "name") {
+      if (tokens[i] !== undefined && gettok(i, 0) == "name") {
         x.names = [gettok(i + 1, 1)];
         i += 2;
       }
@@ -33862,19 +34637,23 @@ function tokens2asc(
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
         while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "funbody")) {
-          if (gettok(i, 0) == "num") {
-            typeassert(i + 1, ["type"], "argument type");
-            var typ = gettok(i + 1, 1);
-            var cnt = gettok(i, 1);
-            x.arity += cnt;
-            i += 2;
-            for (var j = 0; j < cnt; j++) {
-              typeassert(i + j * 2, ["assgn"], "another argument");
-              typeassert(i + j * 2 + 1, ["iden"], "argument");
-              x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
-            }
-            i += cnt * 2;
+          typeassert(i, ["num"], "argument count");
+          typeassert(i + 1, ["type"], "argument type");
+          var typ = gettok(i + 1, 1);
+          var cnt = Number(gettok(i, 1));
+          assert(
+            `Invalid argument count ${cnt}.`,
+            pos,
+            Number.isSafeInteger(cnt) && cnt > 0
+          );
+          x.arity += cnt;
+          i += 2;
+          for (var j = 0; j < cnt; j++) {
+            typeassert(i + j * 2, ["assgn"], "another argument");
+            typeassert(i + j * 2 + 1, ["iden"], "argument");
+            x.args.push({ name: tokens[i + j * 2 + 1][1], type: typ });
           }
+          i += cnt * 2;
         }
       }
       asc.push(x);
@@ -34094,7 +34873,14 @@ function tokens2asc(
       asc.push({ op: "discard", pos });
       i++;
     } else if (gettok(i, 0) == "take") {
-      asc.push({ op: "take", count: gettok(i + 1, 1), pos });
+      typeassert(i + 1, ["num"], "argument count");
+      var cnt = Number(gettok(i + 1, 1));
+      assert(
+        `Invalid argument count ${cnt}`,
+        pos,
+        Number.isSafeInteger(cnt) && cnt > 0
+      );
+      asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
       typeassert(i + 2, ["import"]);
@@ -34132,6 +34918,8 @@ function tokens2asc(
       i += 3;
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
+      i += 2;
+    } else if (gettok(i, 0) == "macro") {
       i += 2;
     } else {
       //console.log("Unrecognized",tokens[i])
@@ -34179,21 +34967,12 @@ function compile(
         ? console.log(x)
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
-    lib = typeof STDLIB == undefined ? {} : STDLIB,
+    lib = typeof STDLIB == "undefined" ? {} : STDLIB,
     reader = defaultReader
   } = {}
 ) {
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
-
-  var tokens = wy2tokens(txt);
-
-  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
-  logCallback(tokens);
-
-  if (romanizeIdentifiers != "none") {
-    tokenRomanize(tokens, romanizeIdentifiers);
-  }
 
   var txtlines = txt.split("\n");
   function assert(msg, pos, b) {
@@ -34221,6 +35000,22 @@ function compile(
     return 0;
   }
 
+  var macros = extractMacros(lang, txt, { lib, reader });
+  txt = expandMacros(txt, macros);
+
+  logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
+  logCallback(macros);
+  // logCallback(txt);
+
+  var tokens = wy2tokens(txt, assert);
+
+  logCallback("\n\n=== [PASS 1] TOKENIZER ===");
+  logCallback(tokens);
+
+  if (romanizeIdentifiers != "none") {
+    tokenRomanize(tokens, romanizeIdentifiers);
+  }
+
   var asc = tokens2asc(tokens, assert);
 
   logCallback("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
@@ -34244,9 +35039,9 @@ function compile(
   imports = Array.from(new Set(imports));
   for (var i = 0; i < imports.length; i++) {
     var isrc;
-    if (imports[i] in lib[lang]){
+    if (imports[i] in lib[lang]) {
       isrc = lib[lang][imports[i]];
-    }else if (imports[i] in lib) {
+    } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
       isrc = reader(imports[i]);
@@ -34276,6 +35071,7 @@ var parser = {
   wy2tokens,
   tokens2asc,
   hanzi2num,
+  hanzi2numstr,
   num2hanzi,
   hanzi2pinyin,
   KEYWORDS,
@@ -34645,13 +35441,26 @@ try {
 } catch (e) {}
 ;
 try {
-  var raw = require.context("../lib", false, /.*\.wy$/);
+  function loadStdlib() {
+    var STDLIB = {};
 
-  var STDLIB = {};
+    var raw = require.context("../lib", true, /.*\.wy$/);
 
-  raw.keys().forEach(key => (STDLIB[key.slice(2, -3)] = raw(key).default));
+    raw.keys().forEach(key => {
+      var parts = key.slice(2, -3).split("/");
+      var data = raw(key).default;
+      let lib = STDLIB;
+      for (var part of parts.slice(0, -1)) {
+        if (!lib[part]) lib[part] = {};
+        lib = lib[part];
+      }
+      lib[parts[parts.length - 1]] = data;
+    });
 
-  module.exports = STDLIB;
+    return STDLIB;
+  }
+
+  module.exports = loadStdlib();
 } catch (e) {}
 ;
 try {
@@ -34703,7 +35512,7 @@ class JSCompiler extends Base {
     var errcurlvls = [];
 
     function getval(x) {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -34718,16 +35527,16 @@ class JSCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = a.values[j][1];
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "[]";
             } else if (a.type == "num") {
@@ -34952,7 +35761,7 @@ class JSCompiler extends Base {
         strayvar = [];
       } else if (a.op == "catcherr") {
         var ec = errcurlvls[errcurlvls.length - 1];
-        if (a.error == undefined) {
+        if (a.error === undefined) {
           var vname = this.nextTmpVar();
           strayvar.push(vname);
           if (curlvl != ec[0]) {
@@ -35013,7 +35822,7 @@ class PYCompiler extends Base {
     var strayvar = [];
     var took = 0;
     var getval = x => {
-      if (x == undefined) {
+      if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
@@ -35021,7 +35830,7 @@ class PYCompiler extends Base {
         strayvar = [];
         return ans;
       }
-      if (x[1] == undefined) {
+      if (x[1] === undefined) {
         return undefined;
       }
       if (x[1].toString() == "true") {
@@ -35037,16 +35846,16 @@ class PYCompiler extends Base {
       var a = this.asc[i];
       if (a.op == "var") {
         for (var j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           var name = a.names[j];
           var value = getval(a.values[j]);
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }
-          if (value == undefined) {
+          if (value === undefined) {
             if (a.type == "arr") {
               value = "Ctnr()";
             } else if (a.type == "num") {
@@ -35432,14 +36241,14 @@ class RBCompiler extends Base {
         return ans;
       }
       if (x[0] == "iden") return this.rename(x[1]);
-      if (x[1] == undefined) return "nil";
+      if (x[1] === undefined) return "nil";
       return x[1];
     };
     for (let i = 0; i < asc.length; i++) {
       let a = asc[i];
       if (a.op == "var") {
         for (let j = 0; j < a.count; j++) {
-          if (a.values[j] == undefined) {
+          if (a.values[j] === undefined) {
             a.values[j] = [];
           }
           let name = a.names[j];
@@ -35448,7 +36257,7 @@ class RBCompiler extends Base {
             continue;
           }
           let value = getval(a.values[j]);
-          if (name == undefined) {
+          if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
           }

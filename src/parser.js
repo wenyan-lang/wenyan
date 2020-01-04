@@ -1,11 +1,16 @@
 try {
-  var { hanzi2num, hanzi2numstr, num2hanzi } = require("./hanzi2num");
+  var {
+    hanzi2num,
+    hanzi2numstr,
+    num2hanzi,
+    bool2hanzi
+  } = require("./hanzi2num");
   var hanzi2pinyin = require("./hanzi2pinyin");
   var STDLIB = require("./stdlib");
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
   var version = require("./version");
   var compilers = require("./compiler/compilers");
-
+  var { typecheck, printSignature } = require("./typecheck");
   var { expandMacros, extractMacros } = require("./macro.js");
 } catch (e) {}
 
@@ -285,7 +290,7 @@ function tokens2asc(
       typeassert(i + 1, ["type"], "variable type");
       typeassert(
         i + 2,
-        ["data", "num", "lit", "iden", "bool"],
+        ["data", "num", "lit", "iden", "bool", "any"],
         "variable initialization"
       );
 
@@ -388,7 +393,7 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "op") {
       typeassert(i + 2, ["opord"]);
-      var x = {};
+      var x = { pos };
       if (gettok(i + 2, 1) == "l") {
         x.lhs = tokens[i + 1];
         x.rhs = tokens[i + 3];
@@ -614,11 +619,16 @@ function tokens2asc(
       i++;
     }
   }
+
   return asc;
 }
 
 function jsWrapModule(name, src) {
-  return `var ${name} = new function(){ ${src} };`;
+  return `/*___wenyan_module_${name}_start___*/var ${name} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
+}
+function pyWrapModule(name, src) {
+  // return `#/*___wenyan_module_${name}_start___*/\nclass ${name}:\n${src.split("\n").map(x=>"\t"+x).join("\n")}\n#/*___wenyan_module_${name}_end___*/\n`;
+  return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
 function defaultReader(x) {
@@ -644,10 +654,21 @@ function defaultReader(x) {
   }
 }
 
-function compile(
-  lang,
-  txt,
-  {
+function compile(arg1, arg2, arg3) {
+  let options = {};
+  let txt = "";
+
+  if (typeof arg2 === "string") {
+    // backward compatible
+    txt = arg2;
+    options = { ...arg3, lang: arg1 };
+  } else {
+    txt = arg1;
+    options = arg2;
+  }
+
+  const {
+    lang = "js",
     romanizeIdentifiers = "none",
     resetVarCnt,
     logCallback = x =>
@@ -656,9 +677,10 @@ function compile(
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
-    reader = defaultReader
-  } = {}
-) {
+    reader = defaultReader,
+    strict = false
+  } = options;
+
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
 
@@ -688,7 +710,7 @@ function compile(
     return 0;
   }
 
-  var macros = extractMacros(lang, txt, { lib, reader });
+  var macros = extractMacros(txt, { lib, reader, lang });
   txt = expandMacros(txt, macros);
 
   logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
@@ -709,9 +731,14 @@ function compile(
   logCallback("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
   logCallback(asc);
 
+  if (strict) {
+    logCallback("\n\n=== [PASS 2.5] TYPECHECK ===");
+    console.log(printSignature(typecheck(asc, assert)));
+  }
+
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var imports = [];
-  var mwrapper = jsWrapModule;
+  var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
   if (!compilers[lang]) {
     console.log(compilers);
     return logCallback("Target language not supported.");
@@ -721,7 +748,6 @@ function compile(
   var result = compiler.compile({ imports });
   var { imports, result } = result;
   var targ = result;
-  if (lang == "rb") mwrapper = x => x;
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
@@ -735,32 +761,96 @@ function compile(
       isrc = reader(imports[i]);
     }
     targ =
-      `/*___wenyan_module_${imports[i]}_start___*/` +
       mwrapper(
         imports[i],
-        compile(lang, isrc, {
+        compile(isrc, {
+          lang,
           romanizeIdentifiers,
           resetVarCnt: false,
+          strict: false,
           logCallback,
           errorCallback,
           lib
         })
-      ) +
-      `/*___wenyan_module_${imports[i]}_end___*/` +
-      targ;
+      ) + targ;
   }
 
   return targ;
 }
 
+function isLangSupportedForEval(lang) {
+  if (lang !== "js")
+    throw new Error(
+      `Executing for target language "${lang}" is not supported in current environment`
+    );
+  return true;
+}
+
+function hanzinize(value) {
+  if (typeof value == "number") {
+    return num2hanzi(value);
+  } else if (typeof value == "boolean") {
+    return bool2hanzi(value);
+  } else if (Array.isArray(value)) {
+    return value.map(i => hanzinize(i)).join("。");
+  } else {
+    return value;
+  }
+}
+
+function outputHanziWrapper(log, outputHanzi) {
+  return function output(...args) {
+    log(...args.map(i => (outputHanzi ? hanzinize(i) : i)));
+  };
+}
+
+function evalCompiled(compiledCode, options = {}) {
+  const {
+    outputHanzi = true,
+    scoped = false,
+    lang = "js",
+    output = console.log
+  } = options;
+
+  isLangSupportedForEval(lang);
+
+  let code = compiledCode;
+
+  (() => {
+    const _console_log = console.log;
+    console.log = outputHanziWrapper(output, outputHanzi);
+    try {
+      if (!scoped && "window" in this) {
+        window.eval(code);
+      } else {
+        eval(code);
+      }
+    } catch (e) {
+      throw e;
+    } finally {
+      console.log = _console_log;
+    }
+  })();
+}
+
+function execute(source, options = {}) {
+  const { lang = "js" } = options;
+  isLangSupportedForEval(lang);
+  const compiled = compile(source, options);
+  evalCompiled(compiled, options);
+}
+
 var parser = {
   compile,
+  evalCompiled,
+  execute,
   version,
   wy2tokens,
   tokens2asc,
   hanzi2num,
   hanzi2numstr,
   num2hanzi,
+  bool2hanzi,
   hanzi2pinyin,
   KEYWORDS,
   NUMBER_KEYWORDS,
