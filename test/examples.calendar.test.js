@@ -60,7 +60,9 @@ function runExample(lang, name, options = {}) {
   });
 
   console.log("Output from .wy script: " + output);
-  expect(output).to.equal("今年何干支?  三十六\n今年積何年?  四千七百一十六\n");
+  expect(output).to.equal(
+    "施「彼年何年」於四千七百一十六?  一千九百六十九\n施「彼刻何刻」於四千七百一十?  一\n施「彼日何干支」於四千七百一十四?  一十八\n"
+  );
 }
 
 function runCal(lang, options) {
