@@ -81,7 +81,7 @@ function runCal(lang, options) {
 
   //var files = fs.readdirSync(exampleDir).filter("import.wy");
   for (const file of files) {
-    console.log("File being processed: " + file);
+    //console.log("File being processed: " + file);
 
     const filename = file.split(".")[0];
     it(filename, () => runExample(lang, filename, options));
