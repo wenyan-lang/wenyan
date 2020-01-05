@@ -59,9 +59,10 @@ function runExample(lang, name, options = {}) {
     ...options
   });
 
-  console.log("Output from .wy script: " + output);
+  console.log("Output from .wy script: \n" + output);
   expect(output).to.equal(
-    "施「彼年何年」於四千七百一十六?  一千九百六十九\n施「彼刻何刻」於四千七百一十?  一\n施「彼日何干支」於四千七百一十四?  一十八\n"
+    "施「彼年何年」於四千七百一十六?  一千九百六十九\n施「彼刻何刻」於四千七百一十?  一\n" +
+      "施「彼日何干支」於四千七百一十四?  一十八\n"
   );
 }
 
