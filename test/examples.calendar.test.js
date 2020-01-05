@@ -12,7 +12,7 @@ const python = getPythonExecutable();
 
 const ignoreExamples = [
   "divination", // contains randomness
-  //"import", // prints current time
+  "import", // prints current time
   "tree2", // DOM manipulate
   "tree" // DOM manipulate
 ];
@@ -64,10 +64,15 @@ function runExample(lang, name, options = {}) {
   });
 
   console.log("Output from " + name + ".wy script: \n" + output);
+  expect(output).to.matchSnapshot();
+  /*
   expect(output).to.equal(
+    "施「言彼之日時」於四千七百一十四? (「時」)  西元一九六九年己酉年十一月二十四日辛巳日丑初一刻三分三十四秒\n" +
     "施「彼年何年」於四千七百一十六?  一千九百六十九\n施「彼刻何刻」於四千七百一十?  一\n" +
-      "施「彼日何干支」於四千七百一十四?  一十八\n"
+    "施「彼日何干支」於四千七百一十四?  一十八\n" 
+    
   );
+  */
 }
 
 function runCal(lang, options) {
