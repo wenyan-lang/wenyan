@@ -6,8 +6,8 @@ var { expect } = require("chai");
 var { compile, evalCompiled } = require("../src/parser");
 
 var lib = utils.loadlib();
-const exampleDir = path.resolve(__dirname, "../examples/");
-const outputDir = path.resolve(__dirname, "../test/temp/examples/");
+const exampleDir = path.resolve(__dirname, "../examples/calendar");
+const outputDir = path.resolve(__dirname, "../test/temp/examples/calendar");
 const python = getPythonExecutable();
 
 const ignoreExamples = [
@@ -30,13 +30,17 @@ function getPythonExecutable() {
 }
 
 function readOtherExample(x) {
-  console.log(x);
+  console.log("Entering function readOtherExample: x = " + x);
   return fs
-    .readFileSync(path.resolve(__dirname, "../examples/" + x + ".wy"), "utf-8")
+    .readFileSync(
+      path.resolve(__dirname, "../examples/.calendar" + x + ".wy"),
+      "utf-8"
+    )
     .toString();
 }
 
 function runExample(lang, name, options = {}) {
+  console.log("Entering function runExample: name = " + name);
   var code = fs
     .readFileSync(path.join(exampleDir, name + ".wy"), "utf-8")
     .toString();
@@ -59,7 +63,7 @@ function runExample(lang, name, options = {}) {
     ...options
   });
 
-  console.log("Output from .wy script: \n" + output);
+  console.log("Output from " + name + ".wy script: \n" + output);
   expect(output).to.equal(
     "施「彼年何年」於四千七百一十六?  一千九百六十九\n施「彼刻何刻」於四千七百一十?  一\n" +
       "施「彼日何干支」於四千七百一十四?  一十八\n"
@@ -67,17 +71,19 @@ function runExample(lang, name, options = {}) {
 }
 
 function runCal(lang, options) {
-  var files = fs.readdirSync(exampleDir).filter(x => x.endsWith("calendar.wy"));
+  var files = fs.readdirSync(exampleDir).filter(x => x.endsWith(".wy"));
   console.log("Files to be tested: " + files);
 
   //var files = fs.readdirSync(exampleDir).filter("import.wy");
   for (const file of files) {
+    console.log("File being processed: " + file);
+
     const filename = file.split(".")[0];
     it(filename, () => runExample(lang, filename, options));
   }
 }
 
-describe("examples", () => {
+describe("examples/calendar", () => {
   before(() => {
     fs.removeSync(outputDir);
     fs.ensureDirSync(outputDir);
