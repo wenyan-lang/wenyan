@@ -29,7 +29,10 @@ function printType(t, n = 0, d = 0) {
       s += k + " : (" + printType(t.fields[k], n + m, d + 1) + "), ";
       m++;
     }
-    s = s.slice(0, -2) + " }";
+    if (s.length > 2) {
+      s = s.slice(0, -2);
+    }
+    s += " }";
     return s;
   }
   return t.type;
@@ -163,6 +166,13 @@ function typecheck(
     assert(`[Type] Expecting value, found '${tok[0]}'`, tok[2], false);
   }
 
+  function objfield(t, x) {
+    if (t.isarg) {
+      t.fields[x] = inittype("any");
+    }
+    return t.fields[x];
+  }
+
   function scopepush(pos) {
     scope.push({});
     scopestarts.push(pos);
@@ -274,6 +284,9 @@ function typecheck(
       let ptr = scope[scope.length - 1][funstack[funstack.length - 1]];
       for (let j = 0; j < a.arity; j++) {
         ptr.in = inittype(a.args[j].type);
+        if (a.args[j].type == "obj") {
+          ptr.in.isarg = true;
+        }
         ptr.in.name = a.args[j].name;
         if (j != a.arity - 1) {
           ptr.out = inittype("fun");
@@ -461,7 +474,7 @@ function typecheck(
               ty
             )}`,
             a.pos,
-            ty.fields[a.value[1].slice(1, -1)]
+            objfield(ty, a.value[1].slice(1, -1))
           );
 
           strayvar.push(Object.assign({}, ty.fields[a.value[1].slice(1, -1)]));
@@ -553,7 +566,7 @@ function typecheck(
           if (tl.type == "any") {
             tlv = inittype("any");
           } else {
-            tlv = tl.fields[a.lhssubs[1].slice(1, -1)];
+            tlv = objfield(tl, a.lhssubs[1].slice(1, -1));
           }
         } else {
           typeassert(
@@ -592,7 +605,7 @@ function typecheck(
             if (tr.type == "any") {
               trv = inittype("any");
             } else {
-              trv = tr.fields[a.rhssubs[1].slice(1, -1)];
+              trv = objfield(tr, a.rhssubs[1].slice(1, -1));
             }
           } else {
             typeassert(
