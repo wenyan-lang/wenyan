@@ -1,7 +1,7 @@
 /* wenyan-catsrc-ignore */
 
 function loadStdlib() {
-  let STDLIB = {};
+  const STDLIB = {};
 
   try {
     const raw = require.context("../lib", true, /.*\.wy$/);
@@ -9,11 +9,12 @@ function loadStdlib() {
     raw.keys().forEach(key => {
       const parts = key.slice(2, -3).split("/");
       const data = raw(key).default;
+      let sublib = STDLIB;
       for (const part of parts.slice(0, -1)) {
-        if (!STDLIB[part]) STDLIB[part] = {};
-        STDLIB = STDLIB[part];
+        if (!sublib[part]) sublib[part] = {};
+        sublib = sublib[part];
       }
-      STDLIB[parts[parts.length - 1]] = data;
+      sublib[parts[parts.length - 1]] = data;
     });
   } catch (e) {} // ignore "require.context" error for testing
 
