@@ -49,10 +49,10 @@ You can import remote scripts as you will do for Javascript.
 
 ### Outputing Hanzi
 
-By default, it will convert numbers and bools to hanzi. If you want to output raw numbers, you can specify `ouputHanzi="false"` in attr of script tag.
+By default, it will convert numbers and bools to hanzi. If you want to output raw numbers, you can specify `outputHanzi="false"` in attr of script tag.
 
 ```html
-<script type="application/wenyan" ouputHanzi="false">
+<script type="application/wenyan" outputHanzi="false">
 吾有一數。曰三。書之。
 </script>
 ```
