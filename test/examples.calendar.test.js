@@ -40,7 +40,7 @@ function readOtherExample(x) {
 }
 
 function runExample(lang, name, options = {}) {
-  console.log("Entering function runExample: name = " + name);
+  //console.log("Entering function runExample: name = " + name);
   var code = fs
     .readFileSync(path.join(exampleDir, name + ".wy"), "utf-8")
     .toString();
@@ -77,7 +77,7 @@ function runExample(lang, name, options = {}) {
 
 function runCal(lang, options) {
   var files = fs.readdirSync(exampleDir).filter(x => x.endsWith(".wy"));
-  console.log("Files to be tested: " + files);
+  //console.log("Files to be tested: " + files);
 
   //var files = fs.readdirSync(exampleDir).filter("import.wy");
   for (const file of files) {
@@ -88,7 +88,7 @@ function runCal(lang, options) {
   }
 }
 
-describe("examples/calendar", () => {
+describe("===== wen-yan calendar unit test suite =====", () => {
   before(() => {
     fs.removeSync(outputDir);
     fs.ensureDirSync(outputDir);
