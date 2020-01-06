@@ -12,6 +12,7 @@ try {
   var compilers = require("./compiler/compilers");
   var { typecheck, printSignature } = require("./typecheck");
   var { expandMacros, extractMacros } = require("./macro.js");
+  var { defaultImportReader } = require("./reader");
 } catch (e) {}
 
 function wy2tokens(
@@ -631,30 +632,7 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-function defaultReader(x) {
-  try {
-    const fs = eval("require")("fs");
-    try {
-      return fs.readFileSync(x + ".wy").toString();
-    } catch (e) {
-      var files = fs.readdirSync("./");
-      for (var i = 0; i < files.length; i++) {
-        if (fs.lstatSync(files[i]).isDirectory()) {
-          try {
-            return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
-          } catch (e) {}
-        }
-      }
-    }
-    console.log("Cannot import ", x);
-  } catch (e) {
-    console.error(
-      `Cannot import ${x}, please specify the "reader" option in compile.`
-    );
-  }
-}
-
-function compile(arg1, arg2, arg3) {
+async function compile(arg1, arg2, arg3) {
   let options = {};
   let txt = "";
 
@@ -677,7 +655,8 @@ function compile(arg1, arg2, arg3) {
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
-    reader = defaultReader,
+    reader = defaultImportReader,
+    importPaths = [],
     strict = false
   } = options;
 
@@ -710,7 +689,7 @@ function compile(arg1, arg2, arg3) {
     return 0;
   }
 
-  var macros = extractMacros(txt, { lib, reader, lang });
+  var macros = await extractMacros(txt, { lib, reader, lang, importPaths });
   txt = expandMacros(txt, macros);
 
   logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
@@ -745,7 +724,7 @@ function compile(arg1, arg2, arg3) {
   }
   var klass = compilers[lang];
   var compiler = new klass(asc);
-  var result = compiler.compile({ imports });
+  var result = await compiler.compile({ imports });
   var { imports, result } = result;
   var targ = result;
   logCallback(targ);
@@ -758,19 +737,21 @@ function compile(arg1, arg2, arg3) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i]);
+      isrc = await reader(imports[i], importPaths);
     }
     targ =
       mwrapper(
         imports[i],
-        compile(isrc, {
+        await compile(isrc, {
           lang,
           romanizeIdentifiers,
           resetVarCnt: false,
           strict: false,
           logCallback,
           errorCallback,
-          lib
+          lib,
+          reader,
+          importPaths
         })
       ) + targ;
   }

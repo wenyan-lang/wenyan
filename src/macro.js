@@ -1,4 +1,4 @@
-function extractMacros(txt, { lib, reader, lang }) {
+async function extractMacros(txt, { lib, reader, lang, importPaths }) {
   function getImports() {
     var imps = [];
     for (var i = 0; i < txt.length; i++) {
@@ -106,9 +106,9 @@ function extractMacros(txt, { lib, reader, lang }) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i]);
+      isrc = await reader(imports[i], importPaths);
     }
-    macros = macros.concat(extractMacros(isrc, { lib, reader, lang }));
+    macros = macros.concat(await extractMacros(isrc, { lib, reader, lang }));
   }
   return macros;
 }
