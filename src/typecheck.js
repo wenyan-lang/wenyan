@@ -126,7 +126,12 @@ function typecheck(
 
     return undefined;
   }
-  function checkscopethis(name) {
+  function checkscopethis(name, pos) {
+    assert(
+      "Scope stack depleted, possibly due to extraneous end-block statement.",
+      pos,
+      scope.length
+    );
     return checkscopei(scope.length - 1, name);
   }
 
@@ -267,7 +272,7 @@ function typecheck(
         assert(
           `[Type] Variable '${a.names[j]}' redeclared in the same scope`,
           a.pos,
-          !checkscopethis(a.names[j])
+          !checkscopethis(a.names[j], a.pos)
         );
 
         scope[scope.length - 1][a.names[j]] = inittype(a.type);
@@ -468,6 +473,7 @@ function typecheck(
             ty.type = "obj";
             ty.fields = {};
             ty.fields[a.value[1].slice(1, -1)] = inittype("any");
+            ty.isarg = true;
           }
           assert(
             `[Type] Property ${a.value[1]} does not exist in obj ${printType(
