@@ -108,7 +108,9 @@ async function extractMacros(txt, { lib, reader, lang, importPaths }) {
     } else {
       isrc = await reader(imports[i], importPaths);
     }
-    macros = macros.concat(await extractMacros(isrc, { lib, reader, lang }));
+    macros = macros.concat(
+      await extractMacros(isrc, { lib, reader, lang, importPaths })
+    );
   }
   return macros;
 }

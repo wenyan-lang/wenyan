@@ -36,7 +36,10 @@ async function runExample(lang, name, options = {}) {
 
   var compiled = await compile(lang, code, {
     logCallback: () => {},
-    importPaths: [path.resolve(__dirname, "../examples/")],
+    importPaths: [
+      path.resolve(__dirname, "../lib/"),
+      path.resolve(__dirname, "../examples/")
+    ],
     lib: lib,
     ...options
   });

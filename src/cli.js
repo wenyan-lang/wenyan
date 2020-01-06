@@ -61,17 +61,21 @@ if (emptyCall || showHelp) {
 
 program.parse(process.argv);
 
-preprocess();
+(async () => {
+  preprocess();
 
-if (program.compile) {
-  output(getCompiled());
-} else if (program.render) {
-  doRender();
-} else if (program.interactive) {
-  intreactive();
-} else {
-  exec();
-}
+  if (program.compile) {
+    output(await getCompiled());
+  } else if (program.render) {
+    doRender();
+  } else if (program.interactive) {
+    await intreactive();
+  } else {
+    await exec();
+  }
+})().catch(e => {
+  console.error(e);
+});
 
 // ====== Utils ======
 
@@ -103,14 +107,25 @@ function preprocess() {
 
 function getCompiled() {
   const source = getSource();
+  const importPaths = getImportPaths();
+  // console.log(importPaths)
+
   return compile(program.lang, source, {
     romanizeIdentifiers: program.roman,
     logCallback: logHandler(program.log, "a"),
     errorCallback: function(x) {
       console.error(x);
       process.exit();
-    }
+    },
+    importPaths
   });
+}
+
+function getImportPaths() {
+  const dir = new Set(
+    program.files.map(file => path.resolve(path.dirname(file)))
+  );
+  return [...dir, path.resolve(".")];
 }
 
 function resolvePath(x) {
@@ -125,6 +140,7 @@ function getSource() {
         : fs.readFileSync(resolvePath(x)).toString()
     )
     .join("\n");
+
   if (program.eval) scripts += `\n${program.eval}`;
 
   return scripts;
@@ -176,7 +192,7 @@ function doRender() {
   }
 }
 
-function intreactive() {
+async function intreactive() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for intreactive mode.`
@@ -184,9 +200,9 @@ function intreactive() {
     process.exit(1);
   }
   replscope();
-  repl(getCompiled());
+  repl(await getCompiled());
 }
-function exec() {
+async function exec() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for direct executing. Please use --compile option instead.`
@@ -194,7 +210,7 @@ function exec() {
     process.exit(1);
   }
 
-  evalCompiled(getCompiled(), {
+  evalCompiled(await getCompiled(), {
     outputHanzi: program.outputHanzi,
     lang: program.lang
   });
