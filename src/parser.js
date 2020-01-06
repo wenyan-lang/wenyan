@@ -10,7 +10,7 @@ try {
   var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
   var version = require("./version");
   var compilers = require("./compiler/compilers");
-
+  var { typecheck, printSignature } = require("./typecheck");
   var { expandMacros, extractMacros } = require("./macro.js");
 } catch (e) {}
 
@@ -290,7 +290,7 @@ function tokens2asc(
       typeassert(i + 1, ["type"], "variable type");
       typeassert(
         i + 2,
-        ["data", "num", "lit", "iden", "bool"],
+        ["data", "num", "lit", "iden", "bool", "any"],
         "variable initialization"
       );
 
@@ -393,7 +393,7 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "op") {
       typeassert(i + 2, ["opord"]);
-      var x = {};
+      var x = { pos };
       if (gettok(i + 2, 1) == "l") {
         x.lhs = tokens[i + 1];
         x.rhs = tokens[i + 3];
@@ -619,6 +619,7 @@ function tokens2asc(
       i++;
     }
   }
+
   return asc;
 }
 
@@ -676,7 +677,8 @@ function compile(arg1, arg2, arg3) {
         : console.dir(x, { depth: null, maxArrayLength: null }),
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
-    reader = defaultReader
+    reader = defaultReader,
+    strict = false
   } = options;
 
   if (resetVarCnt) idenMap = {};
@@ -729,6 +731,11 @@ function compile(arg1, arg2, arg3) {
   logCallback("\n\n=== [PASS 2] ABSTRACT SYNTAX CHAIN ===");
   logCallback(asc);
 
+  if (strict) {
+    logCallback("\n\n=== [PASS 2.5] TYPECHECK ===");
+    console.log(printSignature(typecheck(asc, assert)));
+  }
+
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var imports = [];
   var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
@@ -760,6 +767,7 @@ function compile(arg1, arg2, arg3) {
           lang,
           romanizeIdentifiers,
           resetVarCnt: false,
+          strict: false,
           logCallback,
           errorCallback,
           lib
