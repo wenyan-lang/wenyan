@@ -669,6 +669,9 @@ function typecheck(
     } else if (a.op == "catcherr") {
       scopepop(a, "catch", "catcherr");
       scopepush(a);
+      if (a.error === undefined) {
+        strayvar.push(inittype("str"));
+      }
     } else if (a.op == "tryend") {
       scopepop(a, "catch", "catcherr");
     } else if (a.op == "throw") {
