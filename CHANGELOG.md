@@ -1,3 +1,42 @@
+# v0.2.1
+
+## Static Type Inference
+
+When the option is turned on, the compiler will now raise exceptions if your code does not typecheck. Also it is capable of producing type signatures for inspection, e.g. ./example/quicksort.wy produces the following:
+
+```
+[0-347] {
+  快排 : (('a) arr) -> (('a) arr)
+  己 : (num) arr
+  [33-285] {
+    首 : ('a) arr
+    頷 : ('a) arr
+    尾 : ('a) arr
+    甲一 : 'a
+    甲餘 : ('a) arr
+    乙 : ('a) arr
+    [136-201] {
+      丁 : 'a
+    }
+  }
+}
+```
+
+For more detail, please refer to #486 
+
+### Standard Library
+
+- Fundamental Calendar library (PR #466, thanks @statementreply), check out [Standard Library cheatsheet](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Standard-Lib.md) for more details.
+
+### 3rd Party Compilers
+
+- [JVM compiler](https://github.com/MagicLu550/wenyan-lang_jvm) by [MagicLu550](https://github.com/MagicLu550)
+
+### Fixes
+
+- Stdlib was not bundled correctly. (PR #481, thanks @antfu)
+
+
 # v0.2.0
 
 ## ⚠ BREAKING CHANGE: `compile` API change
