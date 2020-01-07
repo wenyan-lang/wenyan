@@ -2,6 +2,7 @@ function isHostTrusted(url, trustedHosts) {
   // TODO:
   return false;
 }
+
 function isHttpURL(uri) {
   return !!uri.match(/^https?\:\/\//);
 }
@@ -48,9 +49,6 @@ async function defaultImportReader(
   );
 }
 
-try {
-  module.exports = {
-    normalizeImportPath,
-    defaultImportReader
-  };
-} catch (e) {}
+module.exports = {
+  defaultImportReader
+};

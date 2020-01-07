@@ -221,6 +221,12 @@ function tokenRomanize(tokens, method) {
   }
 }
 
+function defaultLogCallback(x) {
+  return typeof x == "string"
+    ? console.log(x)
+    : console.dir(x, { depth: null, maxArrayLength: null });
+}
+
 function tokens2asc(
   tokens,
   assert = (msg, pos, b) => {
@@ -648,17 +654,23 @@ async function compile(arg1, arg2, arg3) {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
-    resetVarCnt,
-    logCallback = x =>
-      typeof x == "string"
-        ? console.log(x)
-        : console.dir(x, { depth: null, maxArrayLength: null }),
+    resetVarCnt = true,
+    logCallback = defaultLogCallback,
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
     reader = defaultImportReader,
     importPaths = [],
-    strict = false
+    strict = false,
+    allowHttp = false,
+    trustedHosts = [],
+    requestTimeout = 2000
   } = options;
+
+  const requestOptions = {
+    allowHttp,
+    trustedHosts,
+    requestTimeout
+  };
 
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
@@ -689,7 +701,13 @@ async function compile(arg1, arg2, arg3) {
     return 0;
   }
 
-  var macros = await extractMacros(txt, { lib, reader, lang, importPaths });
+  var macros = await extractMacros(txt, {
+    lib,
+    reader,
+    lang,
+    importPaths,
+    requestOptions
+  });
   txt = expandMacros(txt, macros);
 
   logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
@@ -743,15 +761,9 @@ async function compile(arg1, arg2, arg3) {
       mwrapper(
         imports[i],
         await compile(isrc, {
-          lang,
-          romanizeIdentifiers,
+          ...options,
           resetVarCnt: false,
-          strict: false,
-          logCallback,
-          errorCallback,
-          lib,
-          reader,
-          importPaths
+          strict: false
         })
       ) + targ;
   }
