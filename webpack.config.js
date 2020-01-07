@@ -1,32 +1,8 @@
-const path = require('path')
 const webpack = require('webpack')
-
-const Default = () => {
-  return {
-    devtool: 'source-map',
-    output: {
-      globalObject: '(typeof self !== "undefined" ? self : this)', // make it works for both node and browser
-      libraryTarget: 'umd2',
-      library: ["Wenyan", "[name]"],
-      path: path.resolve(__dirname, 'dist'),
-      filename: '[name]/index.min.js',
-    },
-    resolve: {
-      extensions: ['.ts', '.js'],
-    },
-    module: {
-      rules: [
-        {
-          test: /\.wy$/i,
-          use: 'raw-loader',
-        },
-      ],
-    },
-  }
-};
+const baseConfig = require('./webpack.base.config')
 
 const Cli = {
-  ...Default(),
+  ...baseConfig(),
   target: 'node',
   entry: {
     cli: './src/cli.js',
@@ -44,7 +20,7 @@ const Cli = {
 }
 
 const Core = {
-  ...Default(),
+  ...baseConfig(),
   entry: {
     core: './src/parser.js',
   }
@@ -53,7 +29,7 @@ const Core = {
 Core.output.library = 'Wenyan'
 
 const Utils = {
-  ...Default(),
+  ...baseConfig(),
   entry: {
     render: './src/render.js',
     runtime: './src/browser_runtime.js',
