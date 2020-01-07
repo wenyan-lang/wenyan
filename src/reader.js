@@ -1,24 +1,44 @@
-function getFetch() {
-  if (typeof window != "undefined" && window.fetch) return window.fetch;
-  else return eval("require")("node-fetch");
+function isHostTrusted(url, trustedHosts) {
+  // TODO:
+  return false;
+}
+function isHttpURL(uri) {
+  return !!uri.match(/^https?\:\/\//);
 }
 
-async function defaultImportReader(moduleName, importPaths = []) {
-  const fetch = getFetch();
+async function defaultImportReader(
+  moduleName,
+  importPaths = [],
+  requestOptions = {}
+) {
+  const {
+    allowHttp = false,
+    trustedHosts = [],
+    requestTimeout = 2000
+  } = requestOptions;
 
   if (typeof importPaths === "string") importPaths = [importPaths];
 
   for (dir of importPaths) {
-    const filepath = dir + "/" + moduleName + ".wy";
-    if (filepath.match(/^\w+\:\/\//)) {
+    const uri = dir + "/" + moduleName + ".wy";
+    if (isHttpURL(uri)) {
+      if (!allowHttp && !isHostTrusted(uri, trustedHosts)) {
+        throw new Error(
+          `URL request "${uri}" is blocked by default for security purpose.` +
+            `You can turn it on by specify the "allowHttp" option.`
+        );
+      }
+
       try {
-        const data = await fetch(filepath);
-        const text = await data.text();
-        return text;
+        const res = await axios(uri, {
+          responseType: "text",
+          timeout: requestTimeout
+        });
+        return res.data;
       } catch (e) {}
     } else {
       try {
-        return eval("require")("fs").readFileSync(filepath, "utf-8");
+        return await eval("require")("fs").promises.readFile(uri, "utf-8");
       } catch (e) {}
     }
   }
