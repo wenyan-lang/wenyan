@@ -7,7 +7,6 @@ var { compile, evalCompiled } = require("../src/parser");
 
 var lib = utils.loadlib();
 const exampleDir = path.resolve(__dirname, "../examples/");
-const outputDir = path.resolve(__dirname, "../test/temp/examples/");
 const python = getPythonExecutable();
 
 const ignoreExamples = [
@@ -30,7 +29,6 @@ function getPythonExecutable() {
 }
 
 function readOtherExample(x) {
-  console.log(x);
   return fs
     .readFileSync(path.resolve(__dirname, "../examples/" + x + ".wy"), "utf-8")
     .toString();
@@ -71,11 +69,6 @@ function runAll(lang, options) {
 }
 
 describe("examples", () => {
-  before(() => {
-    fs.removeSync(outputDir);
-    fs.ensureDirSync(outputDir);
-  });
-
   describe("javascript", () => {
     runAll("js");
   });
