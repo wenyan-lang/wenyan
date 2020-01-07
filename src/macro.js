@@ -169,6 +169,5 @@ function expandMacros(txt, macros) {
   }
   return txt;
 }
-try {
-  module.exports = { extractMacros, expandMacros };
-} catch (e) {}
+
+module.exports = { extractMacros, expandMacros };

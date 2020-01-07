@@ -1,18 +1,11 @@
-try {
-  var {
-    hanzi2num,
-    hanzi2numstr,
-    num2hanzi,
-    bool2hanzi
-  } = require("./hanzi2num");
-  var hanzi2pinyin = require("./hanzi2pinyin");
-  var STDLIB = require("./stdlib");
-  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-  var version = require("./version");
-  var compilers = require("./compiler/compilers");
-  var { typecheck, printSignature } = require("./typecheck");
-  var { expandMacros, extractMacros } = require("./macro.js");
-} catch (e) {}
+var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
+var hanzi2pinyin = require("./hanzi2pinyin");
+var STDLIB = require("./stdlib");
+var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+var version = require("./version");
+var compilers = require("./compiler/compilers");
+var { typecheck, printSignature } = require("./typecheck");
+var { expandMacros, extractMacros } = require("./macro.js");
 
 function wy2tokens(
   txt,
@@ -856,6 +849,4 @@ var parser = {
   NUMBER_KEYWORDS,
   STDLIB
 };
-try {
-  module.exports = parser;
-} catch (e) {}
+module.exports = parser;

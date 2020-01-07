@@ -37,7 +37,7 @@ Add comments in the stdlib files (one line above the function/value), the format
 
 After you fill the comments, you need to update the document by running
 \`\`\`bash
-npm run docs:update
+npm run build:docs
 \`\`\`
 
 Check the output document out and submit a pull request. Thank you!

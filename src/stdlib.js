@@ -1,5 +1,3 @@
-/* wenyan-catsrc-ignore */
-
 function loadStdlib() {
   const STDLIB = {};
 
