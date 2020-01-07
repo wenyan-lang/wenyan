@@ -34,7 +34,7 @@ async function runExample(lang, name, options = {}) {
     .readFileSync(path.join(exampleDir, name + ".wy"), "utf-8")
     .toString();
 
-  var compiled = await compile(lang, code, {
+  var compiled = compile(lang, code, {
     logCallback: () => {},
     importPaths: [
       path.resolve(__dirname, "../lib/"),

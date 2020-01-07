@@ -67,6 +67,7 @@
     "prettier": "^1.19.1",
     "raw-loader": "^4.0.0",
     "rimraf": "^3.0.0",
+    "synchronized-promise": "^0.2.0",
     "version-bump-prompt": "^5.0.6",
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",

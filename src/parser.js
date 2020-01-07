@@ -1,19 +1,13 @@
-try {
-  var {
-    hanzi2num,
-    hanzi2numstr,
-    num2hanzi,
-    bool2hanzi
-  } = require("./hanzi2num");
-  var hanzi2pinyin = require("./hanzi2pinyin");
-  var STDLIB = require("./stdlib");
-  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-  var version = require("./version");
-  var compilers = require("./compiler/compilers");
-  var { typecheck, printSignature } = require("./typecheck");
-  var { expandMacros, extractMacros } = require("./macro.js");
-  var { defaultImportReader } = require("./reader");
-} catch (e) {}
+var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
+var hanzi2pinyin = require("./hanzi2pinyin");
+var STDLIB = require("./stdlib");
+var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
+var version = require("./version");
+var compilers = require("./compiler/compilers");
+var { typecheck, printSignature } = require("./typecheck");
+var { expandMacros, extractMacros } = require("./macro.js");
+var { defaultImportReader } = require("./reader");
+const makeSynchronize = require("synchronized-promise");
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -642,7 +636,7 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-async function compile(arg1, arg2, arg3) {
+async function compileAsync(arg1, arg2, arg3) {
   let options = {};
   let txt = "";
 
@@ -777,6 +771,8 @@ async function compile(arg1, arg2, arg3) {
   return targ;
 }
 
+const compile = makeSynchronize(compileAsync, { tick: 10 });
+
 function isLangSupportedForEval(lang) {
   if (lang !== "js")
     throw new Error(
@@ -832,17 +828,21 @@ function evalCompiled(compiledCode, options = {}) {
   })();
 }
 
-function execute(source, options = {}) {
+async function executeAsync(source, options = {}) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
-  const compiled = compile(source, options);
+  const compiled = compileAsync(source, options);
   evalCompiled(compiled, options);
 }
 
+const execute = makeSynchronize(executeAsync, { tick: 10 });
+
 var parser = {
   compile,
+  compileAsync,
   evalCompiled,
   execute,
+  executeAsync,
   version,
   wy2tokens,
   tokens2asc,
