@@ -4,6 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@wenyanlang/core)](https://www.npmjs.com/package/@wenyanlang/core)
 [![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
 [http://wy-lang.org](http://wy-lang.org)
 
