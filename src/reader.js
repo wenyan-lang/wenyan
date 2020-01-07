@@ -1,5 +1,3 @@
-const axios = require("axios");
-
 function isHostTrusted(url, trustedHosts) {
   for (const host of trustedHosts) {
     // FIXME: it can be bypassed by relative path resolving,
@@ -13,7 +11,24 @@ function isHttpURL(uri) {
   return !!uri.match(/^https?\:\/\//);
 }
 
-async function defaultImportReader(
+function fetchTextSync(url, timeout) {
+  let XHR;
+  if (typeof window !== "undefined" && "XMLHttpRequest" in window)
+    XHR = window.XMLHttpRequest;
+  else XHR = eval("require")("xmlhttprequest").XMLHttpRequest;
+
+  var xmlHttp = new XHR();
+  xmlHttp.timeout = timeout;
+  xmlHttp.open("GET", url, false); // false for synchronous request
+  xmlHttp.send(null);
+
+  if (xmlHttp.status >= 200 && xmlHttp.status < 300)
+    return xmlHttp.responseText;
+
+  throw new URIError(xmlHttp.responseText);
+}
+
+function defaultImportReader(
   moduleName,
   importPaths = [],
   requestOptions = {}
@@ -37,15 +52,11 @@ async function defaultImportReader(
       }
 
       try {
-        const res = await axios(uri, {
-          responseType: "text",
-          timeout: requestTimeout
-        });
-        return res.data;
+        return fetchTextSync(uri, requestTimeout);
       } catch (e) {}
     } else {
       try {
-        return await eval("require")("fs").readFileSync(uri, "utf-8");
+        return eval("require")("fs").readFileSync(uri, "utf-8");
       } catch (e) {}
     }
   }

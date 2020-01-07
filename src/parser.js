@@ -7,7 +7,6 @@ var compilers = require("./compiler/compilers");
 var { typecheck, printSignature } = require("./typecheck");
 var { expandMacros, extractMacros } = require("./macro.js");
 var { defaultImportReader } = require("./reader");
-const makeSynchronize = require("synchronized-promise");
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -636,7 +635,7 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-async function compileAsync(arg1, arg2, arg3) {
+function compile(arg1, arg2, arg3) {
   let options = {};
   let txt = "";
 
@@ -701,7 +700,7 @@ async function compileAsync(arg1, arg2, arg3) {
     return 0;
   }
 
-  var macros = await extractMacros(txt, {
+  var macros = extractMacros(txt, {
     lib,
     reader,
     lang,
@@ -742,7 +741,7 @@ async function compileAsync(arg1, arg2, arg3) {
   }
   var klass = compilers[lang];
   var compiler = new klass(asc);
-  var result = await compiler.compile({ imports });
+  var result = compiler.compile({ imports });
   var { imports, result } = result;
   var targ = result;
   logCallback(targ);
@@ -755,12 +754,12 @@ async function compileAsync(arg1, arg2, arg3) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = await reader(imports[i], importPaths);
+      isrc = reader(imports[i], importPaths);
     }
     targ =
       mwrapper(
         imports[i],
-        await compile(isrc, {
+        compile(isrc, {
           ...options,
           resetVarCnt: false,
           strict: false
@@ -770,8 +769,6 @@ async function compileAsync(arg1, arg2, arg3) {
 
   return targ;
 }
-
-const compile = makeSynchronize(compileAsync, { tick: 10 });
 
 function isLangSupportedForEval(lang) {
   if (lang !== "js")
@@ -828,21 +825,17 @@ function evalCompiled(compiledCode, options = {}) {
   })();
 }
 
-async function executeAsync(source, options = {}) {
+function execute(source, options = {}) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
-  const compiled = compileAsync(source, options);
+  const compiled = compile(source, options);
   evalCompiled(compiled, options);
 }
 
-const execute = makeSynchronize(executeAsync, { tick: 10 });
-
 var parser = {
   compile,
-  compileAsync,
   evalCompiled,
   execute,
-  executeAsync,
   version,
   wy2tokens,
   tokens2asc,

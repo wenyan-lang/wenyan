@@ -1,4 +1,4 @@
-async function extractMacros(txt, options = {}) {
+function extractMacros(txt, options = {}) {
   const { lib, reader, lang, importPaths, requestOptions } = options;
 
   function getImports() {
@@ -108,9 +108,9 @@ async function extractMacros(txt, options = {}) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = await reader(imports[i], importPaths, requestOptions);
+      isrc = reader(imports[i], importPaths, requestOptions);
     }
-    macros = macros.concat(await extractMacros(isrc, options));
+    macros = macros.concat(extractMacros(isrc, options));
   }
   return macros;
 }
