@@ -1,4 +1,4 @@
-<img src="screenshots/logo.png" align="right" width="100" height="100"/>
+<img src="screenshots/logo.png" align="right" width="128" height="128"/>
 
 # 文言 wenyan-lang
 
@@ -6,7 +6,7 @@
 [![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
-[http://wy-lang.org](http://wy-lang.org)
+### [http://wy-lang.org](http://wy-lang.org)
 
 English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
 
