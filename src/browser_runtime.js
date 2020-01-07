@@ -1,5 +1,3 @@
-/* wenyan-catsrc-ignore */
-
 (() => {
   const { execute } = require("./parser");
 

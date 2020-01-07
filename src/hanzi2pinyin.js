@@ -32806,6 +32806,5 @@ function hanzi2pinyin(a, system = "pinyin") {
   }
   return s;
 }
-try {
-  module.exports = hanzi2pinyin;
-} catch (e) {}
+
+module.exports = hanzi2pinyin;

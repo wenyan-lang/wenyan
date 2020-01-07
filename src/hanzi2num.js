@@ -856,6 +856,4 @@ function bool2hanzi(b) {
   return "陰";
 }
 
-try {
-  module.exports = { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi };
-} catch (e) {}
+module.exports = { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi };
