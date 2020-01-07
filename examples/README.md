@@ -39,6 +39,7 @@
 | [tree2.wy](tree2.wy)                   | 畫樹二                    |
 | [try.wy](try.wy)                       | 異常處理示例              |
 | [turing.wy](turing.wy)                 | 圖靈機                    |
+| [pascal_triangle.wy](pascal_triangle.wy)  | 賈憲三角               |
 
 [1]: https://en.wikipedia.org/wiki/Fizz_buzz
 [2]: https://zh.wikipedia.org/wiki/自產生程式
