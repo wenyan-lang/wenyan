@@ -1,4 +1,17 @@
+function loadExamples() {
+  const examples = {};
+
+  const raw = require.context("../examples", false, /.*\.wy$/);
+
+  raw.keys().forEach(key => {
+    examples[key.slice(2, -3)] = raw(key).default;
+  });
+
+  return examples;
+}
+
 module.exports = {
+  examples: loadExamples(),
   examplesAlias: {
     beer: "九十九瓶啤酒",
     collatz: "考拉兹猜想",

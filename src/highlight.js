@@ -1,7 +1,5 @@
-try {
-  var { num2hanzi } = require("./hanzi2num");
-  var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-} catch (e) {}
+var { num2hanzi } = require("./hanzi2num");
+var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
 
 var DEFAULT_COLORS = {
   ctrl: "#F92672",
@@ -191,13 +189,11 @@ function newLineNo(ed) {
   return div;
 }
 
-try {
-  module.exports = {
-    semantic,
-    highlight,
-    newLineNo,
-    DEFAULT_COLORS,
-    newEditor,
-    setTheme
-  };
-} catch (e) {}
+module.exports = {
+  semantic,
+  highlight,
+  newLineNo,
+  DEFAULT_COLORS,
+  newEditor,
+  setTheme
+};

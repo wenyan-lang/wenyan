@@ -848,6 +848,4 @@ var parser = {
   NUMBER_KEYWORDS,
   STDLIB
 };
-try {
-  module.exports = parser;
-} catch (e) {}
+module.exports = parser;

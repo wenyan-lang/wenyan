@@ -1,9 +1,6 @@
-try {
-  var fs = require("fs");
-  var { semantic } = require("./highlight");
-  var { num2hanzi } = require("./hanzi2num");
-  var parser = require("./parser");
-} catch (e) {}
+var { semantic } = require("./highlight");
+var { num2hanzi } = require("./hanzi2num");
+var parser = require("./parser");
 
 const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"; //"Source Han Serif TC"
 const RED = "#E53";
@@ -337,21 +334,8 @@ function unrender(svgs) {
   return txt;
 }
 
-function test_render() {
-  var svgs = render(
-    "圖靈機",
-    fs.readFileSync("../examples/turing.wy").toString()
-  );
-  // var svgs = render("曼德博集",fs.readFileSync("../examples/mandelbrot.txt").toString(),{plotResult:true})
-  // var svgs = render("春日宴",fs.readFileSync("../examples/beer.txt").toString(),{plotResult:false})
-  // var svgs = render("漢諾塔",fs.readFileSync("../examples/hanoi.txt").toString(),{plotResult:true})
-  console.log(unrender(svgs));
-  for (var i = 0; i < svgs.length; i++) {
-    fs.writeFileSync("../render" + i + ".svg", svgs[i]);
-  }
-}
-// test_render()
-
-try {
-  module.exports = { render, unrender, BOOK_COLORS };
-} catch (e) {}
+module.exports = {
+  render,
+  unrender,
+  BOOK_COLORS
+};
