@@ -1,5 +1,11 @@
+const axios = require("axios");
+
 function isHostTrusted(url, trustedHosts) {
-  // TODO:
+  for (const host of trustedHosts) {
+    // FIXME: it can be bypassed by relative path resolving,
+    // for examples: https://trusted.com/a/../../hijack.com/a/
+    if (url.startsWith(host)) return true;
+  }
   return false;
 }
 
@@ -24,8 +30,8 @@ async function defaultImportReader(
     const uri = dir + "/" + moduleName + ".wy";
     if (isHttpURL(uri)) {
       if (!allowHttp && !isHostTrusted(uri, trustedHosts)) {
-        throw new Error(
-          `URL request "${uri}" is blocked by default for security purpose.` +
+        throw new URIError(
+          `URL request "${uri}" is blocked by default for security purpose. ` +
             `You can turn it on by specify the "allowHttp" option.`
         );
       }
@@ -39,12 +45,12 @@ async function defaultImportReader(
       } catch (e) {}
     } else {
       try {
-        return await eval("require")("fs").promises.readFile(uri, "utf-8");
+        return await eval("require")("fs").readFileSync(uri, "utf-8");
       } catch (e) {}
     }
   }
 
-  throw new Error(
+  throw new ReferenceError(
     `Module "${moduleName}" is not found. Searched in ${importPaths}`
   );
 }

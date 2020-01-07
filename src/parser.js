@@ -15,6 +15,10 @@ try {
   var { defaultImportReader } = require("./reader");
 } catch (e) {}
 
+const defaultTrustedHosts = [
+  "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
+];
+
 function wy2tokens(
   txt,
   assert = (msg, pos, b) => {
@@ -665,6 +669,8 @@ async function compile(arg1, arg2, arg3) {
     trustedHosts = [],
     requestTimeout = 2000
   } = options;
+
+  trustedHosts.push(...defaultTrustedHosts);
 
   const requestOptions = {
     allowHttp,
