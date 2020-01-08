@@ -38,6 +38,9 @@ program
     "--roman [method]",
     'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
   )
+  .option("--strict", "Enable static typechecking")
+  .option("--allowHttp", "Allow to import from http")
+  .option("--dir <path>", "Directory to importing from, seprates with comma(,)")
   .option("--outputHanzi", "Convert output to hanzi", true)
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
@@ -107,25 +110,35 @@ function preprocess() {
 
 function getCompiled() {
   const source = getSource();
-  const importPaths = getImportPaths();
-  // console.log(importPaths)
 
-  return compile(program.lang, source, {
-    romanizeIdentifiers: program.roman,
-    logCallback: logHandler(program.log, "a"),
-    errorCallback: function(x) {
-      console.error(x);
-      process.exit();
-    },
-    importPaths
+  return compile(source, {
+    ...getCompileOptions()
   });
 }
 
 function getImportPaths() {
-  const dir = new Set(
-    program.files.map(file => path.resolve(path.dirname(file)))
-  );
-  return [...dir, path.resolve(".")];
+  const pathes = [];
+  if (program.dir) {
+    pathes.push(...program.dir.split(","));
+  }
+  pathes.push(...program.files.map(file => path.resolve(path.dirname(file))));
+  pathes.push(path.resolve("."));
+  return Array.from(new Set(pathes));
+}
+
+function getCompileOptions() {
+  return {
+    lang: program.lang,
+    romanizeIdentifiers: program.roman,
+    strict: !!program.strict,
+    allowHttp: !!program.allowHttp,
+    importPaths: getImportPaths(),
+    logCallback: logHandler(program.log, "a"),
+    errorCallback: function(x) {
+      console.error(x);
+      process.exit();
+    }
+  };
 }
 
 function resolvePath(x) {

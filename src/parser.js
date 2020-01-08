@@ -754,7 +754,7 @@ function compile(arg1, arg2, arg3) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i], importPaths);
+      isrc = reader(imports[i], importPaths, requestOptions);
     }
     targ =
       mwrapper(
