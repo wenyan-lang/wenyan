@@ -12,7 +12,7 @@ module.exports = {
     // "eslint:recommended",
     "prettier",
     "prettier/babel"
-  ]
+  ],
   rules:{
     "quote-props":[2,"always"]
   }
