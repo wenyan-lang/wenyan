@@ -32,7 +32,7 @@
     "test:update": "mocha --require mocha-snapshots --update",
     "lint:fix": "npm run lint -- --fix",
     "lint": "eslint {src,tools,test}/**/*.js",
-    "prettify": "prettier {src,tools,test}/**/*.js --write"
+    "prettify": "prettier {src,tools,test}/**/*.js --write --quote-props preserve"
   },
   "husky": {
     "hooks": {
