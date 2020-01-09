@@ -115,7 +115,7 @@ Please refer to [Browser Runtime](./documentation/Runtime.md)
 
 ## Syntax Cheatsheet
 
-A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below, or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
+You can find the Language Specification [here](https://wy-lang/spec) (WIP). To get started, you can also check the cheatsheet below, or look into `src/parser.js` to learn more. Be sure to check out the examples from the online IDE too!
 
 ### Variables
 
