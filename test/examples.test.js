@@ -29,21 +29,17 @@ function getPythonExecutable() {
   return undefined;
 }
 
-function readOtherExample(x) {
-  console.log(x);
-  return fs
-    .readFileSync(path.resolve(__dirname, "../examples/" + x + ".wy"), "utf-8")
-    .toString();
-}
-
-function runExample(lang, name, options = {}) {
+async function runExample(lang, name, options = {}) {
   var code = fs
     .readFileSync(path.join(exampleDir, name + ".wy"), "utf-8")
     .toString();
 
   var compiled = compile(lang, code, {
     logCallback: () => {},
-    reader: readOtherExample,
+    importPaths: [
+      path.resolve(__dirname, "../lib/"),
+      path.resolve(__dirname, "../examples/")
+    ],
     lib: lib,
     ...options
   });

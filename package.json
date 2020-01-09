@@ -68,5 +68,8 @@
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",
     "webpack-shell-plugin": "^0.5.0"
+  },
+  "dependencies": {
+    "xmlhttprequest": "^1.8.0"
   }
 }

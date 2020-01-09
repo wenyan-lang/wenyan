@@ -1,4 +1,6 @@
-function extractMacros(txt, { lib, reader, lang }) {
+function extractMacros(txt, options = {}) {
+  const { lib, reader, lang, importPaths, requestOptions } = options;
+
   function getImports() {
     var imps = [];
     var qlvl = 0;
@@ -119,9 +121,9 @@ function extractMacros(txt, { lib, reader, lang }) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i]);
+      isrc = reader(imports[i], importPaths, requestOptions);
     }
-    macros = macros.concat(extractMacros(isrc, { lib, reader, lang }));
+    macros = macros.concat(extractMacros(isrc, options));
   }
   return macros;
 }
