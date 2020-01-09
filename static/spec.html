@@ -1,0 +1,65 @@
+<style>
+:target {
+   background: linen;
+}
+a:link {
+  color:#248;
+  background:transparent;
+  text-decoration: none;
+}
+a:visited {
+  color:#248;
+  background:transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color:#248;
+  background:transparent;
+  text-decoration: underline;
+}
+
+a:active {
+  color:#248;
+  background:transparent;
+  text-decoration: underline;
+}
+body{
+  margin:50px;
+  font-size: 14px;
+}
+
+</style>
+<script>
+var bnf_path = "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/documentation/wenyan.g4"
+
+function rich(txt){
+  function anchor(t,other){
+    return `<div id="${t.trim()}">${link(t)}${other}</div>`
+  }
+  function link(t){
+    return t.replace(/([A-z]+)/g,`<a href="#$1">$1</a>`)
+  }
+  var s = "<pre>";
+  var txtlines = txt.split("\n");
+  for (var i = 0; i < txtlines.length; i++){
+    if (txtlines[i].includes(":")){
+      var sp = txtlines[i].split(/:/);
+      var other = ":"+link(sp[1])
+      s += anchor(sp[0],other)
+      
+    }else{
+      s += `<div>${link(txtlines[i])}</div>`;
+    }
+  }
+  s+="</pre>"
+  return s
+}
+fetch(bnf_path)
+  .then((response) => {
+    return response.text();
+  })
+  .then((txt) => {
+    document.body.innerHTML = "<i style='font-size:18px;font-family:serif'>Wenyan Language Specification</i><br><br>"+rich(txt);
+  });
+</script>

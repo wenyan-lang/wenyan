@@ -1,7 +1,22 @@
-function extractMacros(txt, { lib, reader, lang }) {
+function extractMacros(txt, options = {}) {
+  const { lib, reader, lang, importPaths, requestOptions } = options;
+
   function getImports() {
     var imps = [];
+    var qlvl = 0;
     for (var i = 0; i < txt.length; i++) {
+      if (txt[i] == "「") {
+        qlvl++;
+      } else if (txt[i] == "」") {
+        qlvl--;
+      } else if (txt[i] == "『") {
+        qlvl += 2;
+      } else if (txt[i] == "』") {
+        qlvl -= 2;
+      }
+      if (qlvl != 0) {
+        continue;
+      }
       if (txt[i] == "吾" && txt[i + 1] == "嘗" && txt[i + 2] == "觀") {
         var imp = txt
           .slice(i + 3)
@@ -90,7 +105,7 @@ function extractMacros(txt, { lib, reader, lang }) {
             }
           }
         }
-        s0 = s0.replace(/「[甲乙丙丁戊己庚辛壬癸]」/g, "(.*?)");
+        s0 = s0.replace(/「[甲乙丙丁戊己庚辛壬癸]」/g, "(.+?)");
         macs.push([s0, s1]);
         i = j;
       }
@@ -106,9 +121,9 @@ function extractMacros(txt, { lib, reader, lang }) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i]);
+      isrc = reader(imports[i], importPaths, requestOptions);
     }
-    macros = macros.concat(extractMacros(isrc, { lib, reader, lang }));
+    macros = macros.concat(extractMacros(isrc, options));
   }
   return macros;
 }
@@ -156,6 +171,5 @@ function expandMacros(txt, macros) {
   }
   return txt;
 }
-try {
-  module.exports = { extractMacros, expandMacros };
-} catch (e) {}
+
+module.exports = { extractMacros, expandMacros };

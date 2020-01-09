@@ -1,60 +1,60 @@
 const eTokenType = {
-  SIGN: "SIGN", // 負
-  DIGIT: "DIGIT", // 一二三...
-  DECIMAL: "DECIMAL", // ·
-  INT_MULT: "INT_MULT", // 十百千萬億...
-  FRAC_MULT: "FRAC_MULT", // 分釐毫...
-  DELIM: "DELIM", // 又
-  ZERO: "ZERO", // 零
+  "SIGN": "SIGN", // 負
+  "DIGIT": "DIGIT", // 一二三...
+  "DECIMAL": "DECIMAL", // ·
+  "INT_MULT": "INT_MULT", // 十百千萬億...
+  "FRAC_MULT": "FRAC_MULT", // 分釐毫...
+  "DELIM": "DELIM", // 又
+  "ZERO": "ZERO", // 零
 
   // pseudo tokens
-  BEGIN: "BEGIN", // <BEGIN>
-  END: "END" // <END>
+  "BEGIN": "BEGIN", // <BEGIN>
+  "END": "END" // <END>
 };
 
 const NUM_TOKENS = {
-  負: { type: eTokenType.SIGN, sign: -1 },
-  "·": { type: eTokenType.DECIMAL, exp: 0 }, // U+00B7 Middle Dot
-  又: { type: eTokenType.DELIM },
-  有: { type: eTokenType.DELIM },
-  零: { type: eTokenType.ZERO, digit: "0" },
-  〇: { type: eTokenType.DIGIT, digit: "0" }, // U+3007 Ideographic Number Zero
-  一: { type: eTokenType.DIGIT, digit: "1" },
-  二: { type: eTokenType.DIGIT, digit: "2" },
-  三: { type: eTokenType.DIGIT, digit: "3" },
-  四: { type: eTokenType.DIGIT, digit: "4" },
-  五: { type: eTokenType.DIGIT, digit: "5" },
-  六: { type: eTokenType.DIGIT, digit: "6" },
-  七: { type: eTokenType.DIGIT, digit: "7" },
-  八: { type: eTokenType.DIGIT, digit: "8" },
-  九: { type: eTokenType.DIGIT, digit: "9" },
-  十: { type: eTokenType.INT_MULT, exp: 1 },
-  百: { type: eTokenType.INT_MULT, exp: 2 },
-  千: { type: eTokenType.INT_MULT, exp: 3 },
-  萬: { type: eTokenType.INT_MULT, exp: 4 },
-  億: { type: eTokenType.INT_MULT, exp: 8 },
-  兆: { type: eTokenType.INT_MULT, exp: 12 },
-  京: { type: eTokenType.INT_MULT, exp: 16 },
-  垓: { type: eTokenType.INT_MULT, exp: 20 },
-  秭: { type: eTokenType.INT_MULT, exp: 24 },
-  穰: { type: eTokenType.INT_MULT, exp: 28 },
-  溝: { type: eTokenType.INT_MULT, exp: 32 },
-  澗: { type: eTokenType.INT_MULT, exp: 36 },
-  正: { type: eTokenType.INT_MULT, exp: 40 },
-  載: { type: eTokenType.INT_MULT, exp: 44 },
-  極: { type: eTokenType.INT_MULT, exp: 48 },
-  分: { type: eTokenType.FRAC_MULT, exp: -1 },
-  釐: { type: eTokenType.FRAC_MULT, exp: -2 },
-  毫: { type: eTokenType.FRAC_MULT, exp: -3 },
-  絲: { type: eTokenType.FRAC_MULT, exp: -4 },
-  忽: { type: eTokenType.FRAC_MULT, exp: -5 },
-  微: { type: eTokenType.FRAC_MULT, exp: -6 },
-  纖: { type: eTokenType.FRAC_MULT, exp: -7 },
-  沙: { type: eTokenType.FRAC_MULT, exp: -8 },
-  塵: { type: eTokenType.FRAC_MULT, exp: -9 },
-  埃: { type: eTokenType.FRAC_MULT, exp: -10 },
-  渺: { type: eTokenType.FRAC_MULT, exp: -11 },
-  漠: { type: eTokenType.FRAC_MULT, exp: -12 }
+  "負": { "type": eTokenType.SIGN, "sign": -1 },
+  "·": { "type": eTokenType.DECIMAL, "exp": 0 }, // U+00B7 Middle Dot
+  "又": { "type": eTokenType.DELIM },
+  "有": { "type": eTokenType.DELIM },
+  "零": { "type": eTokenType.ZERO, "digit": "0" },
+  "〇": { "type": eTokenType.DIGIT, "digit": "0" }, // U+3007 Ideographic Number Zero
+  "一": { "type": eTokenType.DIGIT, "digit": "1" },
+  "二": { "type": eTokenType.DIGIT, "digit": "2" },
+  "三": { "type": eTokenType.DIGIT, "digit": "3" },
+  "四": { "type": eTokenType.DIGIT, "digit": "4" },
+  "五": { "type": eTokenType.DIGIT, "digit": "5" },
+  "六": { "type": eTokenType.DIGIT, "digit": "6" },
+  "七": { "type": eTokenType.DIGIT, "digit": "7" },
+  "八": { "type": eTokenType.DIGIT, "digit": "8" },
+  "九": { "type": eTokenType.DIGIT, "digit": "9" },
+  "十": { "type": eTokenType.INT_MULT, "exp": 1 },
+  "百": { "type": eTokenType.INT_MULT, "exp": 2 },
+  "千": { "type": eTokenType.INT_MULT, "exp": 3 },
+  "萬": { "type": eTokenType.INT_MULT, "exp": 4 },
+  "億": { "type": eTokenType.INT_MULT, "exp": 8 },
+  "兆": { "type": eTokenType.INT_MULT, "exp": 12 },
+  "京": { "type": eTokenType.INT_MULT, "exp": 16 },
+  "垓": { "type": eTokenType.INT_MULT, "exp": 20 },
+  "秭": { "type": eTokenType.INT_MULT, "exp": 24 },
+  "穰": { "type": eTokenType.INT_MULT, "exp": 28 },
+  "溝": { "type": eTokenType.INT_MULT, "exp": 32 },
+  "澗": { "type": eTokenType.INT_MULT, "exp": 36 },
+  "正": { "type": eTokenType.INT_MULT, "exp": 40 },
+  "載": { "type": eTokenType.INT_MULT, "exp": 44 },
+  "極": { "type": eTokenType.INT_MULT, "exp": 48 },
+  "分": { "type": eTokenType.FRAC_MULT, "exp": -1 },
+  "釐": { "type": eTokenType.FRAC_MULT, "exp": -2 },
+  "毫": { "type": eTokenType.FRAC_MULT, "exp": -3 },
+  "絲": { "type": eTokenType.FRAC_MULT, "exp": -4 },
+  "忽": { "type": eTokenType.FRAC_MULT, "exp": -5 },
+  "微": { "type": eTokenType.FRAC_MULT, "exp": -6 },
+  "纖": { "type": eTokenType.FRAC_MULT, "exp": -7 },
+  "沙": { "type": eTokenType.FRAC_MULT, "exp": -8 },
+  "塵": { "type": eTokenType.FRAC_MULT, "exp": -9 },
+  "埃": { "type": eTokenType.FRAC_MULT, "exp": -10 },
+  "渺": { "type": eTokenType.FRAC_MULT, "exp": -11 },
+  "漠": { "type": eTokenType.FRAC_MULT, "exp": -12 }
 };
 
 const NEG_WORD = "負";
@@ -62,11 +62,11 @@ const INF_WORD = "無限大數";
 const NAN_WORD = "不可算數";
 
 const DECIMAL_WORD = {
-  readout: "又"
+  "readout": "又"
 };
 
 const DIGIT_WORDS = {
-  readout: {
+  "readout": {
     "0": "零",
     "1": "一",
     "2": "二",
@@ -81,67 +81,67 @@ const DIGIT_WORDS = {
 };
 
 const MULT_WORDS = {
-  readout: [
-    { str: "極", exp: 48 },
-    { str: "載", exp: 44 },
-    { str: "正", exp: 40 },
-    { str: "澗", exp: 36 },
-    { str: "溝", exp: 32 },
-    { str: "穰", exp: 28 },
-    { str: "秭", exp: 24 },
-    { str: "垓", exp: 20 },
-    { str: "京", exp: 16 },
-    { str: "兆", exp: 12 },
-    { str: "億", exp: 8 },
-    { str: "萬", exp: 4 },
-    { str: "千", exp: 3 },
-    { str: "百", exp: 2 },
-    { str: "十", exp: 1 },
-    { str: "", exp: 0 },
-    { str: "分", exp: -1 },
-    { str: "釐", exp: -2 },
-    { str: "毫", exp: -3 },
-    { str: "絲", exp: -4 },
-    { str: "忽", exp: -5 },
-    { str: "微", exp: -6 },
-    { str: "纖", exp: -7 },
-    { str: "沙", exp: -8 },
-    { str: "塵", exp: -9 },
-    { str: "埃", exp: -10 },
-    { str: "渺", exp: -11 },
-    { str: "漠", exp: -12 }
+  "readout": [
+    { "str": "極", "exp": 48 },
+    { "str": "載", "exp": 44 },
+    { "str": "正", "exp": 40 },
+    { "str": "澗", "exp": 36 },
+    { "str": "溝", "exp": 32 },
+    { "str": "穰", "exp": 28 },
+    { "str": "秭", "exp": 24 },
+    { "str": "垓", "exp": 20 },
+    { "str": "京", "exp": 16 },
+    { "str": "兆", "exp": 12 },
+    { "str": "億", "exp": 8 },
+    { "str": "萬", "exp": 4 },
+    { "str": "千", "exp": 3 },
+    { "str": "百", "exp": 2 },
+    { "str": "十", "exp": 1 },
+    { "str": "", "exp": 0 },
+    { "str": "分", "exp": -1 },
+    { "str": "釐", "exp": -2 },
+    { "str": "毫", "exp": -3 },
+    { "str": "絲", "exp": -4 },
+    { "str": "忽", "exp": -5 },
+    { "str": "微", "exp": -6 },
+    { "str": "纖", "exp": -7 },
+    { "str": "沙", "exp": -8 },
+    { "str": "塵", "exp": -9 },
+    { "str": "埃", "exp": -10 },
+    { "str": "渺", "exp": -11 },
+    { "str": "漠", "exp": -12 }
   ]
 };
 
 const eMultState = {
-  NONE: "NONE", // <END>, 一 (ambiguous: 一萬一 or 一十一 or 一·一 or 一絲一)
-  FRAC: "FRAC", // ...微
-  INT: "INT", // ...萬, ...·,
-  DONE: "DONE" // 負一
+  "NONE": "NONE", // <END>, 一 (ambiguous: 一萬一 or 一十一 or 一·一 or 一絲一)
+  "FRAC": "FRAC", // ...微
+  "INT": "INT", // ...萬, ...·,
+  "DONE": "DONE" // 負一
 };
 
 const eDigitState = {
-  NONE: "NONE", // <END>, ·
-  MULT: "MULT", // 微
-  MULT_AMBIG: "MULT_AMBIG", // 十 (ambiguous: ...十 or 一十)
-  DIGIT: "DIGIT", // 一
-  DIGIT_WITH_ZERO: "DIGIT_WITH_ZERO", // 一...零, 零零， 零一...零,
-  DELIM: "DELIM", // 又
-  ZERO: "ZERO", // 零<END>, 零·, 零又, 零微, 零一
-  SIGN: "SIGN", // 負
-  ZERO_MULT_AMBIG: "ZERO_MULT_AMBIG" // 零十 (ambiguous: 零一十 or 零十 or 〇十)
+  "NONE": "NONE", // <END>, ·
+  "MULT": "MULT", // 微
+  "MULT_AMBIG": "MULT_AMBIG", // 十 (ambiguous: ...十 or 一十)
+  "DIGIT": "DIGIT", // 一
+  "DIGIT_WITH_ZERO": "DIGIT_WITH_ZERO", // 一...零, 零零， 零一...零,
+  "DELIM": "DELIM", // 又
+  "ZERO": "ZERO", // 零<END>, 零·, 零又, 零微, 零一
+  "SIGN": "SIGN", // 負
+  "ZERO_MULT_AMBIG": "ZERO_MULT_AMBIG" // 零十 (ambiguous: 零一十 or 零十 or 〇十)
 };
 
 const RESULT_2_TO_63 = {
-  sign: 1,
-  exp: 0,
-  digits: "9223372036854775808".split("").reverse()
+  "sign": 1,
+  "exp": 0,
+  "digits": "9223372036854775808".split("").reverse()
 };
 
 function hanzi2numstr(s) {
   // returns array of tokens on success, null on invalid string
   function tokenize(s) {
-    let result = [{ type: eTokenType.BEGIN }];
+    let result = [{ "type": eTokenType.BEGIN }];
     for (let i = 0; i < s.length; ++i) {
       let tokenStr = s.charAt(i);
       if (!NUM_TOKENS.hasOwnProperty(tokenStr)) {
@@ -149,7 +149,7 @@ function hanzi2numstr(s) {
       }
       result.push(NUM_TOKENS[tokenStr]);
     }
-    result.push({ type: eTokenType.END });
+    result.push({ "type": eTokenType.END });
     return result;
   }
 
@@ -169,16 +169,16 @@ function hanzi2numstr(s) {
 
     // multiplier stack, keep track of all active multiplier exponents
     let multStack = {
-      isEmpty: function() {
+      "isEmpty": function() {
         return this._exps.length == 0;
       },
-      total: function() {
+      "total": function() {
         return this._expAdd;
       },
-      top: function() {
+      "top": function() {
         return this._exps[this._exps.length - 1];
       },
-      state: function() {
+      "state": function() {
         if (this.isEmpty()) {
           return eMultState.NONE;
         } else if (this._exps[0] < 0) {
@@ -190,44 +190,44 @@ function hanzi2numstr(s) {
         }
       },
 
-      push: function(exp) {
+      "push": function(exp) {
         this._expAdd += exp;
         this._exps.push(exp);
       },
-      pop: function() {
+      "pop": function() {
         this._expAdd -= this.top();
         this._exps.pop();
       },
-      clear: function() {
+      "clear": function() {
         this._expAdd = 0;
         this._exps = [];
       },
-      markDone: function() {
+      "markDone": function() {
         this.clear();
         this.push(Infinity);
       },
 
-      _exps: [],
-      _expAdd: 0
+      "_exps": [],
+      "_expAdd": 0
     };
 
     // result, with different convension of exp for internal use
     let result = {
-      sign: function() {
+      "sign": function() {
         return this._sign;
       },
-      exp: function() {
+      "exp": function() {
         return this._exp;
       },
-      digits: function() {
+      "digits": function() {
         return this._digits;
       },
 
-      applySign: function(newSign) {
+      "applySign": function(newSign) {
         this._sign *= newSign;
       },
       // digit: number or array of numbers
-      push: function(digit) {
+      "push": function(digit) {
         if (Array.isArray(digit)) {
           this._digits = this._digits.concat(digit);
           this._exp += digit.length;
@@ -236,17 +236,17 @@ function hanzi2numstr(s) {
           ++this._exp;
         }
       },
-      fillZeros: function(newExp) {
+      "fillZeros": function(newExp) {
         this.push(Array(newExp - this._exp).fill("0"));
       },
-      resetExp: function(newExp) {
+      "resetExp": function(newExp) {
         this._exp = newExp;
       },
 
       // the result is sign * 0.{digits[length-1..0]} * 10^exp
-      _sign: 1, // +1/-1
-      _exp: 0, // one plus exponent of the highest digit
-      _digits: [] // lowest to highest
+      "_sign": 1, // +1/-1
+      "_exp": 0, // one plus exponent of the highest digit
+      "_digits": [] // lowest to highest
     };
 
     // parses the number string backwards, discarding <END>
@@ -589,9 +589,9 @@ function hanzi2numstr(s) {
       return null;
     }
     return {
-      sign: result.sign(),
-      exp: result.exp() - result.digits().length,
-      digits: result.digits()
+      "sign": result.sign(),
+      "exp": result.exp() - result.digits().length,
+      "digits": result.digits()
     };
   }
 
@@ -739,9 +739,9 @@ function num2hanzi(n, format = "", precision = undefined) {
     );
     const fracDigits = fracStr.split("").reverse();
     return {
-      sign: sign,
-      exp: scientificExp - fracDigits.length,
-      digits: fracDigits.concat(intDigits)
+      "sign": sign,
+      "exp": scientificExp - fracDigits.length,
+      "digits": fracDigits.concat(intDigits)
     };
   }
 
@@ -856,6 +856,4 @@ function bool2hanzi(b) {
   return "陰";
 }
 
-try {
-  module.exports = { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi };
-} catch (e) {}
+module.exports = { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi };

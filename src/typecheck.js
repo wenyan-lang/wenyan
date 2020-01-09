@@ -78,7 +78,7 @@ function typecheck(
   let imported = [];
   let strayvar = [];
   let scope = [{}];
-  let scopestarts = [0];
+  let scopestarts = [{ pos: 0, op: "global" }];
   let signature = [];
   let funstack = [];
   let funretcnt = [];
@@ -126,7 +126,12 @@ function typecheck(
 
     return undefined;
   }
-  function checkscopethis(name) {
+  function checkscopethis(name, pos) {
+    assert(
+      "Scope stack depleted, possibly due to extraneous end-block statement.",
+      pos,
+      scope.length
+    );
     return checkscopei(scope.length - 1, name);
   }
 
@@ -173,15 +178,20 @@ function typecheck(
     return t.fields[x];
   }
 
-  function scopepush(pos) {
+  function scopepush(tok) {
     scope.push({});
-    scopestarts.push(pos);
+    scopestarts.push(tok);
   }
 
-  function scopepop(pos) {
+  function scopepop(tok, ...acceptScopeStartOps) {
     let ss = scopestarts.pop();
     let s = scope.pop();
-    signature.push([[ss, pos, scope.length], s]);
+    assert(
+      `[Type] Unexpected '${tok.op}' in '${ss.op}' block`,
+      tok.pos,
+      acceptScopeStartOps.indexOf(ss.op) >= 0
+    );
+    signature.push([[ss.pos, tok.pos, scope.length], s]);
   }
 
   function logscope() {
@@ -267,7 +277,7 @@ function typecheck(
         assert(
           `[Type] Variable '${a.names[j]}' redeclared in the same scope`,
           a.pos,
-          !checkscopethis(a.names[j])
+          !checkscopethis(a.names[j], a.pos)
         );
 
         scope[scope.length - 1][a.names[j]] = inittype(a.type);
@@ -298,11 +308,11 @@ function typecheck(
         let ptr = scope[scope.length - 1][funstack[funstack.length - 1]];
         ptr.in = inittype("nil");
       }
-      scopepush(a.pos);
+      scopepush(a);
     } else if (a.op == "funend") {
       var f = funstack.pop();
       var n = funretcnt.pop();
-      scopepop(a.pos);
+      scopepop(a, "funbody");
 
       if (n == 0) {
         var ptr = scope[scope.length - 1][f];
@@ -320,12 +330,12 @@ function typecheck(
         a.type
       );
     } else if (a.op == "end") {
-      scopepop(a.pos);
+      scopepop(a, "if", "else", "for", "whiletrue", "whilen");
     } else if (a.op == "if") {
-      scopepush(a.pos);
+      scopepush(a);
     } else if (a.op == "else") {
-      scopepop(a.pos);
-      scopepush(a.pos);
+      scopepop(a, "if");
+      scopepush(a);
     } else if (a.op == "return") {
       funretcnt[funretcnt.length - 1]++;
       let ptr;
@@ -468,6 +478,7 @@ function typecheck(
             ty.type = "obj";
             ty.fields = {};
             ty.fields[a.value[1].slice(1, -1)] = inittype("any");
+            ty.isarg = true;
           }
           assert(
             `[Type] Property ${a.value[1]} does not exist in obj ${printType(
@@ -530,14 +541,14 @@ function typecheck(
 
       gettype(a.container).element = Object.assign({}, typ);
     } else if (a.op == "for") {
-      scopepush(a.pos);
+      scopepush(a);
       typeassert(`For-each LHS`, [inittype("arr")], a.container, a.pos);
       scope[scope.length - 1][a.iterator] =
         gettype(a.container).element || inittype("any");
     } else if (a.op == "whiletrue") {
-      scopepush(a.pos);
+      scopepush(a);
     } else if (a.op == "whilen") {
-      scopepush(a.pos);
+      scopepush(a);
     } else if (a.op == "break") {
       //pass
     } else if (a.op == "not") {
@@ -651,22 +662,25 @@ function typecheck(
     } else if (a.op == "import") {
       imported = imported.concat(a.iden);
     } else if (a.op == "try") {
-      scopepush(a.pos);
+      scopepush(a);
     } else if (a.op == "catch") {
-      scopepop(a.pos);
-      scopepush(a.pos);
+      scopepop(a, "try");
+      scopepush(a);
     } else if (a.op == "catcherr") {
-      scopepop(a.pos);
-      scopepush(a.pos);
+      scopepop(a, "catch", "catcherr");
+      scopepush(a);
+      if (a.error === undefined) {
+        strayvar.push(inittype("str"));
+      }
     } else if (a.op == "tryend") {
-      scopepop(a.pos);
+      scopepop(a, "catch", "catcherr");
     } else if (a.op == "throw") {
     } else if (a.op == "comment") {
       //pass
     } else {
     }
   }
-  scopepop(a.pos);
+  scopepop({ pos: a.pos, op: "EOF" }, "global");
   // console.log(scope.length)
   // console.dir(signature,{maxArrayLength:null,depth:null})
 
@@ -674,6 +688,5 @@ function typecheck(
   // process.exit()
   return signature;
 }
-try {
-  module.exports = { typecheck, printType, printSignature };
-} catch (e) {}
+
+module.exports = { typecheck, printType, printSignature };

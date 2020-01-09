@@ -54,7 +54,7 @@ function runAll(lang, skips = []) {
 
 // runExample("js", "quicksort");
 // runExample("js", "../lib/js/畫譜");
-// runExample("js", "../lib/列經");
+// runExample("js", "../lib/曆法");
 // runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
 // runAll("js", ["quine"]);
 

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="./assets/site.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/vs.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+  <script src="./dist/core.js"></script>
+  <script src="./dist/examples.js"></script>
+  <script src="./dist/highlight.js"></script>
+  <script src="./dist/render.js"></script>
+</head>
+<body>
+  <div id="bg"><div id="bg-inner"><img src='./assets/turing.svg' width='100%'/></div></div>
+  
+  <div id="title-box"><div id="title1">文言 / wenyan&#8209;lang</div><div id="title2">編程語言 Programming Language for the ancient Chinese</div></div>
+  
+  <div id="content-box">
+  <div id="content">
+  
+  <i>文言</i>, or <i>wenyan</i>, is an esoteric programming language that closely follows the grammar and tone of classical Chinese literature. Moreover, the alphabet of <i>wenyan</i> contains only traditional Chinese characters and <code>「」</code> quotes, so it is guaranteed to be readable by ancient Chinese people. You too can try it out on the <a href="./ide.html">online editor</a>, <a href="https://github.com/LingDong-/wenyan-lang#installation">download a compiler</a>, or view the <a href="https://github.com/LingDong-/wenyan-lang">source code</a>.
+  
+  <h1>Syntax</h1>
+  
+  Syntax of <i>wenyan</i> is just like that of its namesake, classical Chinese:
+  
+  <h2>天地，好在否！/ HELLO WORLD <span class="play-btn">▶&#xFE0E;</span></h2>
+  
+  <table class="tryit" data-prgm="helloworld+"><tr>
+    <td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
+  </tr></table>
+  
+  The code above is editable, go ahead customize the greeting and hit ▶&#xFE0E;! Another slightly more sophisticated example, using the sieve of Erathosthenes to find prime numbers:
+  
+  <h2>埃氏筛 / SIEVE OF ERATOSTHENES <span class="play-btn">▶&#xFE0E;</span></h2>
+  
+  <table class="tryit" data-prgm="sieve"><tr>
+    <td class="in-box" valign="top"></td><td class="out-box" valign="top"></td>
+  </tr></table>
+  
+  You can find many more examples such as a Universal Turing Machine, a Mandelbrot set plotter, a Tower of Hanoi solver, and so on on the <a href="./ide.html">online IDE</a>.
+  
+  
+  <h1>Compilation</h1>
+  
+  <i>wenyan</i> currently compiles to JavaScript, Python, or Ruby, and will support more languages (e.g. C) in the future. The Hello World example (or whatever you edited it to be) above translates to:
+  
+  <div class="compile-out-box">
+    <div class='language-item'>
+      <pre class="compile-out" id="js"></pre>
+    </div>
+    <div class='language-item'>
+      <pre class="compile-out" id="py"></pre>
+    </div>
+    <div class='language-item'>
+      <pre class="compile-out" id="rb"></pre>
+    </div>
+  </div>
+  
+  <h1>Get</h1>
+  
+  <span class="big-btn" onclick="window.location.href='https://github.com/LingDong-/wenyan-lang'">GITHUB</span>
+  <span class="big-btn" onclick="window.location.href='./ide.html'">ONLINE EDITOR</span>
+  <span class="big-btn" onclick="window.location.href='./spec.html'">LANGUAGE SPEC</span>
+  <span class="big-btn" onclick="window.location.href='https://github.com/LingDong-/wenyan-lang#syntax-cheatsheet'">REFERENCE</span>
+
+  <div style="height:180px;"></div>
+  
+  </div>
+  
+  <script src='./site.js'></script>
+  </body>
+  </html>

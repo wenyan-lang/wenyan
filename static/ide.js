@@ -1,23 +1,3 @@
-try {
-  process.chdir("./tools");
-} catch (e) {} //make sure we're in tools directory
-
-var fs = require("fs");
-var execSync = require("child_process").execSync;
-var parser = require("../src/parser");
-var utils = require("./utils");
-const { examplesAlias } = require("./examples_info");
-
-var files = fs.readdirSync("../examples/").filter(x => x.endsWith(".wy"));
-var prgms = {};
-for (var i = 0; i < files.length; i++) {
-  prgms[files[i].split(".")[0]] = fs
-    .readFileSync("../examples/" + files[i])
-    .toString();
-}
-
-var lib = utils.loadlib();
-
 function main() {
   function hideImportedModules(source) {
     const markerRegex = /\/\*___wenyan_module_([\s\S]+?)_(start|end)___\*\//g;
@@ -53,37 +33,37 @@ function main() {
   let currentHighlightTimeout;
   const highlightCode = () => {
     console.time("highlight");
-    highlight([ed]);
+    Highlighter.highlight([ed]);
     highlighted = true;
     console.timeEnd("highlight");
   };
 
   var makeTitle = example => {
-    return (examplesAlias[example] || example) + " - wenyan-lang Online IDE";
+    return (Examples.examplesAlias[example] || example) + " - wenyan-lang Online IDE";
   };
 
   var sel = document.getElementById("pick-example");
-  for (var k in prgms) {
+  for (var k in Examples.examples) {
     var opt = document.createElement("option");
     opt.value = k;
-    opt.text = k + (examplesAlias[k] ? ` (${examplesAlias[k]})` : "");
+    opt.text = k + (Examples.examplesAlias[k] ? ` (${Examples.examplesAlias[k]})` : "");
     sel.appendChild(opt);
   }
   var match = location.search.match(/(?:^\?|&)example=([^&]+)/);
   match = match && decodeURIComponent(match[1]);
   var example = match || "mandelbrot";
-  var ed = newEditor(prgms[example]);
+  var ed = Highlighter.newEditor(Examples.examples[example]);
   // var ln = newLineNo(ed);
   sel.value = example;
   document.title = makeTitle(example);
   sel.onchange = function() {
     var example = sel.value;
-    if (!prgms[example]) {
+    if (!Examples.examples[example]) {
       return;
     }
     var title = makeTitle(example);
     document.title = title;
-    ed.innerText = prgms[example];
+    ed.innerText = Examples.examples[example];
     run();
     if (history.pushState) {
       var url = "?example=" + encodeURIComponent(example);
@@ -92,10 +72,10 @@ function main() {
   };
   window.onpopstate = function(event) {
     var example = event.state && event.state.example;
-    if (example && prgms[example]) {
+    if (example && Examples.examples[example]) {
       sel.value = example;
       document.title = makeTitle(example);
-      ed.innerText = prgms[example];
+      ed.innerText = Examples.examples[example];
       run();
     }
   };
@@ -145,13 +125,12 @@ function main() {
   function run() {
     highlightCode();
     document.getElementById("out").innerText = "";
-    var code = compile(ed.innerText, {
+    var code = Wenyan.compile(ed.innerText, {
       lang: "js",
       romanizeIdentifiers: selr.value,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-      lib: STDLIB,
-      reader: x => prgms[x]
+      reader: x => Examples.examples[x]
     });
 
     var showcode = hidestd.checked ? hideImportedModules(code) : code;
@@ -159,7 +138,7 @@ function main() {
     document.getElementById("js").innerText = js_beautify(showcode);
     hljs.highlightBlock(document.getElementById("js"));
 
-    evalCompiled(code, {
+    Wenyan.evalCompiled(code, {
       outputHanzi: outputHanzi.checked,
       output: (...args) => {
         outdiv.innerText += args.join(" ") + "\n";
@@ -172,40 +151,4 @@ function main() {
   run();
 }
 
-var html = `<!--GENERATED FILE, DO NOT READ-->
-<head>
-<meta charset="UTF-8">
-<title>wenyan-lang Online IDE</title>
-<style>
-[contenteditable="true"]:focus {outline: none;}
-pre{tab-size: 4;}
-.tbar{background:white;color:black;font-style:italic;font-family:monospace;font-size:14px;opacity:80%;margin-top:20px;}
-</style>
-</head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
-<script>${utils.catsrc()}</script>
-<body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
-  <h2><i>wenyan-lang</i></h2>
-<table><tr><td>
-<select id="pick-example"></select><button id="run">Run</button>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="checkbox" id="output-hanzi" checked=""/><small>Output Hanzi</small>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<small>Romanization</small><select id="pick-roman"></select>
-
-</td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
-<script>var STDLIB = ${JSON.stringify(lib)};</script>
-<script>var prgms = ${JSON.stringify(prgms)};</script>
-<script>var examplesAlias = ${JSON.stringify(examplesAlias)};</script>
-<script>${main.toString()};main();</script>
-</body>
-`;
-
-fs.writeFileSync("../site/ide.html", html);
+main();
