@@ -1,3 +1,23 @@
+# v0.2.2
+
+## New Website Domain http://wy-lang.org!
+
+We are now using Netlify to build our website & IDE. The legacy links will redirect to http://wy-lang.org automatically.
+
+- New spec page, [check it out](https://wy-lang.org/spec)
+
+## Features
+- New option `importPaths` for specifying the import searching directories, (PR #499, by @antfu)
+- New option `allowHttp` for allowing import scripts from the web (default to `false`). refer to #499 for more details.
+
+## Fixes
+- Fix for mismatched scope begin/end in typecheck (PR #496, thanks @statementreply)
+- Stdlib: Fix for some 曆法 functions (PR #503, thanks @statementreply)
+- Stdlib: Improve asin, acos and atan (PR #511, thanks @statementreply)
+
+## Examples
+- New example Pascal Triangle (PR #498, thanks @MerakDipper)
+
 # v0.2.1
 
 ## Static Type Inference
