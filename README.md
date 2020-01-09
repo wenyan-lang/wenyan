@@ -115,7 +115,7 @@ Please refer to [Browser Runtime](./documentation/Runtime.md)
 
 ## Syntax Cheatsheet
 
-You can find the Language Specification [here](https://wy-lang/spec) (WIP). To get started, you can also check the cheatsheet below, or look into `src/parser.js` to learn more. Be sure to check out the examples from the online IDE too!
+You can find the Language Specification [here](https://wy-lang.org/spec) (WIP). To get started, you can also check the cheatsheet below, or look into `src/parser.js` to learn more. Be sure to check out the examples from the online IDE too!
 
 ### Variables
 
