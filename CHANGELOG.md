@@ -1,3 +1,43 @@
+# v0.2.3
+
+## 序.wy
+
+Think `序.wy` the Wenyan version of `index.js`.
+
+For example, the reader now will search for a module `四庫全書` for a given path `/tmp/examples`
+
+- `/tmp/examples/四庫全書.wy`
+- `/tmp/examples/四庫全書/序.wy`
+
+The first match will be imported. Refer to #512 for more details.
+
+## 藏書樓
+
+Think `藏書樓` the Wenyan version of `node_modules`.
+
+`藏書樓` will be included as `importPaths` by CLI automatically. It will do an up searching for `藏書樓` from the cwd (just as node did)
+
+
+# v0.2.2
+
+## New Website Domain http://wy-lang.org!
+
+We are now using Netlify to build our website & IDE. The legacy links will redirect to http://wy-lang.org automatically.
+
+- New spec page, [check it out](https://wy-lang.org/spec)
+
+## Features
+- New option `importPaths` for specifying the import searching directories, (PR #499, by @antfu)
+- New option `allowHttp` for allowing import scripts from the web (default to `false`). refer to #499 for more details.
+
+## Fixes
+- Fix for mismatched scope begin/end in typecheck (PR #496, thanks @statementreply)
+- Stdlib: Fix for some 曆法 functions (PR #503, thanks @statementreply)
+- Stdlib: Improve asin, acos and atan (PR #511, thanks @statementreply)
+
+## Examples
+- New example Pascal Triangle (PR #498, thanks @MerakDipper)
+
 # v0.2.1
 
 ## Static Type Inference

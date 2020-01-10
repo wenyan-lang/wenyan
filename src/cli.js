@@ -4,8 +4,10 @@ const { compile, evalCompiled } = require("./parser");
 const { render, unrender } = require("./render");
 const path = require("path");
 const commander = require("commander");
+const findUp = require("find-up");
 
 var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
+const MODULE_LIBRARY_NAME = "藏書樓";
 
 const program = new commander.Command();
 program
@@ -121,9 +123,17 @@ function getImportPaths() {
   if (program.dir) {
     pathes.push(...program.dir.split(","));
   }
+
+  const moduleLib = findModuleLibrary();
+  if (moduleLib) pathes.push(moduleLib);
+
   pathes.push(...program.files.map(file => path.resolve(path.dirname(file))));
   pathes.push(path.resolve("."));
   return Array.from(new Set(pathes));
+}
+
+function findModuleLibrary() {
+  return findUp.sync(MODULE_LIBRARY_NAME, { type: "directory" });
 }
 
 function getCompileOptions() {
