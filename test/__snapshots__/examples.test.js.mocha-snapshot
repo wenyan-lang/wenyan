@@ -146,3 +146,7 @@ exports["examples/javascript/sieve(1)"] = "二。三。五。七。一十一。�
 
 exports["examples/javascript/try(1)"] = "嗚呼哀哉。伏维尚飨\n事不關心\n";
 
+exports["examples/javascript/pascal_triangle(0)"] = "一\n一。一\n一。二。一\n一。三。三。一\n一。四。六。四。一\n一。五。一十。一十。五。一\n一。六。一十五。二十。一十五。六。一\n一。七。二十一。三十五。三十五。二十一。七。一\n一。八。二十八。五十六。七十。五十六。二十八。八。一\n";
+
+exports["examples/romanizeIdentifiers/pascal_triangle(0)"] = "一\n一。一\n一。二。一\n一。三。三。一\n一。四。六。四。一\n一。五。一十。一十。五。一\n一。六。一十五。二十。一十五。六。一\n一。七。二十一。三十五。三十五。二十一。七。一\n一。八。二十八。五十六。七十。五十六。二十八。八。一\n";
+
