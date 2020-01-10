@@ -729,7 +729,7 @@ function compile(arg1, arg2, arg3) {
 
   if (strict) {
     logCallback("\n\n=== [PASS 2.5] TYPECHECK ===");
-    console.log(printSignature(typecheck(asc, assert)));
+    logCallback(printSignature(typecheck(asc, assert)));
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
