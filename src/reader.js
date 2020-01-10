@@ -1,7 +1,3 @@
-const URL = require("url");
-
-const isClient = typeof window !== "undefined";
-
 const INDEX_FILENAME = "序";
 
 function isHostTrusted(url, trustedHosts) {
@@ -49,10 +45,6 @@ function defaultImportReader(
 
   for (dir of importPaths) {
     let uri = dir;
-
-    if (isClient) {
-      uri = URL.resolve(window.document.location, uri);
-    }
 
     if (uri.endsWith("/")) uri = uri.slice(0, -1);
 
