@@ -1,3 +1,23 @@
+# v0.2.3
+
+## 序.wy
+
+Think `序.wy` the Wenyan version of `index.js`.
+
+For example, the reader now will search for a module `四庫全書` for a given path `/tmp/examples`
+
+- `/tmp/examples/四庫全書.wy`
+- `/tmp/examples/四庫全書/序.wy`
+
+The first match will be imported. Refer to #512 for more details.
+
+## 藏書樓
+
+Think `藏書樓` the Wenyan version of `node_modules`.
+
+`藏書樓` will be included as `importPaths` by CLI automatically. It will do an up searching for `藏書樓` from the cwd (just as node did)
+
+
 # v0.2.2
 
 ## New Website Domain http://wy-lang.org!
