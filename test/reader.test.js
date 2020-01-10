@@ -5,14 +5,14 @@ const helloworldContent = "吾有一言。曰「「問天地好在。」」。�
 
 describe("reader", () => {
   describe("local", () => {
-    it("import local files", async () => {
-      const content = await reader("helloworld", "./examples");
+    it("import local files", () => {
+      const content = reader("helloworld", "./examples");
 
       expect(content).eq(helloworldContent);
     });
 
-    it("search for files", async () => {
-      const content = await reader("helloworld", [
+    it("search for files", () => {
+      const content = reader("helloworld", [
         "./some/invalid/dir",
         "./lib",
         "./examples"
@@ -21,9 +21,9 @@ describe("reader", () => {
       expect(content).eq(helloworldContent);
     });
 
-    it("not found", async () => {
+    it("not found", () => {
       try {
-        await reader("not_exists", "./examples");
+        reader("not_exists", "./examples");
       } catch (e) {
         expect(e).to.be.an.instanceof(ReferenceError);
       }
@@ -42,8 +42,8 @@ describe("reader", () => {
       }
     });
 
-    it("load http contents", async () => {
-      const content = await reader(
+    it("load http contents", () => {
+      const content = reader(
         "helloworld",
         "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
         {
@@ -54,8 +54,8 @@ describe("reader", () => {
       expect(content).eq(helloworldContent);
     });
 
-    it("load http contents in trusted hosts", async () => {
-      const content = await reader(
+    it("load http contents in trusted hosts", () => {
+      const content = reader(
         "helloworld",
         "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
         {
@@ -68,8 +68,8 @@ describe("reader", () => {
       expect(content).eq(helloworldContent);
     });
 
-    it("search for http contents", async () => {
-      const content = await reader(
+    it("search for http contents", () => {
+      const content = reader(
         "helloworld",
         [
           "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/lib/",

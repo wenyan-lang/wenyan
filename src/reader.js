@@ -1,3 +1,9 @@
+const URL = require("url");
+
+const isClient = typeof window !== "undefined";
+
+const INDEX_FILENAME = "序";
+
 function isHostTrusted(url, trustedHosts) {
   for (const host of trustedHosts) {
     // FIXME: it can be bypassed by relative path resolving,
@@ -42,7 +48,14 @@ function defaultImportReader(
   if (typeof importPaths === "string") importPaths = [importPaths];
 
   for (dir of importPaths) {
-    const uri = dir + "/" + moduleName + ".wy";
+    let uri = dir;
+
+    if (isClient) {
+      uri = URL.resolve(window.document.location, uri);
+    }
+
+    if (uri.endsWith("/")) uri = uri.slice(0, -1);
+
     if (isHttpURL(uri)) {
       if (!allowHttp && !isHostTrusted(uri, trustedHosts)) {
         throw new URIError(
@@ -52,11 +65,31 @@ function defaultImportReader(
       }
 
       try {
-        return fetchTextSync(uri, requestTimeout);
+        return fetchTextSync(
+          `${uri}/${encodeURIComponent(moduleName)}.wy`,
+          requestTimeout
+        );
+      } catch (e) {}
+      try {
+        return fetchTextSync(
+          `${uri}/${encodeURIComponent(moduleName)}/${encodeURIComponent(
+            INDEX_FILENAME
+          )}.wy`,
+          requestTimeout
+        );
       } catch (e) {}
     } else {
       try {
-        return eval("require")("fs").readFileSync(uri, "utf-8");
+        return eval("require")("fs").readFileSync(
+          `${dir}/${moduleName}.wy`,
+          "utf-8"
+        );
+      } catch (e) {}
+      try {
+        return eval("require")("fs").readFileSync(
+          `${dir}/${moduleName}/${INDEX_FILENAME}.wy`,
+          "utf-8"
+        );
       } catch (e) {}
     }
   }
