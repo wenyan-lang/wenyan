@@ -1,3 +1,20 @@
+# v0.2.4
+
+## import in, elseif, if true, if false, any
+
+Thanks to everyone who contributed their ideas, a selection of proposed new syntaxes are now added
+
+| js/c++ | wenyan | issue |
+|-|-|-|
+| `continue` | `乃止是遍` | #392  |
+| `else if` | `或若` | #365 |
+| `if (ans) {` | `若其然者` | #513 |
+| `if (!ans) {` | `若其不然者` | ditto |
+| `auto` | `元` | #486 |
+| `require('path/to/something')` | `吾嘗觀「「某樓」」中「「某閣」」中「「某書」」之書。` | #475 |
+
+refer to #519 for more details
+
 # v0.2.3
 
 ## 序.wy
