@@ -102,8 +102,10 @@ class JSCompiler extends Base {
         curlvl = cl;
       } else if (a.op == "objend") {
         js += "};";
+        curlvl--;
       } else if (a.op == "objbody") {
         js += `${prevobjpublic ? `${prevobj} = this.` : ""}${prevobj}={`;
+        curlvl++;
       } else if (a.op == "prop") {
         js += `${a.name}:${a.value[1]},`;
       } else if (a.op == "end") {
@@ -113,6 +115,7 @@ class JSCompiler extends Base {
       } else if (a.op == "if") {
         if (a.elseif) {
           js += "}else ";
+          curlvl--;
         }
         js += "if (";
         if (a.not) {
