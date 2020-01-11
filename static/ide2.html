@@ -8,17 +8,8 @@
       margin:0px;
       overflow: hidden;
     }
-    #in-outer{
-      /*border:1px solid red;*/
+    #in-outer, #js-outer, #ex-outer {
       position:absolute;
-    }
-    #js-outer{
-      /*border:1px solid blue;*/
-      position:absolute;
-      /*overflow:scroll;*/
-      /*padding:0px;*/
-      /*margin:0px;*/
-      /*background: red;*/
     }
     #out-outer{
       /*border:1px solid green;*/
@@ -28,12 +19,12 @@
       font-size: 13px;
       overflow:hidden;
     }
-    #in, #js, #out{
+    #in, #js, #out, #explorer {
       width:100%;
       height:calc(100% - 30px);
+      overflow: auto;
     }
-    #in-bar, #js-bar, #out-bar{
-      
+    #in-bar, #js-bar, #out-bar, #explorer-bar {
       width:100%;
       height:20px;
       padding:5px;
@@ -48,17 +39,16 @@
     #out-bar{
       position: fixed;
     }
-    #out{
+    #out {
       top:30px;
       position: absolute;
       padding: 10px;
       margin:0px;
       width:calc(100% - 20px);
       height:calc(100% - 50px);
-      overflow:scroll;
       background:white;
     }
-    #hand-v{
+    #hand-v, #hand-ex {
       position:absolute;
       cursor: ew-resize;
       z-index: 1000;
@@ -68,13 +58,12 @@
       cursor: ns-resize;
       z-index: 1000;
     }
-    #hand-v-inner{
+    #hand-v-inner, #hand-ex-inner{
       background:transparent;
       border: 1px solid grey;
       box-shadow: 1px 1px 1px rgba(0,0,0,0.1);
       height:calc(100% - 3px);
       margin:0px 3px 3px 3px;
-
     }
     #hand-h-inner{
       background:transparent;
@@ -83,6 +72,66 @@
       margin:3px 0px 3px 0px;
       width:100%;
       height:1px;
+    }
+    #explorer {
+      overflow-x: hidden;
+    }
+    .caret {
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      opacity: 0.5;
+    }
+    .caret::before {
+      font-size: 10px;
+      content: "\25B6";
+      color: black;
+      display: inline-block;
+      margin-right: 4px;
+      opacity: 0.5;
+      transform: scaleX(0.8) translateY(-2px);
+    }
+    .caret.active::before {
+      transform: scaleY(0.8) translateY(-2px) rotate(90deg);
+    }
+    ul.nested {
+      display: none;
+      padding: 5px 0;
+    }
+    ul.nested.active {
+      display: block;
+    }
+    #explorer-list {
+      padding: 0;
+      margin: 0;
+    }
+    #explorer-list li, #explorer-list ul {
+      list-style: none;
+    }
+    #explorer-list li {
+      padding: 0;
+      margin: 0;
+      font-size: 13px;
+      font-family: sans-serif;
+      padding: 3px 6px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    #explorer-list ul.nested li {
+      padding: 3px 5px 3px 20px;
+    }
+    #explorer-list ul.nested li:hover {
+      background: #f1f1f1;
+    }
+    #explorer-list ul.nested li.active {
+      background: #ddd;
+      font-size: bold;
+    }
+    #explorer-list ul.nested li .name {
+      padding-right: 5px;
+    }
+    #explorer-list ul.nested li .alias {
+      opacity: 0.5
     }
     button{
       background: white;
@@ -120,11 +169,29 @@
 </head>
 
 <body>
+  <div id="ex-outer">
+    <div id="explorer-bar">
+      <span style="color:#555">&nbsp;Explorer&nbsp;&nbsp;&nbsp;</span>
+    </div>
+    <div id="explorer">
+      <ul id="explorer-list">
+        <li>
+          <span class="caret">User</span>
+          <ul class="nested active" id="explorer-list-user">
+          </ul>
+        </li>
+        <li>
+          <span class="caret">Examples</span>
+          <ul class="nested active" id="explorer-list-examples">
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
 
   <div id="in-outer">
     <div id="in-bar">
       <span style="color:#555">&nbsp;&nbsp;文言 / wenyan-lang&nbsp;&nbsp;&nbsp;</span>
-      <select id="pick-example"></select>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
       <select id="pick-keyword"></select>
@@ -155,6 +222,7 @@
     </div>
     <pre id="out"></pre>
   </div>
+  <div id="hand-ex"><div id="hand-ex-inner"></div></div>
   <div id="hand-h"><div id="hand-h-inner"></div></div>
   <div id="hand-v"><div id="hand-v-inner"></div></div>
 
@@ -164,14 +232,29 @@
 
   <script>
 
-var handv = window.innerWidth*0.5;
+var handv = window.innerWidth*0.55;
 var handh = window.innerHeight*0.7;
+var handex = window.innerWidth*0.1;
 var djs = document.getElementById("js-outer")
 var din = document.getElementById("in-outer")
 var dou = document.getElementById("out-outer")
+var dex = document.getElementById("ex-outer")
 
 var dhv = document.getElementById("hand-v")
 var dhh = document.getElementById("hand-h")
+var dhex = document.getElementById("hand-ex")
+
+var exlist = document.getElementById("explorer-list")
+var exlistUser = document.getElementById("explorer-list-user")
+var exlistExamples = document.getElementById("explorer-list-examples")
+
+var selr = document.getElementById("pick-roman");
+var selkey = document.getElementById("pick-keyword");
+var hidestd = document.getElementById("hide-std");
+var outputHanzi = document.getElementById("output-hanzi");
+var outdiv = document.getElementById("out");
+
+var currentFile = new URLSearchParams(location.search).get('file') || 'mandelbrot'
 
 dhv.onmousedown = function(e){
   e.preventDefault();
@@ -199,22 +282,38 @@ dhh.onmousedown = function(e){
   document.body.addEventListener('mousemove', handler);
 }
 
+dhex.onmousedown = function(e){
+  e.preventDefault();
+  var handler = function(event){
+    if (event.buttons === 1){
+      handex = event.pageX;
+      setView();
+    }else{
+      document.body.removeEventListener('mousemove', handler);
+    } 
+  };
+  document.body.addEventListener('mousemove', handler);
+}
+
 function setView(){
   // requestAnimationFrame(setView)
-
-
   var W = window.innerWidth;
   var H = window.innerHeight;
+
+  dex.style.left="0px";
+  dex.style.top="0px";
+  dex.style.width=handex+"px"
+  dex.style.height=handh+"px";
+
+  din.style.left=handex+"px";
+  din.style.top="0px";
+  din.style.width=(handv-handex)+"px"
+  din.style.height=handh+"px";
 
   djs.style.left=handv+"px";
   djs.style.top="0px";
   djs.style.width=(W-handv)+"px"
   djs.style.height=handh+"px";
-
-  din.style.left="0px";
-  din.style.top="0px";
-  din.style.width=handv+"px"
-  din.style.height=handh+"px";
 
   dou.style.left="0px";
   dou.style.top=handh+"px";
@@ -223,11 +322,16 @@ function setView(){
 
   var hw = 9;
 
+  dhex.style.left=(handex-hw/2)+"px";
+  dhex.style.top="0px";
+  dhex.style.width=hw+"px"
+  dhex.style.height=handh+"px";
+    
   dhv.style.left=(handv-hw/2)+"px";
   dhv.style.top="0px";
   dhv.style.width=hw+"px"
   dhv.style.height=handh+"px";
-  
+
   dhh.style.left="0px";
   dhh.style.top=(handh-hw/2)+"px";
   dhh.style.width=W+"px"
@@ -289,26 +393,66 @@ function hideImportedModules(source) {
 }
 
 
-var sel = document.getElementById("pick-example");
-for (var k in Examples.examples) {
-  var opt = document.createElement("option");
-  opt.value = k;
-  opt.text = k + (Examples.examplesAlias[k] ? ` (${Examples.examplesAlias[k]})` : "");
-  sel.appendChild(opt);
+function initExplorer() { 
+  initExamples()
+
+  var toggler = document.getElementsByClassName("caret");
+  var i;
+
+  for (i = 0; i < toggler.length; i++) {
+    toggler[i].addEventListener("click", function() {
+      this.parentElement.querySelector('.nested').classList.toggle("active");
+      this.classList.toggle("active");
+    });
+  }
 }
 
-sel.value = "mandelbrot";
-
-sel.onchange = function() {
-  var example = sel.value;
-  if (!Examples.examples[example]) {
-    return;
+function initExamples(){
+  for (let k in Examples.examples) {
+    exlistExamples.appendChild(createExplorerEntry(k, Examples.examplesAlias[k] || ""));
   }
-  editorCM.setValue(Examples.examples[example]);
-  crun();
-};
+}
 
-var selr = document.getElementById("pick-roman");
+function createExplorerEntry(name, alias) {
+  const item = document.createElement("li");
+  item.value = name;
+  const a = document.createElement("span")
+  const n = document.createElement("span")
+  n.classList.add('name')
+  n.innerText = alias || name
+  item.appendChild(n)
+  if (alias) {
+    a.classList.add('alias')
+    a.innerText = name
+    item.appendChild(a)
+  }
+  item.onclick = () => openFile(name);
+  return item
+}
+
+function openFile(name) {
+  var searchParams = new URLSearchParams(window.location.search)
+  if (searchParams.get('file') !== name){
+    searchParams.set("file", name)
+    history.pushState({ file:name }, name, '?'+searchParams.toString());
+  }
+  loadFile(name)
+}
+
+function loadFile(name) {
+  currentFile = name
+  editorCM.setValue(Examples.examples[name] || '');
+  crun();
+}
+
+window.addEventListener('popstate', (event) => {
+  loadFile(new URLSearchParams(location.search).get('file') || 'mandelbrot')
+})
+
+loadFile(currentFile)
+
+initExplorer()
+
 for (var k of ["none", "pinyin", "baxter", "unicode"]) {
   var opt = document.createElement("option");
   opt.value = k;
@@ -318,7 +462,6 @@ for (var k of ["none", "pinyin", "baxter", "unicode"]) {
 selr.value = "pinyin";
 selr.onchange = crun;
 
-var selkey = document.getElementById("pick-keyword");
 var kp = Object.keys(Wenyan.KEYWORDS).map(x=>[x,(x.length>1)?Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g,"$1"):Wenyan.hanzi2pinyin(x)])
 kp.sort((a,b)=>a[1].localeCompare(b[1]));
 var keys = ([["Insert..."],["「","`"],["」","'"],["「「",'['],["」」","]"]]).concat(kp);
@@ -342,10 +485,6 @@ selkey.onchange = function(){
   selkey.value = "Insert..."
   editorCM.focus();
 }
-
-var hidestd = document.getElementById("hide-std");
-var outputHanzi = document.getElementById("output-hanzi");
-var outdiv = document.getElementById("out");
 
 hidestd.onchange = crun;
 outputHanzi.onchange = crun;
