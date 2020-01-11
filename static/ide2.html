@@ -35,6 +35,15 @@
       overflow: hidden;
       white-space: nowrap;
     }
+    .bar .title {
+      display: inline-block;
+      color: #777;
+      padding: 0 10px;
+    }
+    #current-file-name {
+      font-weight: bold;
+      padding-right: 10px;
+    }
     #out {
       top:30px;
       position: absolute;
@@ -177,7 +186,7 @@
 <body>
   <div id="ex-outer">
     <div class="bar" id="explorer-bar">
-      <span style="color:#555">&nbsp;Explorer&nbsp;&nbsp;&nbsp;</span>
+      <span class="title">Explorer</span>
       <button id="new-file" class="right-aligned">New</button>
     </div>
     <div id="explorer">
@@ -198,7 +207,8 @@
 
   <div id="in-outer">
     <div class="bar" id="in-bar">
-      <span style="color:#555">&nbsp;&nbsp;文言 / wenyan-lang&nbsp;&nbsp;</span>
+      <span class="title">文言</span>
+      <span id="current-file-name"></span>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
       <select id="pick-keyword"></select>
@@ -210,7 +220,7 @@
   
   <div id="js-outer">
     <div class="bar" id="js-bar">
-      <span style="color:#555">&nbsp;&nbsp;Compiled&nbsp;&nbsp;</span>
+      <span class="title">Compiled</span>
       &nbsp;&nbsp;
       <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
       &nbsp;&nbsp;&nbsp;
@@ -225,7 +235,7 @@
   
   <div id="out-outer">
     <div class="bar" id="out-bar">
-      <span style="color:#555">&nbsp;Output&nbsp;&nbsp;&nbsp;</span>
+      <span class="title">Output</span>
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button id="rend">Render Book</button>
@@ -271,6 +281,7 @@ var hidestd = document.getElementById("hide-std");
 var outputHanzi = document.getElementById("output-hanzi");
 var outdiv = document.getElementById("out");
 var deleteBtn = document.getElementById("delete-current");
+var fileNameSpan = document.getElementById("current-file-name");
 
 var currentFile = {}
 
@@ -510,6 +521,7 @@ function loadFile(name) {
     savingLock = false
     crun();
   }
+  fileNameSpan.innerText = currentFile.alias || currentFile.name
   updateExplorerList()
   deleteBtn.classList.toggle('hidden', !!currentFile.readonly)
 }
@@ -529,12 +541,27 @@ function deleteCurrentFile(){
 
 function createNewFile(){
   const name = prompt("New filename", "Untitled");
-  openFile(name)
+  if (name)
+    openFile(name)
 }
 
 function downloadCurrentFile() {
   var blob = new Blob([currentFile.code], {type: "text/wenyan;charset=utf-8"});
   saveAs(blob, `${currentFile.alias || currentFile.name}.wy`);
+}
+
+function renameCurrentFile() {
+  if (currentFile.readonly)
+    return
+  const name = prompt("Rename", currentFile.alias || currentFile.name);
+  if (name) {
+    delete state.files[currentFile.name]
+    delete currentFile.alias
+    currentFile.name = name
+    state.files[name] = currentFile
+    saveState()
+    openFile(name)
+  }
 }
 
 editorCM.on('change', (e)=>{
@@ -668,6 +695,7 @@ document.getElementById("crun").onclick = crun;
 document.getElementById("new-file").onclick = createNewFile;
 document.getElementById("download-current").onclick = downloadCurrentFile;
 deleteBtn.onclick = deleteCurrentFile
+fileNameSpan.onclick = renameCurrentFile
 crun();
 
 // document.getElementById("insert").onmousedown= function(){
