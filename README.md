@@ -128,7 +128,7 @@ You can find the Language Specification [here](https://wy-lang.org/spec) (WIP). 
 |`吾有一爻。曰陰。名之曰「丙」。` | `var c = false;` |
 |`吾有一列。名之曰「丁」。` | `var d = [];` |
 |`吾有三數。曰一。曰三。曰五。名之曰「甲」曰「乙」曰「丙」。` | `var a=1,b=3,c=5;` |
-
+|`吾有一元` | `(auto type)` | 
 
 ### Control
 
@@ -139,8 +139,11 @@ You can find the Language Specification [here](https://wy-lang.org/spec) (WIP). 
 |`為是百遍。⋯⋯ 云云。` | `for (var i = 0; i < 100; i++){ ... }` |
 |`恆為是。⋯⋯ 云云。` | `while (true) { ... }` |
 |`凡「天地」中之「人」。⋯⋯ 云云。` | `for (var human of world){ ... }` |
-|`乃止。` | `break;` |
-
+|`乃止。`|`break;`|
+|`乃止是遍`|`continue`|
+|`或若`|`else if` | 
+|`若其然者` |`if (ans) {` | 
+|`若其不然者`|`if (!ans) {` | 
 
 ### Math
 
@@ -197,6 +200,7 @@ Arrays are 1-indexed.
 | wenyan | JavaScript |
 |---|---|
 |`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `var {sin,cos} = require("math");` |
+|`吾嘗觀「「某樓」」中「「某閣」」中「「某書」」之書。`|`require('path/to/something')` |
 
 
 ### Misc
