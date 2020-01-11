@@ -178,7 +178,7 @@
     <div id="explorer">
       <ul id="explorer-list">
         <li>
-          <span class="caret">User</span>
+          <span class="caret">My Scripts</span>
           <ul class="nested active" id="explorer-list-user">
           </ul>
         </li>
@@ -234,6 +234,15 @@
 
   <script>
 
+const LOCAL_STORAGE_KEY = 'wenyang-ide'
+const DEFAULT_STATE = ()=> ({config: {}, files: {
+  "hi": {
+    name: 'hi',
+    alias: 'good',
+    code: '你好'
+  }
+}})
+
 var handv = window.innerWidth*0.6;
 var handh = window.innerHeight*0.7;
 var handex = window.innerWidth*0.15;
@@ -256,7 +265,37 @@ var hidestd = document.getElementById("hide-std");
 var outputHanzi = document.getElementById("output-hanzi");
 var outdiv = document.getElementById("out");
 
-var currentFile = new URLSearchParams(location.search).get('file') || 'mandelbrot'
+var currentFile = {}
+
+var state
+
+var examples = {}
+
+var savingLock = false // to ignore changes made from switching files
+
+for (const key of Object.keys(Examples.examples)) {
+  examples[key] = {
+    name: key,
+    alias: Examples.examplesAlias[key],
+    author: 'examples',
+    readonly: true,
+    code: Examples.examples[key]
+  }
+}
+
+function loadState() {
+  const raw = localStorage.getItem(LOCAL_STORAGE_KEY)
+  if (raw)
+    state = JSON.parse(raw)
+  else 
+    state = DEFAULT_STATE()
+}
+
+function saveState() {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state))
+}
+
+loadState()
 
 dhv.onmousedown = function(e){
   e.preventDefault();
@@ -344,15 +383,14 @@ document.body.onresize=setView
 setView()
 
 var editorCM = CodeMirror(document.getElementById("in"), {
-  value: Examples.examples.mandelbrot,
-  mode:  "wenyan",
+  value: '',
+  mode: "wenyan",
   lineNumbers: true,
   theme: "wenyan-light",
   styleActiveLine: true,
 });
 
 editorCM.setSize(null,"100%");
-
 
 var jsCM = CodeMirror(document.getElementById("js"), {
   value: '',
@@ -411,16 +449,21 @@ function initExplorer() {
 
 function updateExplorerList(){
   exlistExamples.innerHTML = '';
-  for (let k in Examples.examples) {
-    exlistExamples.appendChild(createExplorerEntry(k, Examples.examplesAlias[k] || ""));
+  for (let file of Object.values(examples)) {
+    exlistExamples.appendChild(createExplorerEntry(file));
+  }
+
+  exlistUser.innerHTML = '';
+  for (let file of Object.values(state.files)) {
+    exlistUser.appendChild(createExplorerEntry(file));
   }
 }
 
-function createExplorerEntry(name, alias) {
+function createExplorerEntry({ name, alias }) {
   const item = document.createElement("li");
   item.value = name;
 
-  if (currentFile === name)
+  if (currentFile.name === name)
     item.classList.add('active')
 
   const a = document.createElement("span")
@@ -446,18 +489,52 @@ function openFile(name) {
   loadFile(name)
 }
 
+
 function loadFile(name) {
-  currentFile = name
-  editorCM.setValue(Examples.examples[name] || '');
+  if (currentFile.name !== name){
+    currentFile = state.files[name] || examples[name]
+    savingLock = true
+    editorCM.setValue(currentFile.code || '');
+    savingLock = false
+    crun();
+  }
   updateExplorerList()
-  crun();
 }
 
-window.addEventListener('popstate', (event) => {
+function loadFromUrl(){
   loadFile(new URLSearchParams(location.search).get('file') || 'mandelbrot')
+}
+
+editorCM.on('change', (e)=>{
+  if (savingLock)
+    return
+  if (!currentFile.readonly) {
+    currentFile.code = editorCM.getValue()
+    saveState()
+  }
+  else {
+    // make a copy
+    let num = 1
+    while (state.files[`${currentFile.name}_${num}`]){
+      num += 1
+    }
+    const name = `${currentFile.name}_${num}`
+    const newFile = {
+      name: name,
+      alias: currentFile.alias? `${currentFile.alias}(${num})` : '',
+      code: editorCM.getValue()
+    }
+    state.files[name] = newFile
+    currentFile = newFile
+    saveState()
+    openFile(name)
+  }
+  console.log('CHANGED!')
 })
 
-loadFile(currentFile)
+window.addEventListener('popstate', loadFromUrl)
+
+loadFromUrl()
 
 initExplorer()
 
@@ -541,12 +618,16 @@ function crun(){
 
   jsCM.setValue(js_beautify(showcode));
 
-  Wenyan.evalCompiled(code, {
-    outputHanzi: outputHanzi.checked,
-    output: (...args) => {
-      outdiv.innerText += args.join(" ") + "\n";
-    }
-  });
+  try {
+    Wenyan.evalCompiled(code, {
+      outputHanzi: outputHanzi.checked,
+      output: (...args) => {
+        outdiv.innerText += args.join(" ") + "\n";
+      }
+    });
+  }catch(e){
+    console.error(e)
+  }
 }
 
 document.getElementById("compile").onclick = compile;
