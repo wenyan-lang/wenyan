@@ -72,7 +72,7 @@
       left: 0;
       right: 0;
       background: #f1f1f1;
-      z-index: 5;
+      z-index: -2;
       padding: 3px 6px;
       font-size: 14px;
       color: #777;
@@ -276,6 +276,11 @@
 
 const LOCAL_STORAGE_KEY = 'wenyang-ide'
 const DEFAULT_STATE = ()=> ({config: {}, files: {}})
+const EXPLORER_WIDTH_MIN = 0
+const EXPLORER_WIDTH_MAX = 400
+const EDITOR_WIDTH_MIN = 150
+const EDITOR_HEIGHT_MIN = 30
+const OUTPUT_HEIGHT_MIN = 30
 
 var handv = window.innerWidth*0.6;
 var handh = window.innerHeight*0.7;
@@ -334,11 +339,16 @@ loadState()
 
 dhv.onmousedown = function(e){
   e.preventDefault();
-  var handler = function(event){
+  var handler = function(event) {
     if (event.buttons === 1){
-      handv=event.pageX;
+      let x = event.pageX
+      if (x < handex + EDITOR_WIDTH_MIN)
+        return
+      if (x > window.innerWidth - EDITOR_WIDTH_MIN)
+        return
+      handv = x;
       setView();
-    }else{
+    } else {
       document.body.removeEventListener('mousemove', handler);
     } 
   };
@@ -349,7 +359,12 @@ dhh.onmousedown = function(e){
   e.preventDefault();
   var handler = function(event){
     if (event.buttons === 1){
-      handh=event.pageY;
+      let y = event.pageY;
+      if (y < EDITOR_HEIGHT_MIN)
+        return
+      if (y > window.innerHeight - OUTPUT_HEIGHT_MIN)
+        return
+      handh = y;
       setView();
     }else{
       document.body.removeEventListener('mousemove', handler);
@@ -362,7 +377,14 @@ dhex.onmousedown = function(e){
   e.preventDefault();
   var handler = function(event){
     if (event.buttons === 1){
-      handex = event.pageX;
+      let x = event.pageX
+      if (x < EXPLORER_WIDTH_MIN)
+        return
+      if (x > EXPLORER_WIDTH_MAX)
+        return
+      if (x > handv - EDITOR_WIDTH_MIN)
+        return
+      handex = x
       setView();
     }else{
       document.body.removeEventListener('mousemove', handler);
