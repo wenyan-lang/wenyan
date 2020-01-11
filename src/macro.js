@@ -20,8 +20,10 @@ function extractMacros(txt, options = {}) {
       if (txt[i] == "吾" && txt[i + 1] == "嘗" && txt[i + 2] == "觀") {
         var imp = txt
           .slice(i + 3)
-          .split(/[」』]/g)[0]
-          .replace(/[「」『』]/g, "");
+          .split("之書")[0]
+          .split("中")
+          .map(x => x.replace(/[「」『』]/g, ""))
+          .join("/");
         imps.push(imp);
       }
     }

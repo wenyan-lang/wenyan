@@ -13,7 +13,7 @@ var KEYWORDS_DEFINE = {
   術: ["type", "fun"],
   爻: ["type", "bol"],
   物: ["type", "obj"],
-  量: ["type", "any"],
+  元: ["type", "any"],
   書之: ["print"],
   名之曰: ["name"],
   施: ["call", "r"],
@@ -45,10 +45,14 @@ var KEYWORDS_DEFINE = {
   為是: ["ctrl", "whilen0"],
   遍: ["ctrl", "whilen1"],
   乃止: ["ctrl", "break"],
+  乃止是遍: ["ctrl", "continue"],
 
   若非: ["ctrl", "else"],
   若: ["ctrl", "if"],
   者: ["ctrl", "conj"],
+  若其然者: ["ctrl", "iftrue"],
+  若其不然者: ["ctrl", "iffalse"],
+  或若: ["ctrl", "elseif"],
 
   其物如是: ["ctrl", "objbody"],
   之物也: ["ctrl", "objend"],
@@ -84,6 +88,7 @@ var KEYWORDS_DEFINE = {
   陽: ["bool", true],
 
   吾嘗觀: ["import", "file"],
+  中: ["import", "in"],
   之書: ["import", "fileend"],
   方悟: ["import", "iden"],
   之義: ["import", "idenend"],

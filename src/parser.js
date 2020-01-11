@@ -377,6 +377,21 @@ function tokens2asc(
       }
       i++;
       asc.push(x);
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "iftrue") {
+      asc.push({ op: "if", test: [["ans"]], pos });
+      i++;
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "iffalse") {
+      asc.push({ op: "if", test: [["ans"]], not: true, pos });
+      i++;
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "elseif") {
+      var x = { op: "if", test: [], elseif: true, pos };
+      i++;
+      while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "conj")) {
+        x.test.push(tokens[i]);
+        i++;
+      }
+      i++;
+      asc.push(x);
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "end") {
       asc.push({ op: "end", pos });
       i++;
@@ -391,6 +406,9 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "break") {
       asc.push({ op: "break", pos });
+      i += 1;
+    } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "continue") {
+      asc.push({ op: "continue", pos });
       i += 1;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "else") {
       asc.push({ op: "else", pos });
@@ -580,9 +598,13 @@ function tokens2asc(
       asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
-      typeassert(i + 2, ["import"]);
       var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
-      i += 3;
+      i += 2;
+      while (gettok(i, 0) == "import" && gettok(i, 1) == "in") {
+        x.file += "/" + gettok(i + 1, 1);
+        i += 2;
+      }
+      i += 1;
       if (tokens[i] && gettok(i, 0) == "import" && gettok(i, 1) == "iden") {
         i++;
         while (!(gettok(i, 0) == "import" && gettok(i, 1) == "idenend")) {
@@ -628,7 +650,9 @@ function tokens2asc(
 }
 
 function jsWrapModule(name, src) {
-  return `/*___wenyan_module_${name}_start___*/var ${name} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
+  var splitted = name.split("/");
+  var bname = splitted[splitted.length - 1];
+  return `/*___wenyan_module_${name}_start___*/var ${bname} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
 }
 function pyWrapModule(name, src) {
   // return `#/*___wenyan_module_${name}_start___*/\nclass ${name}:\n${src.split("\n").map(x=>"\t"+x).join("\n")}\n#/*___wenyan_module_${name}_end___*/\n`;
@@ -729,7 +753,7 @@ function compile(arg1, arg2, arg3) {
 
   if (strict) {
     logCallback("\n\n=== [PASS 2.5] TYPECHECK ===");
-    console.log(printSignature(typecheck(asc, assert)));
+    logCallback(printSignature(typecheck(asc, assert)));
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");

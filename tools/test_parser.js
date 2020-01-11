@@ -29,7 +29,7 @@ function runExample(lang, name) {
       console.log(utils.pyeval(sourceCode));
       break;
     case "js":
-      // eval(sourceCode);
+      eval(sourceCode);
       break;
     case "rb":
       console.log(utils.rbeval(sourceCode));
@@ -52,11 +52,11 @@ function runAll(lang, skips = []) {
   }
 }
 
-// runExample("js", "quicksort");
+// runExample("js", "import");
 // runExample("js", "../lib/js/畫譜");
 // runExample("js", "../lib/曆法");
-// runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
+runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
 // runAll("js", ["quine"]);
 
-runExample("js", "../../../Downloads/local_test");
+// runExample("js", "../../../Downloads/local_test");
 // runExample("py", "draw_heart");

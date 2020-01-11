@@ -111,7 +111,13 @@ class JSCompiler extends Base {
         curlvl--;
         js += ";";
       } else if (a.op == "if") {
+        if (a.elseif) {
+          js += "}else ";
+        }
         js += "if (";
+        if (a.not) {
+          js += "!(";
+        }
         var j = 0;
         while (j < a.test.length) {
           if (a.test[j][0] == "cmp") {
@@ -135,6 +141,9 @@ class JSCompiler extends Base {
             js += getval(a.test[j]);
           }
           j++;
+        }
+        if (a.not) {
+          js += ")";
         }
         js += "){";
         curlvl++;
@@ -215,6 +224,8 @@ class JSCompiler extends Base {
         curlvl++;
       } else if (a.op == "break") {
         js += "break;";
+      } else if (a.op == "continue") {
+        js += "continue;";
       } else if (a.op == "not") {
         var v = getval(a.value);
         var vname = this.nextTmpVar();
