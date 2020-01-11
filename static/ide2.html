@@ -4,25 +4,26 @@
   <meta charset="UTF-8">
   <title>wenyan-lang Online IDE</title>
   <style>
-    body{
-      margin:0px;
+    body {
+      margin: 0px;
       overflow: hidden;
+      font-family: sans-serif;
     }
     #in-outer, #js-outer, #ex-outer {
-      position:absolute;
+      position: absolute;
     }
-    #out-outer{
-      /*border:1px solid green;*/
-      position:absolute;
-      overflow:scroll;
-      font-family: monospace;
+    #out-outer {
+      position: absolute;
+      overflow: hidden;
       font-size: 13px;
-      overflow:hidden;
     }
     #in, #js, #out, #explorer {
-      width:100%;
-      height:calc(100% - 30px);
+      width: 100%;
+      height: calc(100% - 32px);
       overflow: auto;
+    }
+    #in {
+      height: calc(100% - 54px);
     }
     .bar {
       height:20px;
@@ -31,7 +32,6 @@
       border: 1px solid gainsboro;
       z-index: 1000;
       font-size: 15px;
-      font-family: sans-serif;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -45,23 +45,45 @@
       padding-right: 10px;
     }
     #out {
-      top:30px;
       position: absolute;
       padding: 10px;
-      margin:0px;
-      width:calc(100% - 20px);
-      height:calc(100% - 50px);
-      background:white;
+      margin: 0px;
+      top: 30px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      overflow: auto;
+      font-family: monospace;
+      width: auto;
+      height: auto;
+      word-break: normal !important;
+      word-wrap: normal !important;
+      white-space: pre !important;
     }
     #hand-v, #hand-ex {
       position:absolute;
       cursor: ew-resize;
-      z-index: 1000;
+      z-index: 10;
+    }
+    .editor-hint {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f1f1f1;
+      z-index: 5;
+      padding: 3px 6px;
+      font-size: 14px;
+      color: #777;
+      overflow: hidden;
+      white-space: nowrap;
+      font-style: italic;
     }
     #hand-h{
       position:absolute;
       cursor: ns-resize;
-      z-index: 1000;
+      z-index: 10;
     }
     #hand-v-inner, #hand-ex-inner{
       background: white;
@@ -167,11 +189,13 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.css" />
   <link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/wenyan-light.codemirror.css'/>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/runmode/runmode.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/mode/simple.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
@@ -211,11 +235,11 @@
       <span id="current-file-name"></span>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
-      <select id="pick-keyword"></select>
       <button id="delete-current" class="right-aligned">Delete</button>
       <button id="download-current" class="right-aligned">Download</button>
     </div>
     <div id="in"></div>
+    <div class="editor-hint" id="in-hint">Hint: Press <code>Ctrl+.</code> or <code>Cmd+.</code> to show autocomplete.</div>
   </div>
   
   <div id="js-outer">
@@ -251,13 +275,7 @@
   <script>
 
 const LOCAL_STORAGE_KEY = 'wenyang-ide'
-const DEFAULT_STATE = ()=> ({config: {}, files: {
-  "hi": {
-    name: 'hi',
-    alias: 'good',
-    code: '你好'
-  }
-}})
+const DEFAULT_STATE = ()=> ({config: {}, files: {}})
 
 var handv = window.innerWidth*0.6;
 var handh = window.innerHeight*0.7;
@@ -276,7 +294,6 @@ var exlistUser = document.getElementById("explorer-list-user")
 var exlistExamples = document.getElementById("explorer-list-examples")
 
 var selr = document.getElementById("pick-roman");
-var selkey = document.getElementById("pick-keyword");
 var hidestd = document.getElementById("hide-std");
 var outputHanzi = document.getElementById("output-hanzi");
 var outdiv = document.getElementById("out");
@@ -376,7 +393,7 @@ function setView(){
 
   dou.style.left=handex+"px";
   dou.style.top=handh+"px";
-  dou.style.width=W+"px"
+  dou.style.width=(W-handex)+"px"
   dou.style.height=(H-handh)+"px";
 
   var hw = 9;
@@ -564,9 +581,59 @@ function renameCurrentFile() {
   }
 }
 
+const snippets = [
+  { text:"「", trigger: "`" },
+  { text:"」", trigger: "'"},
+  { text:"「「", trigger: '['},
+  { text:"」」", trigger: "]"},
+  ...Object.keys(Wenyan.KEYWORDS)
+    .map(x=>({
+      text: x, 
+      trigger: x.length > 1
+        ? Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g,"$1")
+        : Wenyan.hanzi2pinyin(x)
+    }))
+]
+
+snippets.sort((a,b)=>a.trigger.localeCompare(b.trigger))
+snippets.forEach(s => {
+  s.displayText = s.trigger + " • " + s.text
+})
+
+function showHint() {
+  CodeMirror.showHint(editorCM, () => {
+    const cursor = editorCM.getCursor()
+    const token = editorCM.getTokenAt(cursor)
+    console.log(cursor, token)
+    const start = token.start
+    const end = cursor.ch
+    const line = cursor.line
+    const currentWord = token.string
+
+    // TODO: filter hints
+    /*
+    const list = snippets.filter((item) => {
+      return item.indexOf(currentWord) >= 0
+    })
+    */
+
+    return {
+      list: snippets,
+      from: CodeMirror.Pos(line, end),
+      to: CodeMirror.Pos(line, end)
+    }
+  }, { completeSingle: false })
+}
+
+editorCM.setOption('extraKeys', {
+  'Cmd-.': showHint,
+  'Ctrl-.': showHint
+})
+
 editorCM.on('change', (e)=>{
   if (savingLock)
     return
+
   if (!currentFile.readonly) {
     currentFile.code = editorCM.getValue()
     saveState()
@@ -605,30 +672,6 @@ for (var k of ["none", "pinyin", "baxter", "unicode"]) {
 }
 selr.value = "pinyin";
 selr.onchange = crun;
-
-var kp = Object.keys(Wenyan.KEYWORDS).map(x=>[x,(x.length>1)?Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g,"$1"):Wenyan.hanzi2pinyin(x)])
-kp.sort((a,b)=>a[1].localeCompare(b[1]));
-var keys = ([["Insert..."],["「","`"],["」","'"],["「「",'['],["」」","]"]]).concat(kp);
-
-for (var k of keys){
-  var opt = document.createElement("option");
-  opt.value = k[0];
-  console.log(k[1]+" • "+k[0])
-  if (k[1]){
-    opt.text =k[1]+" • "+k[0];
-  }else{
-    opt.text =k[0]
-  }
-  
-  selkey.appendChild(opt);
-}
-selkey.onchange = function(){
-  var doc = editorCM.getDoc();
-  var cursor = doc.getCursor();
-  doc.replaceRange(selkey.value, cursor);
-  selkey.value = "Insert..."
-  editorCM.focus();
-}
 
 hidestd.onchange = crun;
 outputHanzi.onchange = crun;
