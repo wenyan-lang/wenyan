@@ -24,10 +24,9 @@
       height:calc(100% - 30px);
       overflow: auto;
     }
-    #in-bar, #js-bar, #out-bar, #explorer-bar {
-      width:100%;
+    .bar {
       height:20px;
-      padding:5px;
+      padding:5px 10px;
       background: #f1f1f1;
       border: 1px solid gainsboro;
       z-index: 1000;
@@ -35,9 +34,6 @@
       font-family: sans-serif;
       overflow: hidden;
       white-space: nowrap;
-    }
-    #out-bar{
-      position: fixed;
     }
     #out {
       top:30px;
@@ -150,7 +146,12 @@
     button:focus{
       outline:none;
     }
-
+    button.right-aligned {
+      float: right;
+    }
+    button.hidden {
+      display: none;
+    }
   </style>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.js"></script>
@@ -172,8 +173,9 @@
 
 <body>
   <div id="ex-outer">
-    <div id="explorer-bar">
+    <div class="bar" id="explorer-bar">
       <span style="color:#555">&nbsp;Explorer&nbsp;&nbsp;&nbsp;</span>
+      <button id="new-file" class="right-aligned">New</button>
     </div>
     <div id="explorer">
       <ul id="explorer-list">
@@ -192,17 +194,18 @@
   </div>
 
   <div id="in-outer">
-    <div id="in-bar">
+    <div class="bar" id="in-bar">
       <span style="color:#555">&nbsp;&nbsp;文言 / wenyan-lang&nbsp;&nbsp;&nbsp;</span>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
       <select id="pick-keyword"></select>
+      <button id="delete-current" class="right-aligned">Delete</button>
     </div>
     <div id="in"></div>
   </div>
   
   <div id="js-outer">
-    <div id="js-bar">
+    <div class="bar" id="js-bar">
       <span style="color:#555">&nbsp;&nbsp;&nbsp;&nbsp;Compiled&nbsp;&nbsp;&nbsp;</span>
       &nbsp;&nbsp;
       <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
@@ -210,13 +213,14 @@
       <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
       &nbsp;&nbsp;
       <button id="run">Run JS</button>
-      
+
+      <button id="dark" class="right-aligned">Dark Mode</button>
     </div>
     <div id="js" class="cm-s-wenyan-light"></div>
   </div>
   
   <div id="out-outer">
-    <div id="out-bar">
+    <div class="bar" id="out-bar">
       <span style="color:#555">&nbsp;Output&nbsp;&nbsp;&nbsp;</span>
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -229,8 +233,6 @@
   <div id="hand-v"><div id="hand-v-inner"></div></div>
 
   <div id="keywords"></div>
-
-  <div style="position:absolute;right:10px;top:6px"><button id="dark">Dark Mode</button></div>
 
   <script>
 
@@ -264,6 +266,7 @@ var selkey = document.getElementById("pick-keyword");
 var hidestd = document.getElementById("hide-std");
 var outputHanzi = document.getElementById("output-hanzi");
 var outdiv = document.getElementById("out");
+var deleteBtn = document.getElementById("delete-current");
 
 var currentFile = {}
 
@@ -379,7 +382,7 @@ function setView(){
   dhh.style.height=hw+"px";
 }
 
-document.body.onresize=setView
+document.body.onresize = setView
 setView()
 
 var editorCM = CodeMirror(document.getElementById("in"), {
@@ -489,20 +492,40 @@ function openFile(name) {
   loadFile(name)
 }
 
-
 function loadFile(name) {
-  if (currentFile.name !== name){
+  if (currentFile.name !== name) {
     currentFile = state.files[name] || examples[name]
+    if (!currentFile){
+      currentFile = { name, code: ''}
+      state.files[name] = currentFile
+      saveState()
+    }
+
     savingLock = true
     editorCM.setValue(currentFile.code || '');
     savingLock = false
     crun();
   }
   updateExplorerList()
+  deleteBtn.classList.toggle('hidden', !!currentFile.readonly)
 }
 
 function loadFromUrl(){
   loadFile(new URLSearchParams(location.search).get('file') || 'mandelbrot')
+}
+
+function deleteCurrentFile(){
+  const yes = confirm(`Are you sure to delete file ${currentFile.alias || currentFile.alias}?\n\nThis operation can NOT be undone.`)
+  if (yes) {
+    delete state.files[currentFile.name]
+    saveState()
+    openFile(Object.keys(state.files)[0] || 'mandelbrot')
+  }
+}
+
+function createNewFile(){
+  const name = prompt("New filename", "Untitled");
+  openFile(name)
 }
 
 editorCM.on('change', (e)=>{
@@ -513,7 +536,7 @@ editorCM.on('change', (e)=>{
     saveState()
   }
   else {
-    // make a copy
+    // make a copy for examples
     let num = 1
     while (state.files[`${currentFile.name}_${num}`]){
       num += 1
@@ -521,7 +544,7 @@ editorCM.on('change', (e)=>{
     const name = `${currentFile.name}_${num}`
     const newFile = {
       name: name,
-      alias: currentFile.alias? `${currentFile.alias}(${num})` : '',
+      alias: currentFile.alias? `${currentFile.alias}「${Wenyan.num2hanzi(num)}」` : '',
       code: editorCM.getValue()
     }
     state.files[name] = newFile
@@ -529,8 +552,8 @@ editorCM.on('change', (e)=>{
     saveState()
     openFile(name)
   }
-  console.log('CHANGED!')
 })
+
 
 window.addEventListener('popstate', loadFromUrl)
 
@@ -633,6 +656,8 @@ function crun(){
 document.getElementById("compile").onclick = compile;
 document.getElementById("run").onclick = run;
 document.getElementById("crun").onclick = crun;
+document.getElementById("new-file").onclick = createNewFile;
+deleteBtn.onclick = deleteCurrentFile
 crun();
 
 // document.getElementById("insert").onmousedown= function(){
@@ -675,6 +700,6 @@ document.getElementById("rend").onclick = function(){
     document.getElementById("out").innerHTML += svgs[i]+"<br>";
   }
 }
-  </script>
+</script>
 </body>
 </html>
