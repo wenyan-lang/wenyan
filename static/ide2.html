@@ -75,6 +75,7 @@
     }
     #explorer {
       overflow-x: hidden;
+      padding: 8px 0;
     }
     .caret {
       font-weight: bold;
@@ -87,6 +88,7 @@
       content: "\25B6";
       color: black;
       display: inline-block;
+      margin-left: 8px;
       margin-right: 4px;
       opacity: 0.5;
       transform: scaleX(0.8) translateY(-2px);
@@ -113,7 +115,7 @@
       margin: 0;
       font-size: 13px;
       font-family: sans-serif;
-      padding: 3px 6px;
+      padding: 3px 0;
       white-space: nowrap;
       cursor: pointer;
     }
@@ -125,7 +127,7 @@
     }
     #explorer-list ul.nested li.active {
       background: #ddd;
-      font-size: bold;
+      font-weight: bold;
     }
     #explorer-list ul.nested li .name {
       padding-right: 5px;
@@ -394,7 +396,7 @@ function hideImportedModules(source) {
 
 
 function initExplorer() { 
-  initExamples()
+  updateExplorerList()
 
   var toggler = document.getElementsByClassName("caret");
   var i;
@@ -407,7 +409,8 @@ function initExplorer() {
   }
 }
 
-function initExamples(){
+function updateExplorerList(){
+  exlistExamples.innerHTML = '';
   for (let k in Examples.examples) {
     exlistExamples.appendChild(createExplorerEntry(k, Examples.examplesAlias[k] || ""));
   }
@@ -416,6 +419,10 @@ function initExamples(){
 function createExplorerEntry(name, alias) {
   const item = document.createElement("li");
   item.value = name;
+
+  if (currentFile === name)
+    item.classList.add('active')
+
   const a = document.createElement("span")
   const n = document.createElement("span")
   n.classList.add('name')
@@ -442,6 +449,7 @@ function openFile(name) {
 function loadFile(name) {
   currentFile = name
   editorCM.setValue(Examples.examples[name] || '');
+  updateExplorerList()
   crun();
 }
 
