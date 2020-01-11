@@ -332,6 +332,9 @@ function typecheck(
     } else if (a.op == "end") {
       scopepop(a, "if", "else", "for", "whiletrue", "whilen");
     } else if (a.op == "if") {
+      if (a.elseif) {
+        scopepop(a, "if");
+      }
       scopepush(a);
     } else if (a.op == "else") {
       scopepop(a, "if");
@@ -551,6 +554,8 @@ function typecheck(
       scopepush(a);
     } else if (a.op == "break") {
       //pass
+    } else if (a.op == "continue") {
+      //pass
     } else if (a.op == "not") {
       strayvar.push(inittype("bol"));
     } else if (a.op == "reassign") {
@@ -680,7 +685,9 @@ function typecheck(
     } else {
     }
   }
-  scopepop({ pos: a.pos, op: "EOF" }, "global");
+  if (a) {
+    scopepop({ pos: a.pos, op: "EOF" }, "global");
+  }
   // console.log(scope.length)
   // console.dir(signature,{maxArrayLength:null,depth:null})
 
