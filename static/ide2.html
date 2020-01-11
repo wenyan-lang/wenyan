@@ -4,88 +4,6 @@
   <meta charset="UTF-8">
   <title>wenyan-lang Online IDE</title>
   <style>
-.cm-s-wenyan-light.CodeMirror {
-  background: #fff;
-  color: #444;
-  line-height: 120%;
-}
-
-.cm-s-wenyan-light .CodeMirror-gutters {
-  background: #f8f8f8;
-  border-right-width: 0; }
-
-.cm-s-wenyan-light .CodeMirror-guttermarker {
-  color: white; }
-
-.cm-s-wenyan-light .CodeMirror-guttermarker-subtle {
-  color: #d0d0d0; }
-
-.cm-s-wenyan-light .CodeMirror-linenumber {
-  color: #959da5;
-  padding: 0 3px 0 3px; }
-
-.cm-s-wenyan-light .CodeMirror-cursor {
-  border-left: 1px solid #000; }
-
-.cm-s-wenyan-light div.CodeMirror-selected{
-  background: linen; }
-
-.cm-s-wenyan-light div.CodeMirror-activeline-background{
-  background: linen; }
-
-.cm-s-wenyan-light .cm-comment {
-  color: #666; }
-
-.cm-s-wenyan-light .cm-keyword {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #E53; }
-
-.cm-s-wenyan-light .cm-number {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #872; }
-
-.cm-s-wenyan-light .cm-string {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #248; }
-
-.cm-s-wenyan-light .cm-variable {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #248; }
-
-.cm-s-wenyan-light .cm-atom {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #248; }
-
-.cm-s-wenyan-light .cm-type {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #248; }
-
-.cm-s-wenyan-light .cm-builtin {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #000; }
-
-.cm-s-wenyan-light .cm-operator {
-  font-weight: normal;
-  font-style: normal;
-  text-decoration: none;
-  color: #872; }
-
-  </style>
-  <style>
     body{
       margin:0px;
       overflow: hidden;
@@ -186,11 +104,13 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.css" />
+  <link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/wenyan-light.codemirror.css'/>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/runmode/runmode.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/mode/simple.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
     
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
@@ -199,7 +119,7 @@
   <script src="./dist/render.js"></script>
 </head>
 
-<body style="">
+<body>
 
   <div id="in-outer">
     <div id="in-bar">
@@ -316,51 +236,6 @@ function setView(){
 
 document.body.onresize=setView
 setView()
-
-function defineSyntax(){
-  var keywords = [];
-  var controls = [];
-  var types = [];
-  var ops = [];
-  var atoms = [];
-  var comments = [];
-  for (var k in Wenyan.KEYWORDS){
-    if (["print","decl","name","call","rassgn","take","import","throw","try","discard","take","assgn"].includes(Wenyan.KEYWORDS[k][0])){
-      keywords.push(k)
-    }
-    if (["ctrl"].includes(Wenyan.KEYWORDS[k][0])){
-      controls.push(k)
-    }
-    if (["bool","ans"].includes(Wenyan.KEYWORDS[k][0])){
-      atoms.push(k)
-    }
-    if (["lop","op","cmp","opord"].includes(Wenyan.KEYWORDS[k][0])){
-      ops.push(k)
-    }
-    if (["type"].includes(Wenyan.KEYWORDS[k][0])){
-      types.push(k);
-    }
-    if (["comment"].includes(Wenyan.KEYWORDS[k][0])){
-      comments.push(k+"。?「「.*?」」");
-    }
-  }
-  CodeMirror.defineSimpleMode("wenyan", {
-    // The start state contains the rules that are intially used
-    start: [
-      // The regex matches the token, the token property contains the type
-      {regex: /(「「.*?」」)/, token: "string"},
-      {regex: /(「.*?」)/, token: "variable"},
-      {regex: new RegExp(keywords.join("|")), token: "builtin"},
-      {regex: new RegExp(controls.join("|")), token: "keyword"},
-      {regex: new RegExp(types.join("|")), token: "type"},
-      {regex: new RegExp(atoms.join("|")), token: "atom"},
-      {regex: new RegExp(ops.join("|")), token: "operator"},
-      {regex: new RegExp(Wenyan.NUMBER_KEYWORDS.join("|")), token: "number"},
-      {regex: new RegExp(comments.join("|")+"|。|、"), token: "comment"},
-    ],
-  });
-}
-defineSyntax();
 
 var editorCM = CodeMirror(document.getElementById("in"), {
   value: Examples.examples.mandelbrot,
