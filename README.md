@@ -1,15 +1,16 @@
-<img src="screenshots/logo.png" align="right" width="100" height="100"/>
+<img src="screenshots/logo.png" align="right" width="128" height="128"/>
 
 # 文言 wenyan-lang
 
 [![npm](https://img.shields.io/npm/v/@wenyanlang/core)](https://www.npmjs.com/package/@wenyanlang/core)
 [![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
-[http://wenyan-lang.lingdong.works](http://wenyan-lang.lingdong.works)
+### [https://wy-lang.org](https://wy-lang.org)
 
 English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
 
-文言文編程語言。A programming language for the ancient Chinese. [Try it online.](http://wenyan-lang.lingdong.works/ide.html)
+文言文編程語言。A programming language for the ancient Chinese. [Try it online.](https://wy-lang.org/ide)
 
 ![](screenshots/screenshot01.png)
 
@@ -59,7 +60,7 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 - [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- An [online IDE](http://wenyan-lang.lingdong.works/ide.html)
+- An [online IDE](https://wy-lang.org/ide)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
 
@@ -83,7 +84,7 @@ wenyan examples/helloworld.wy
 > From v0.1.0, the `wenyan` command will direct execute the script by default. If you are migrating from previous versions, please use `wenyan -h` to output the help and check [this PR](https://github.com/LingDong-/wenyan-lang/pull/356) for the detailed changes.
 
 
-### [The Online IDE](http://wenyan-lang.lingdong.works/ide.html)
+### [The Online IDE](https://wy-lang.org/ide)
 
 ![](screenshots/screenshot02.png)
 
@@ -114,7 +115,7 @@ Please refer to [Browser Runtime](./documentation/Runtime.md)
 
 ## Syntax Cheatsheet
 
-A context-free grammar description is under construction. Meanwhile, please check the cheatsheet below, or look into `src/parser.js` to learn about the syntax. Be sure to check out the examples from the online IDE too!
+You can find the Language Specification [here](https://wy-lang.org/spec) (WIP). To get started, you can also check the cheatsheet below, or look into `src/parser.js` to learn more. Be sure to check out the examples from the online IDE too!
 
 ### Variables
 

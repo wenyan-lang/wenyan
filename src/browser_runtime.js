@@ -9,16 +9,26 @@
       script.attributes.outputHanzi &&
       script.attributes.outputHanzi.value === "false"
     );
+    const allowHttp = !!script.attributes.allowHttp;
     let code = script.innerText;
+    let importPaths = [window.location.origin];
     if (script.src) {
       const response = await fetch(script.src);
       code = (await response.text()).toString();
+      importPaths.push(
+        script.src
+          .split("/")
+          .slice(0, -1)
+          .join("/")
+      );
     }
     execute(code, {
       scoped,
       outputHanzi,
       logCallback: isDev ? console.log : () => {},
-      resetVarCnt: false
+      resetVarCnt: false,
+      importPaths,
+      allowHttp
     });
   }
 

@@ -4,8 +4,10 @@ const { compile, evalCompiled } = require("./parser");
 const { render, unrender } = require("./render");
 const path = require("path");
 const commander = require("commander");
+const findUp = require("find-up");
 
 var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
+const MODULE_LIBRARY_NAME = "藏書樓";
 
 const program = new commander.Command();
 program
@@ -38,6 +40,9 @@ program
     "--roman [method]",
     'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
   )
+  .option("--strict", "Enable static typechecking")
+  .option("--allowHttp", "Allow to import from http")
+  .option("--dir <path>", "Directory to importing from, seprates with comma(,)")
   .option("--outputHanzi", "Convert output to hanzi", true)
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
@@ -61,17 +66,21 @@ if (emptyCall || showHelp) {
 
 program.parse(process.argv);
 
-preprocess();
+(async () => {
+  preprocess();
 
-if (program.compile) {
-  output(getCompiled());
-} else if (program.render) {
-  doRender();
-} else if (program.interactive) {
-  intreactive();
-} else {
-  exec();
-}
+  if (program.compile) {
+    output(await getCompiled());
+  } else if (program.render) {
+    doRender();
+  } else if (program.interactive) {
+    await intreactive();
+  } else {
+    await exec();
+  }
+})().catch(e => {
+  console.error(e);
+});
 
 // ====== Utils ======
 
@@ -103,14 +112,43 @@ function preprocess() {
 
 function getCompiled() {
   const source = getSource();
-  return compile(program.lang, source, {
+
+  return compile(source, {
+    ...getCompileOptions()
+  });
+}
+
+function getImportPaths() {
+  const pathes = [];
+  if (program.dir) {
+    pathes.push(...program.dir.split(","));
+  }
+
+  const moduleLib = findModuleLibrary();
+  if (moduleLib) pathes.push(moduleLib);
+
+  pathes.push(...program.files.map(file => path.resolve(path.dirname(file))));
+  pathes.push(path.resolve("."));
+  return Array.from(new Set(pathes));
+}
+
+function findModuleLibrary() {
+  return findUp.sync(MODULE_LIBRARY_NAME, { type: "directory" });
+}
+
+function getCompileOptions() {
+  return {
+    lang: program.lang,
     romanizeIdentifiers: program.roman,
+    strict: !!program.strict,
+    allowHttp: !!program.allowHttp,
+    importPaths: getImportPaths(),
     logCallback: logHandler(program.log, "a"),
     errorCallback: function(x) {
       console.error(x);
       process.exit();
     }
-  });
+  };
 }
 
 function resolvePath(x) {
@@ -125,6 +163,7 @@ function getSource() {
         : fs.readFileSync(resolvePath(x)).toString()
     )
     .join("\n");
+
   if (program.eval) scripts += `\n${program.eval}`;
 
   return scripts;
@@ -176,7 +215,7 @@ function doRender() {
   }
 }
 
-function intreactive() {
+async function intreactive() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for intreactive mode.`
@@ -184,9 +223,9 @@ function intreactive() {
     process.exit(1);
   }
   replscope();
-  repl(getCompiled());
+  repl(await getCompiled());
 }
-function exec() {
+async function exec() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for direct executing. Please use --compile option instead.`
@@ -194,7 +233,7 @@ function exec() {
     process.exit(1);
   }
 
-  evalCompiled(getCompiled(), {
+  evalCompiled(await getCompiled(), {
     outputHanzi: program.outputHanzi,
     lang: program.lang
   });

@@ -1,7 +1,7 @@
 {
   "name": "wenyanlang",
   "description": "文言 A programming language for the ancient Chinese",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "author": "LingDong <lingdong0618@hotmail.com>",
   "private": true,
   "repository": {
@@ -32,7 +32,7 @@
     "test:update": "mocha --require mocha-snapshots --update",
     "lint:fix": "npm run lint -- --fix",
     "lint": "eslint {src,tools,test}/**/*.js",
-    "prettify": "prettier {src,tools,test}/**/*.js --write"
+    "prettify": "prettier {src,tools,test}/**/*.js --write --quote-props preserve"
   },
   "husky": {
     "hooks": {
@@ -54,13 +54,13 @@
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "find-up": "^4.1.0",
     "fs-extra": "^8.1.0",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
     "mocha": "^6.2.2",
     "mocha-snapshots": "^4.2.0",
     "nodemon": "^2.0.2",
-    "pkg": "^4.4.2",
     "prettier": "^1.19.1",
     "raw-loader": "^4.0.0",
     "rimraf": "^3.0.0",
@@ -69,5 +69,8 @@
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",
     "webpack-shell-plugin": "^0.5.0"
+  },
+  "dependencies": {
+    "xmlhttprequest": "^1.8.0"
   }
 }

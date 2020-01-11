@@ -6,6 +6,11 @@ var version = require("./version");
 var compilers = require("./compiler/compilers");
 var { typecheck, printSignature } = require("./typecheck");
 var { expandMacros, extractMacros } = require("./macro.js");
+var { defaultImportReader } = require("./reader");
+
+const defaultTrustedHosts = [
+  "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
+];
 
 function wy2tokens(
   txt,
@@ -211,6 +216,12 @@ function tokenRomanize(tokens, method) {
       idenMap[key] = r;
     }
   }
+}
+
+function defaultLogCallback(x) {
+  return typeof x == "string"
+    ? console.log(x)
+    : console.dir(x, { depth: null, maxArrayLength: null });
 }
 
 function tokens2asc(
@@ -624,29 +635,6 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-function defaultReader(x) {
-  try {
-    const fs = eval("require")("fs");
-    try {
-      return fs.readFileSync(x + ".wy").toString();
-    } catch (e) {
-      var files = fs.readdirSync("./");
-      for (var i = 0; i < files.length; i++) {
-        if (fs.lstatSync(files[i]).isDirectory()) {
-          try {
-            return fs.readFileSync(files[i] + "/" + x + ".wy").toString();
-          } catch (e) {}
-        }
-      }
-    }
-    console.log("Cannot import ", x);
-  } catch (e) {
-    console.error(
-      `Cannot import ${x}, please specify the "reader" option in compile.`
-    );
-  }
-}
-
 function compile(arg1, arg2, arg3) {
   let options = {};
   let txt = "";
@@ -663,16 +651,25 @@ function compile(arg1, arg2, arg3) {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
-    resetVarCnt,
-    logCallback = x =>
-      typeof x == "string"
-        ? console.log(x)
-        : console.dir(x, { depth: null, maxArrayLength: null }),
+    resetVarCnt = true,
+    logCallback = defaultLogCallback,
     errorCallback = process.exit,
     lib = typeof STDLIB == "undefined" ? {} : STDLIB,
-    reader = defaultReader,
-    strict = false
+    reader = defaultImportReader,
+    importPaths = [],
+    strict = false,
+    allowHttp = false,
+    trustedHosts = [],
+    requestTimeout = 2000
   } = options;
+
+  trustedHosts.push(...defaultTrustedHosts);
+
+  const requestOptions = {
+    allowHttp,
+    trustedHosts,
+    requestTimeout
+  };
 
   if (resetVarCnt) idenMap = {};
   txt = (txt || "").replace(/\r\n/g, "\n");
@@ -703,7 +700,13 @@ function compile(arg1, arg2, arg3) {
     return 0;
   }
 
-  var macros = extractMacros(txt, { lib, reader, lang });
+  var macros = extractMacros(txt, {
+    lib,
+    reader,
+    lang,
+    importPaths,
+    requestOptions
+  });
   txt = expandMacros(txt, macros);
 
   logCallback("\n\n=== [PASS 0] EXPAND-MACROS ===");
@@ -726,7 +729,7 @@ function compile(arg1, arg2, arg3) {
 
   if (strict) {
     logCallback("\n\n=== [PASS 2.5] TYPECHECK ===");
-    console.log(printSignature(typecheck(asc, assert)));
+    logCallback(printSignature(typecheck(asc, assert)));
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
@@ -751,19 +754,15 @@ function compile(arg1, arg2, arg3) {
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i]);
+      isrc = reader(imports[i], importPaths, requestOptions);
     }
     targ =
       mwrapper(
         imports[i],
         compile(isrc, {
-          lang,
-          romanizeIdentifiers,
+          ...options,
           resetVarCnt: false,
-          strict: false,
-          logCallback,
-          errorCallback,
-          lib
+          strict: false
         })
       ) + targ;
   }
