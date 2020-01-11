@@ -136,6 +136,7 @@
       background: white;
       border: 1px solid gainsboro;
       border-radius: 3px;
+      margin: 0 3px;
     }
     button:hover{
       background:gainsboro;
@@ -164,7 +165,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
-    
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
   <script src="./dist/core.js"></script>
@@ -196,18 +198,19 @@
 
   <div id="in-outer">
     <div class="bar" id="in-bar">
-      <span style="color:#555">&nbsp;&nbsp;文言 / wenyan-lang&nbsp;&nbsp;&nbsp;</span>
+      <span style="color:#555">&nbsp;&nbsp;文言 / wenyan-lang&nbsp;&nbsp;</span>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
       <select id="pick-keyword"></select>
       <button id="delete-current" class="right-aligned">Delete</button>
+      <button id="download-current" class="right-aligned">Download</button>
     </div>
     <div id="in"></div>
   </div>
   
   <div id="js-outer">
     <div class="bar" id="js-bar">
-      <span style="color:#555">&nbsp;&nbsp;&nbsp;&nbsp;Compiled&nbsp;&nbsp;&nbsp;</span>
+      <span style="color:#555">&nbsp;&nbsp;Compiled&nbsp;&nbsp;</span>
       &nbsp;&nbsp;
       <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
       &nbsp;&nbsp;&nbsp;
@@ -529,6 +532,11 @@ function createNewFile(){
   openFile(name)
 }
 
+function downloadCurrentFile() {
+  var blob = new Blob([currentFile.code], {type: "text/wenyan;charset=utf-8"});
+  saveAs(blob, `${currentFile.alias || currentFile.name}.wy`);
+}
+
 editorCM.on('change', (e)=>{
   if (savingLock)
     return
@@ -658,6 +666,7 @@ document.getElementById("compile").onclick = compile;
 document.getElementById("run").onclick = run;
 document.getElementById("crun").onclick = crun;
 document.getElementById("new-file").onclick = createNewFile;
+document.getElementById("download-current").onclick = downloadCurrentFile;
 deleteBtn.onclick = deleteCurrentFile
 crun();
 
