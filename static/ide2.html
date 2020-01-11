@@ -59,7 +59,7 @@
       z-index: 1000;
     }
     #hand-v-inner, #hand-ex-inner{
-      background:transparent;
+      background: white;
       border: 1px solid grey;
       box-shadow: 1px 1px 1px rgba(0,0,0,0.1);
       height:calc(100% - 3px);
@@ -234,9 +234,9 @@
 
   <script>
 
-var handv = window.innerWidth*0.55;
+var handv = window.innerWidth*0.6;
 var handh = window.innerHeight*0.7;
-var handex = window.innerWidth*0.1;
+var handex = window.innerWidth*0.15;
 var djs = document.getElementById("js-outer")
 var din = document.getElementById("in-outer")
 var dou = document.getElementById("out-outer")
@@ -305,7 +305,7 @@ function setView(){
   dex.style.left="0px";
   dex.style.top="0px";
   dex.style.width=handex+"px"
-  dex.style.height=handh+"px";
+  dex.style.height=H+"px";
 
   din.style.left=handex+"px";
   din.style.top="0px";
@@ -317,7 +317,7 @@ function setView(){
   djs.style.width=(W-handv)+"px"
   djs.style.height=handh+"px";
 
-  dou.style.left="0px";
+  dou.style.left=handex+"px";
   dou.style.top=handh+"px";
   dou.style.width=W+"px"
   dou.style.height=(H-handh)+"px";
@@ -327,14 +327,14 @@ function setView(){
   dhex.style.left=(handex-hw/2)+"px";
   dhex.style.top="0px";
   dhex.style.width=hw+"px"
-  dhex.style.height=handh+"px";
+  dhex.style.height=H+"px";
     
   dhv.style.left=(handv-hw/2)+"px";
   dhv.style.top="0px";
   dhv.style.width=hw+"px"
   dhv.style.height=handh+"px";
 
-  dhh.style.left="0px";
+  dhh.style.left=handex+"px";
   dhh.style.top=(handh-hw/2)+"px";
   dhh.style.width=W+"px"
   dhh.style.height=hw+"px";
