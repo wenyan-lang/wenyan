@@ -167,5 +167,25 @@ describe("stdlib", () => {
         );
       }
     });
+
+    // atan
+    describe("反正切", () => {
+      for (const c of cases.ATAN) {
+        const x = c.x;
+        const expected = c.expected;
+        const actual = 算經.反正切(x);
+        it(
+          x.toString(),
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [
+              [-1.5707963267948966, -6.123233995736766e-17],
+              [0, 0],
+              [1.5707963267948966, 6.123233995736766e-17]
+            ],
+            relTol: Number.EPSILON * 2
+          }, `Expect 反正切(${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
   });
 });
