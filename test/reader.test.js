@@ -1,5 +1,4 @@
 var { expect } = require("chai");
-var path = require("path");
 const { defaultImportReader: reader } = require("../src/reader");
 
 const helloworldContent = "吾有一言。曰「「問天地好在。」」。書之。";

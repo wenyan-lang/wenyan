@@ -43,17 +43,30 @@ function fetchSync(uri, cache, requestTimeout) {
 }
 
 function defaultImportReader(moduleName, requestOptions = {}) {
-  let {
+  const {
     allowHttp = false,
+    entryFilepath,
     importPaths = [],
     importCache = {},
     trustedHosts = [],
     requestTimeout = 2000
   } = requestOptions;
 
-  if (typeof importPaths === "string") importPaths = [importPaths];
+  const pathes = [];
 
-  for (dir of importPaths) {
+  if (typeof importPaths === "string") pathes.push(importPaths);
+  else pathes.push(...importPaths);
+
+  if (entryFilepath)
+    pathes.push(
+      entryFilepath
+        .replace(/\\/g, "/")
+        .split("/")
+        .slice(0, -1)
+        .join("/")
+    );
+
+  for (dir of pathes) {
     let uri = dir;
     let entries = [];
     let src;

@@ -779,12 +779,12 @@ function compile(arg1, arg2, arg3) {
   }
   var klass = compilers[lang];
   var compiler = new klass(asc);
-  var result = compiler.compile({ imports });
-  var { imports, result } = result;
+  var { imports, result } = compiler.compile({ imports });
   var targ = result;
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
+  logCallback("Loading imports", imports);
   for (var i = 0; i < imports.length; i++) {
     var isrc, entry;
     if (imports[i] in lib[lang]) {
