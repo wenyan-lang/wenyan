@@ -56,7 +56,7 @@ describe("stdlib", () => {
 
     testExactFunc("平方根", Math.sqrt, cases.SQRT);
 
-    // sin, cos, tan
+    // sin
     describe("正弦", () => {
       for (const c of cases.TRIG) {
         const x = c.x;
@@ -70,13 +70,14 @@ describe("stdlib", () => {
           x.toString(),
           () => assertNearlyEqual(actual, expected, {
             bounds: [[-1, 0], [1, 0]],
-            relTol: Number.EPSILON * 1,
+            relTol: Number.EPSILON * 1.5,
             absTol: absTol
           }, `Expect 正弦(${x}) = ${expected[0]}, actually ${actual}`)
         );
       }
     });
 
+    // cos
     describe("餘弦", () => {
       for (const c of cases.TRIG) {
         const x = c.x;
@@ -90,13 +91,14 @@ describe("stdlib", () => {
           x.toString(),
           () => assertNearlyEqual(actual, expected, {
             bounds: [[-1, 0], [1, 0]],
-            relTol: Number.EPSILON * 1,
+            relTol: Number.EPSILON * 1.5,
             absTol: absTol
           }, `Expect 餘弦(${x}) = ${expected[0]}, actually ${actual}`)
         );
       }
     });
 
+    // tan
     describe("正切", () => {
       for (const c of cases.TRIG) {
         const x = c.x;
@@ -119,9 +121,49 @@ describe("stdlib", () => {
         it(
           x.toString(),
           () => assertNearlyEqual(actual, expected, {
-            relTol: Number.EPSILON * 2,
+            relTol: Number.EPSILON * 2.5,
             absTol: absTol
           }, `Expect 正切(${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
+    // asin
+    describe("反正弦", () => {
+      for (const c of cases.ASIN_ACOS) {
+        const x = c.x;
+        const expected = c.asin;
+        const actual = 算經.反正弦(x);
+        it(
+          x.toString(),
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [
+              [-1.5707963267948966, -6.123233995736766e-17],
+              [0, 0],
+              [1.5707963267948966, 6.123233995736766e-17]
+            ],
+            relTol: Number.EPSILON * 2
+          }, `Expect 反正弦(${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
+    // acos
+    describe("反餘弦", () => {
+      for (const c of cases.ASIN_ACOS) {
+        const x = c.x;
+        const expected = c.acos;
+        const actual = 算經.反餘弦(x);
+        it(
+          x.toString(),
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [
+              [0, 0],
+              [1.5707963267948966, 6.123233995736766e-17],
+              [3.1415926535897931, 1.2246467991473532e-16]
+            ],
+            relTol: Number.EPSILON * 2
+          }, `Expect 反餘弦(${x}) = ${expected[0]}, actually ${actual}`)
         );
       }
     });
