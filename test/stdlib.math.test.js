@@ -69,6 +69,7 @@ describe("stdlib", () => {
         it(
           x.toString(),
           () => assertNearlyEqual(actual, expected, {
+            bounds: [[-1, 0], [1, 0]],
             relTol: Number.EPSILON * 1,
             absTol: absTol
           }, `Expect 正弦(${x}) = ${expected[0]}, actually ${actual}`)
@@ -88,6 +89,7 @@ describe("stdlib", () => {
         it(
           x.toString(),
           () => assertNearlyEqual(actual, expected, {
+            bounds: [[-1, 0], [1, 0]],
             relTol: Number.EPSILON * 1,
             absTol: absTol
           }, `Expect 餘弦(${x}) = ${expected[0]}, actually ${actual}`)
