@@ -40,6 +40,12 @@ function compileLib(name, options = {}) {
   return wrapper;
 }
 
+/**
+ * Assert that actual result is equal to the expected.
+ * @param {number} actual - Actual value.
+ * @param {number} expected - Expected value.
+ * @param {string} [message] - Debug message.
+ */
 function assertNumberEqual(actual, expected, message = undefined) {
   if (Number.isNaN(expected)) {
     expect(actual, message).NaN;
@@ -81,24 +87,47 @@ function calcError(actual, expected) {
 function nearlyEqual(actual, expected, options = {}) {
   const {
     relTol = Number.EPSILON,   // relative error
-    absTol = Number.MIN_VALUE, // absolute error
+    absTol = 0,                // absolute error
     bounds = []                // boundary values (shall not cross into the wrong side)
   } = options;
 
-  const err = calcError(actual, expected);
-  const maxErr = Math.abs(expected) * relTol + absTol;
-  return Math.abs(err) <= maxErr && bounds.every(x => isOnCorrectSide(actual, expected, x));
+  const expectedSingle = Array.isArray(expected) ? expected[0] : expected;
+  if (Number.isFinite(expectedSingle)) {
+    const err = calcError(actual, expected);
+    const maxErr = Math.abs(expectedSingle) * relTol + absTol;
+    return Math.abs(err) <= maxErr && bounds.every(x => isOnCorrectSide(actual, expected, x));
+  } else {
+    if (Number.isNaN(expectedSingle)) {
+      return Number.isNaN(actual);
+    } else {
+      return actual === expectedSingle;
+    }
+  }
 }
 
+/**
+ * Assert that actual result is close to the expected.
+ * Tolerance = abs(expected) * relTol + absTol
+ * @param {number} actual - Actual value
+ * @param {(number|number[])} expected - Expected value (number or multi-word number)
+ * @param {object} [options] - Options
+ *   @param {number} [options.relTol = Number.EPSILON] - Relative error tolerance
+ *   @param {number} [options.absTol = 0] - Absolute error tolerance
+ *   @param {number[]|number[][]} [options.alts] - Array of alternative acceptable results
+ *   @param {number[]|number[][]} [options.bounds] - Array of boundary values.
+ *     The actual result shall not be on the different side of the boundary then the expected.
+ * @param {string} [message] - Debug message.
+ */
 function assertNearlyEqual(actual, expected, options = {}, message = undefined) {
   const {
     relTol = Number.EPSILON,   // relative error
-    absTol = Number.MIN_VALUE, // absolute error
+    absTol = 0,                // absolute error
     alts = [],                 // alternative acceptable results
     bounds = []                // boundary values (shall not cross into the wrong side)
   } = options;
 
-  assert.ok([expected].concat(alts).some(x => nearlyEqual(actual, x, { relTol, absTol, bounds })), message);
+  expect(actual, message)
+    .satisfy(a => [expected].concat(alts).some(e => nearlyEqual(a, e, { relTol, absTol, bounds })));
 }
 
 module.exports = {
