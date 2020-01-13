@@ -30,13 +30,23 @@ function fetchTextSync(url, timeout) {
   throw new URIError(xmlHttp.responseText);
 }
 
-function defaultImportReader(
-  moduleName,
-  importPaths = [],
-  requestOptions = {}
-) {
-  const {
+function fetchSync(uri, cache, requestTimeout) {
+  if (cache[uri]) return cache[uri];
+
+  const data = isHttpURL(uri)
+    ? fetchTextSync(uri, requestTimeout)
+    : eval("require")("fs").readFileSync(uri, "utf-8");
+
+  cache[uri] = data;
+
+  return data;
+}
+
+function defaultImportReader(moduleName, requestOptions = {}) {
+  let {
     allowHttp = false,
+    importPaths = [],
+    importCache = {},
     trustedHosts = [],
     requestTimeout = 2000
   } = requestOptions;
@@ -45,6 +55,8 @@ function defaultImportReader(
 
   for (dir of importPaths) {
     let uri = dir;
+    let entries = [];
+    let src;
 
     if (uri.endsWith("/")) uri = uri.slice(0, -1);
 
@@ -55,33 +67,23 @@ function defaultImportReader(
             `You can turn it on by specify the "allowHttp" option.`
         );
       }
-
-      try {
-        return fetchTextSync(
-          `${uri}/${encodeURIComponent(moduleName)}.wy`,
-          requestTimeout
-        );
-      } catch (e) {}
-      try {
-        return fetchTextSync(
-          `${uri}/${encodeURIComponent(moduleName)}/${encodeURIComponent(
-            INDEX_FILENAME
-          )}.wy`,
-          requestTimeout
-        );
-      } catch (e) {}
+      entries = [
+        `${uri}/${encodeURIComponent(moduleName)}.wy`,
+        `${uri}/${encodeURIComponent(moduleName)}/${encodeURIComponent(
+          INDEX_FILENAME
+        )}.wy`
+      ];
     } else {
+      entries = [
+        `${uri}/${moduleName}.wy`,
+        `${uri}/${moduleName}/${INDEX_FILENAME}.wy`
+      ];
+    }
+
+    for (const entry of entries) {
       try {
-        return eval("require")("fs").readFileSync(
-          `${dir}/${moduleName}.wy`,
-          "utf-8"
-        );
-      } catch (e) {}
-      try {
-        return eval("require")("fs").readFileSync(
-          `${dir}/${moduleName}/${INDEX_FILENAME}.wy`,
-          "utf-8"
-        );
+        src = fetchSync(entry, importCache, requestTimeout);
+        return { src, entry };
       } catch (e) {}
     }
   }
