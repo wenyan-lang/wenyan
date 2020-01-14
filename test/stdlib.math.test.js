@@ -3,9 +3,6 @@ const cases = require("./stdlib.math.test.cases");
 
 const 算經 = compileLib("算經");
 
-const MIN_NORMAL_VALUE = Number.MIN_VALUE / Number.EPSILON;
-const MAX_POW_OF_2 = Number.MAX_VALUE / (2 - Number.EPSILON);
-
 describe("stdlib", () => {
   describe("math", () => {
     // consts
@@ -184,6 +181,39 @@ describe("stdlib", () => {
             ],
             relTol: Number.EPSILON * 2
           }, `Expect 反正切(${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
+    // exp
+    describe("指數", () => {
+      for (const c of cases.EXP) {
+        const x = c.x;
+        const expected = c.expected;
+        const actual = 算經.指數(x);
+        it(
+          x.toString(),
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [[0, 0], [1, 0]],
+            relTol: Number.EPSILON * 1,
+            absTol: Number.MIN_VALUE * 2
+          }, `Expect 指數(${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
+    // log
+    describe("對數", () => {
+      for (const c of cases.LOG) {
+        const x = c.x;
+        const expected = c.expected;
+        const actual = 算經.對數(x);
+        it(
+          x.toString(),
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [[0, 0]],
+            relTol: Number.EPSILON * 2
+          }, `Expect 對數(${x}) = ${expected[0]}, actually ${actual}`)
         );
       }
     });
