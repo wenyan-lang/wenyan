@@ -12,5 +12,8 @@ module.exports = {
     // "eslint:recommended",
     "prettier",
     "prettier/babel"
+  ],
+  plugins: [
+    "html"
   ]
 }
