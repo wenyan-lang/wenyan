@@ -1,0 +1,242 @@
+body {
+  margin: 0px;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+#in-outer,
+#js-outer,
+#ex-outer {
+  position: absolute;
+}
+
+#out-outer {
+  position: absolute;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+#in,
+#js,
+#out,
+#explorer {
+  width: 100%;
+  height: calc(100% - 38px);
+  overflow: auto;
+}
+
+#in {
+  height: calc(100% - 58px);
+}
+
+.bar {
+  height: 20px;
+  padding: 7px 10px;
+  background: #f1f1f1;
+  border: 1px solid gainsboro;
+  z-index: 1000;
+  font-size: 15px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.bar * {
+  vertical-align: middle;
+}
+
+.bar .title {
+  display: inline-block;
+  color: #777;
+  padding: 0 10px;
+}
+
+.bar .right-aligned {
+  position: absolute;
+  top: 0px;
+  right: 0;
+  padding: 7px;
+  display: inline-block;
+  height: 20px;
+  background: #f1f1f1;
+  border: 1px solid gainsboro;
+}
+
+#current-file-name {
+  color: unset;
+  padding-right: 10px;
+}
+
+#out {
+  position: absolute;
+  padding: 10px;
+  margin: 0px;
+  top: 36px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  overflow: auto;
+  font-family: monospace;
+  width: auto;
+  height: auto;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+
+#hand-v,
+#hand-ex {
+  position: absolute;
+  cursor: ew-resize;
+  z-index: 10;
+}
+
+.editor-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #f1f1f1;
+  z-index: -2;
+  padding: 3px 6px;
+  font-size: 14px;
+  color: #777;
+  overflow: hidden;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+#hand-h {
+  position: absolute;
+  cursor: ns-resize;
+  z-index: 10;
+}
+
+#hand-v-inner,
+#hand-ex-inner {
+  background: white;
+  border: 1px solid grey;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+  height: calc(100% - 3px);
+  margin: 0px 3px 3px 3px;
+}
+
+#hand-h-inner {
+  background: white;
+  border: 1px solid grey;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+  margin: 4px 0px 4px 0px;
+  width: 100%;
+  height: 1px;
+}
+
+#explorer {
+  overflow-x: hidden;
+  background: white;
+  padding: 8px 0;
+}
+
+.caret {
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.5;
+}
+
+.caret::before {
+  font-size: 10px;
+  content: "\25B6";
+  color: black;
+  display: inline-block;
+  margin-left: 8px;
+  margin-right: 4px;
+  opacity: 0.5;
+  transform: scaleX(0.8) translateY(-2px);
+}
+
+.caret.active::before {
+  transform: scaleY(0.8) translateY(-2px) rotate(90deg);
+}
+
+ul.nested {
+  display: none;
+  padding: 5px 0;
+}
+
+ul.nested.active {
+  display: block;
+}
+
+#explorer-list {
+  padding: 0;
+  margin: 0;
+}
+
+#explorer-list li,
+#explorer-list ul {
+  list-style: none;
+}
+
+#explorer-list li {
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  font-family: sans-serif;
+  padding: 3px 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#explorer-list ul.nested li {
+  padding: 3px 5px 3px 20px;
+}
+
+#explorer-list ul.nested li:hover {
+  background: #f1f1f1;
+}
+
+#explorer-list ul.nested li.active {
+  background: #ddd;
+  font-weight: bold;
+}
+
+#explorer-list ul.nested li .name {
+  padding-right: 5px;
+}
+
+#explorer-list ul.nested li .alias {
+  opacity: 0.5
+}
+
+button {
+  background: white;
+  border: 1px solid gainsboro;
+  border-radius: 3px;
+  margin: 0 3px;
+  height: 22px;
+}
+
+button:hover {
+  background: gainsboro;
+  border: 1px solid grey;
+}
+
+button:active {
+  background: silver;
+}
+
+button:focus {
+  outline: none;
+}
+
+button.icon {
+  padding: 0;
+  text-align: center;
+  width: 26px;
+  font-size: 16px;
+  line-height: 16px;
+}
+
+.hidden {
+  display: none;
+}
