@@ -152,6 +152,10 @@ body {
   transform: scaleX(0.8) translateY(-2px);
 }
 
+.caret.active {
+  padding-bottom: 10px;
+}
+
 .caret.active::before {
   transform: scaleY(0.8) translateY(-2px) rotate(90deg);
 }

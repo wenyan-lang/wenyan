@@ -29,6 +29,8 @@ var dhex = document.getElementById("hand-ex");
 const exlist = document.getElementById("explorer-list");
 const exlistUser = document.getElementById("explorer-list-user");
 const exlistExamples = document.getElementById("explorer-list-examples");
+const exlistPackages = document.getElementById("explorer-list-packages");
+const explorerPackages = document.getElementById("explorer-packages");
 
 const selr = document.getElementById("pick-roman");
 const hidestd = document.getElementById("hide-std");
@@ -271,6 +273,14 @@ function updateExplorerList() {
   for (let file of Object.values(state.files)) {
     exlistUser.appendChild(createExplorerEntry(file));
   }
+
+  explorerPackages.classList.toggle("hidden", !wygToggle.checked);
+  if (wygToggle.checked) {
+    exlistPackages.innerHTML = "";
+    for (let pkg of state.wyg.packages) {
+      exlistPackages.appendChild(createExplorerPackageEntry(pkg));
+    }
+  }
 }
 
 function createExplorerEntry({ name, alias }) {
@@ -290,6 +300,25 @@ function createExplorerEntry({ name, alias }) {
     item.appendChild(a);
   }
   item.onclick = () => openFile(name);
+  return item;
+}
+
+function createExplorerPackageEntry(pkg) {
+  const { name, author } = pkg;
+  const item = document.createElement("li");
+  item.value = name;
+
+  const a = document.createElement("span");
+  const n = document.createElement("span");
+  n.classList.add("name");
+  n.innerText = name;
+  item.appendChild(n);
+  a.classList.add("alias");
+  a.innerText = "by " + author;
+  item.appendChild(a);
+  item.onclick = () => {
+    // TODO:
+  };
   return item;
 }
 
@@ -432,6 +461,7 @@ function getImportContext() {
 }
 
 function loadWygPackages() {
+  updateExplorerList();
   if (
     wygToggle.checked &&
     Date.now() - state.wyg.last_updated > PACKAGES_LIFETIME
@@ -440,6 +470,7 @@ function loadWygPackages() {
       state.wyg.packages = packages;
       state.wyg.last_updated = +Date.now();
       saveState();
+      updateExplorerList();
       crun();
     });
   }
