@@ -25,10 +25,6 @@ body {
   overflow: auto;
 }
 
-#in {
-  height: calc(100% - 58px);
-}
-
 .bar {
   height: 20px;
   padding: 7px 10px;
@@ -217,7 +213,7 @@ ul.nested.active {
   border-radius: 3px;
   position: fixed;
   top: 35px;
-  right: 35px;
+  right: 45px;
   width: 300px;
   z-index: 1000;
   padding: 16px 14px;
@@ -230,6 +226,13 @@ ul.nested.active {
 
 #help-panel .section {
   font-size: 0.9em;
+}
+
+#help-panel .details {
+  padding: 15px 5px 0 5px;
+  font-style: italic;
+  font-size: 0.85em;
+  opacity: 0.6;
 }
 
 #shortcut-table {
