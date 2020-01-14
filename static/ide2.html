@@ -321,6 +321,7 @@
   <script>
 
 const LOCAL_STORAGE_KEY = 'wenyang-ide'
+const TITLE = ' - 文言 Wenyan Online IDE'
 const DEFAULT_STATE = ()=> ({config: {}, files: {}})
 const EXPLORER_WIDTH_MIN = 0
 const EXPLORER_WIDTH_MAX = 400
@@ -611,6 +612,7 @@ function loadFile(name) {
     savingLock = false
     crun();
   }
+  document.title = (currentFile.alias || currentFile.name) + TITLE
   fileNameSpan.innerText = currentFile.alias || currentFile.name
   updateExplorerList()
   deleteBtn.classList.toggle('hidden', !!currentFile.readonly)
@@ -813,31 +815,34 @@ function run() {
 }
 
 function crun(){
-  document.getElementById("out").innerText = "";
-  var code = Wenyan.compile(editorCM.getValue(), {
-    lang: "js",
-    romanizeIdentifiers: selr.value,
-    resetVarCnt: true,
-    errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-    importContext: getImportContext(),
-  });
-
-  var showcode = hidestd.checked ? hideImportedModules(code) : code;
-
-  // CodeMirror.runMode(js_beautify(showcode),"JavaScript",document.getElementById("js"));
-
-  jsCM.setValue(js_beautify(showcode));
-
   resetOutput()
-
+  document.getElementById("out").innerText = "";
   try {
-    Wenyan.evalCompiled(code, {
-      outputHanzi: outputHanzi.checked,
-      output: (...args) => {
-        outdiv.innerText += args.join(" ") + "\n";
-      }
+    var code = Wenyan.compile(editorCM.getValue(), {
+      lang: "js",
+      romanizeIdentifiers: selr.value,
+      resetVarCnt: true,
+      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      importContext: getImportContext(),
     });
-  }catch(e){
+    var showcode = hidestd.checked ? hideImportedModules(code) : code;
+
+    // CodeMirror.runMode(js_beautify(showcode),"JavaScript",document.getElementById("js"));
+
+    jsCM.setValue(js_beautify(showcode));
+
+    try {
+      Wenyan.evalCompiled(code, {
+        outputHanzi: outputHanzi.checked,
+        output: (...args) => {
+          outdiv.innerText += args.join(" ") + "\n";
+        }
+      });
+    }catch(e){
+      console.error(e)
+    }
+  } catch(e) {
+    jsCM.setValue("")
     console.error(e)
   }
 }
