@@ -6,6 +6,8 @@ const EXPLORER_WIDTH_MAX = 400;
 const EDITOR_WIDTH_MIN = 150;
 const EDITOR_HEIGHT_MIN = 36;
 const OUTPUT_HEIGHT_MIN = 36;
+const AUTOCOMPLETE_TRIGGER_REGEX = /[\d\w\.,'"\/]+$/;
+const CONTROL_KEYCODES = [13, 37, 38, 39, 40, 9, 27]; // Enter, Arrow Keys, etc
 
 const djs = document.getElementById("js-outer");
 const din = document.getElementById("in-outer");
@@ -64,16 +66,20 @@ function init() {
   }
 
   snippets = [
-    { text: "「", trigger: "`" },
+    { text: "。", trigger: "." },
+    { text: "、", trigger: "," },
+    { text: "「", trigger: "'" },
     { text: "」", trigger: "'" },
-    { text: "「「", trigger: "[" },
-    { text: "」」", trigger: "]" },
+    { text: "「「", trigger: '"' },
+    { text: "」」", trigger: '"' },
     ...Object.keys(Wenyan.KEYWORDS).map(x => ({
       text: x,
       trigger:
         x.length > 1
-          ? Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g, "$1")
-          : Wenyan.hanzi2pinyin(x)
+          ? Wenyan.hanzi2pinyin(x)
+              .replace(/([A-z])[A-z]+?([1-9])/g, "$1")
+              .toLowerCase()
+          : Wenyan.hanzi2pinyin(x).toLowerCase()
     }))
   ];
 
@@ -81,11 +87,6 @@ function init() {
   snippets.forEach(s => {
     s.displayText = s.text;
   });
-}
-
-function wenyanHint(editor, options) {
-  console.log(options);
-  // TODO:
 }
 
 function loadState() {
@@ -373,23 +374,23 @@ function showHint() {
     editorCM,
     () => {
       const cursor = editorCM.getCursor();
-      const token = editorCM.getTokenAt(cursor);
-      console.log(cursor, token);
-      const start = token.start;
+      let start = cursor.ch - 5;
+      const text = editorCM.getRange({ line: cursor.line, ch: start }, cursor);
       const end = cursor.ch;
       const line = cursor.line;
-      const currentWord = token.string;
 
-      // TODO: filter hints
-      /*
-    const list = snippets.filter((item) => {
-      return item.indexOf(currentWord) >= 0
-    })
-    */
+      const match = text.match(AUTOCOMPLETE_TRIGGER_REGEX);
+
+      if (!match) return undefined;
+
+      const list =
+        match[0] === "/"
+          ? snippets
+          : snippets.filter(item => item.trigger.startsWith(match[0]));
 
       return {
-        list: snippets,
-        from: CodeMirror.Pos(line, end),
+        list: list,
+        from: CodeMirror.Pos(line, end - match[0].length),
         to: CodeMirror.Pos(line, end)
       };
     },
@@ -519,9 +520,7 @@ editorCM = CodeMirror(document.getElementById("in"), {
   lineNumbers: true,
   theme: "wenyan-light",
   styleActiveLine: true,
-  hintOptions: { hint: wenyanHint },
   extraKeys: {
-    "/": showHint,
     "Shift-Enter": crun,
     "Alt-Enter": compile
   }
@@ -564,6 +563,10 @@ editorCM.on("change", e => {
     saveState();
     openFile(name);
   }
+});
+
+editorCM.on("keyup", (cm, event) => {
+  if (!CONTROL_KEYCODES.includes(event.keyCode)) showHint();
 });
 
 registerHandlerEvents(dhv, ({ x }) => {
