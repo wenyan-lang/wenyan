@@ -263,6 +263,7 @@
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button id="rend">Render Book</button>
+      <button id="download-render">Download Renders</button>
     </div>
     <pre id="out"></pre>
   </div>
@@ -304,8 +305,11 @@ var outputHanzi = document.getElementById("output-hanzi");
 var outdiv = document.getElementById("out");
 var deleteBtn = document.getElementById("delete-current");
 var fileNameSpan = document.getElementById("current-file-name");
+var downloadRenderBtn = document.getElementById("download-render");
 
 var currentFile = {}
+
+var renderedSVGs = []
 
 var state
 
@@ -589,6 +593,22 @@ function downloadCurrentFile() {
   saveAs(blob, `${currentFile.alias || currentFile.name}.wy`);
 }
 
+
+function downloadRenders(){
+  const name = currentFile.alias || currentFile.name
+  if (renderedSVGs.length === 1){
+    var blob = new Blob([renderedSVGs[0]], {type: "image/svg+xml;charset=utf-8"});
+    saveAs(blob, `${name}.svg`);
+  }
+  else {
+    renderedSVGs.forEach((svg, i)=>{
+      var blob = new Blob([svg], {type: "image/svg+xml;charset=utf-8"});
+      saveAs(blob, `${name}-${i}.svg`);
+    })
+  }
+}
+
+
 function renameCurrentFile() {
   if (currentFile.readonly)
     return
@@ -710,6 +730,11 @@ function getImportContext(){
   return context
 }
 
+function resetOutput(){
+  downloadRenderBtn.classList.toggle('hidden', true)
+  renderedSVGs = []
+}
+
 function compile(){
   document.getElementById("out").innerText = "";
   var log = ""
@@ -720,8 +745,9 @@ function compile(){
     errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
     importContext: getImportContext(),
     logCallback:(x)=>{log+=x+"\n"},
-    strict:true
+    strict: true
   });
+  resetOutput()
   var sig = log.split("=== [PASS 2.5] TYPECHECK ===\n")[1].split("=== [PASS 3] COMPILER ===")[0];
   outdiv.innerText = sig;
   var showcode = hidestd.checked ? hideImportedModules(code) : code;
@@ -736,6 +762,7 @@ function run() {
       outdiv.innerText += args.join(" ") + "\n";
     }
   });
+  resetOutput()
 }
 
 function crun(){
@@ -754,6 +781,8 @@ function crun(){
 
   jsCM.setValue(js_beautify(showcode));
 
+  resetOutput()
+
   try {
     Wenyan.evalCompiled(code, {
       outputHanzi: outputHanzi.checked,
@@ -771,6 +800,7 @@ document.getElementById("run").onclick = run;
 document.getElementById("crun").onclick = crun;
 document.getElementById("new-file").onclick = createNewFile;
 document.getElementById("download-current").onclick = downloadCurrentFile;
+downloadRenderBtn.onclick = downloadRenders
 deleteBtn.onclick = deleteCurrentFile
 fileNameSpan.onclick = renameCurrentFile
 crun();
@@ -795,25 +825,11 @@ document.getElementById("dark").onclick = function(){
 }
 document.getElementById("rend").onclick = function(){
   document.getElementById("out").innerText = "";
-  var txt = editorCM.getValue();
-  var title;
-  try{
-    title = txt.split(/吾有一術.?名之曰「/)[1].split("」")[0]
-  }catch(e){
-    try{
-      title = txt.split("「「")[1].split("」」")[0]
-    }catch(e){
-      try{
-        title = txt.split("「")[1].split("」")[0]
-      }catch(e){
-        title = txt.split("。")[0]
-      }
-    }
+  renderedSVGs = Render.render(currentFile.alias || currentFile.name, currentFile.code);
+  for (const svg of renderedSVGs){
+    document.getElementById("out").innerHTML += svg + "<br>";
   }
-  var svgs = Render.render(title,txt);
-  for (var i = 0; i < svgs.length; i++){
-    document.getElementById("out").innerHTML += svgs[i]+"<br>";
-  }
+  downloadRenderBtn.classList.toggle('hidden', false)
 }
 </script>
 </body>
