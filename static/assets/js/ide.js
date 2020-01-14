@@ -39,6 +39,7 @@ var currentFile = {};
 var renderedSVGs = [];
 var state;
 var examples = {};
+var cache = {};
 var snippets = [];
 
 var isDark = false;
@@ -424,6 +425,7 @@ function compile() {
     resetVarCnt: true,
     errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
     importContext: getImportContext(),
+    importCache: cache,
     logCallback: x => {
       log += x + "\n";
     },
@@ -458,7 +460,8 @@ function crun() {
       romanizeIdentifiers: selr.value,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-      importContext: getImportContext()
+      importContext: getImportContext(),
+      importCache: cache
     });
     var showcode = hidestd.checked ? hideImportedModules(code) : code;
 
