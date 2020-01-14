@@ -218,11 +218,12 @@ ul.nested.active {
   right: 35px;
   width: 300px;
   z-index: 1000;
-  padding: 13px 15px;
+  padding: 16px 14px;
 }
 
 #help-panel .title {
   opacity: 0.5;
+  padding: 0 4px;
 }
 
 #help-panel .section {
@@ -231,7 +232,8 @@ ul.nested.active {
 
 #shortcut-table {
   font-size: 0.9em;
-  padding: 8px;
+  padding: 4px;
+  margin-bottom: 5px;
   width: 100%;
 }
 
