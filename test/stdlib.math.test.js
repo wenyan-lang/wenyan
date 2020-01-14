@@ -227,20 +227,38 @@ describe("stdlib", () => {
         const y = c.y;
         const expected = c.theta;
         const actual = 算經.勾股求角(y)(x);
-        it(
-          `(${y}, ${x})`,
-          () => assertNearlyEqual(actual, expected, {
-            bounds: [
-              [-3.1415926535897931, -1.2246467991473532e-16],
-              [-1.5707963267948966, -6.123233995736766e-17],
-              [0, 0],
-              [1.5707963267948966, 6.123233995736766e-17],
-              [3.1415926535897931, 1.2246467991473532e-16]
-            ],
-            relTol: Number.EPSILON * 2,
-            absTol: Number.MIN_VALUE
-          }, `Expect 勾股求角(${y}, ${x}) = ${expected[0]}, actually ${actual}`)
-        );
+        if ("theta_alt" in c) {
+          it(
+            `(${y}, ${x})`,
+            () => assertNearlyEqual(actual, expected, {
+              alts: [c.theta_alt],
+              bounds: [
+                [-3.1415926535897931, -1.2246467991473532e-16],
+                [-1.5707963267948966, -6.123233995736766e-17],
+                [0, 0],
+                [1.5707963267948966, 6.123233995736766e-17],
+                [3.1415926535897931, 1.2246467991473532e-16]
+              ],
+              relTol: Number.EPSILON * 2,
+              absTol: Number.MIN_VALUE
+            }, `Expect 勾股求角(${y}, ${x}) = ${expected[0]}, actually ${actual}`)
+          );
+        } else {
+          it(
+            `(${y}, ${x})`,
+            () => assertNearlyEqual(actual, expected, {
+              bounds: [
+                [-3.1415926535897931, -1.2246467991473532e-16],
+                [-1.5707963267948966, -6.123233995736766e-17],
+                [0, 0],
+                [1.5707963267948966, 6.123233995736766e-17],
+                [3.1415926535897931, 1.2246467991473532e-16]
+              ],
+              relTol: Number.EPSILON * 2,
+              absTol: Number.MIN_VALUE
+            }, `Expect 勾股求角(${y}, ${x}) = ${expected[0]}, actually ${actual}`)
+          );
+        }
       }
     });
 
