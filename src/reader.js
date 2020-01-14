@@ -34,7 +34,7 @@ function fetchSync(uri, cache, requestTimeout) {
   if (cache[uri]) return cache[uri];
 
   const data = isHttpURL(uri)
-    ? fetchTextSync(uri, requestTimeout)
+    ? fetchTextSync(uri)
     : eval("require")("fs").readFileSync(uri, "utf-8");
 
   cache[uri] = data;
@@ -53,7 +53,21 @@ function defaultImportReader(moduleName, requestOptions = {}) {
     requestTimeout = 2000
   } = requestOptions;
 
-  if (importContext[moduleName]) return { src: importContext[moduleName] };
+  const context = importContext[moduleName];
+  if (context) {
+    if (typeof context === "string") {
+      return { src: context };
+    } else if (context.entry) {
+      return {
+        entry: context.entry,
+        src: context.src
+          ? context.src
+          : fetchSync(context.entry, importCache, requestTimeout)
+      };
+    } else {
+      throw new SyntaxError("Failed to parse context: " + context);
+    }
+  }
 
   const pathes = [];
 

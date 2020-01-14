@@ -23,7 +23,7 @@
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
   <script src="https://code.iconify.design/1/1.0.0-rc1/iconify.min.js"></script>
-
+  <script src="https://unpkg.com/@wenyanlang/wyg"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
   <script src="./dist/core.js"></script>
@@ -105,6 +105,7 @@
     <div class="bar" id="out-bar">
       <span class="title">Output</span>
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
+      <input type="checkbox" id="wyg-enabled" checked=""/><small>Enable wyg (文渊阁)</small>
       <div class="right-aligned">
         <button id="rend">Render Book</button>
         <button id="download-render" class="icon">

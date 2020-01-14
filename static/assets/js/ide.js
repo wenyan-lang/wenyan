@@ -1,6 +1,14 @@
 const LOCAL_STORAGE_KEY = "wenyang-ide";
 const TITLE = " - 文言 Wenyan Online IDE";
-const DEFAULT_STATE = () => ({ config: {}, files: {} });
+const DEFAULT_STATE = () => ({
+  config: {},
+  files: {},
+  wyg: {
+    packages: [],
+    last_updated: -Infinity
+  }
+});
+const PACKAGES_LIFETIME = 1000 * 60 * 60; // 60 min
 const EXPLORER_WIDTH_MIN = 0;
 const EXPLORER_WIDTH_MAX = 400;
 const EDITOR_WIDTH_MIN = 150;
@@ -30,6 +38,7 @@ const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
 const darkToggle = document.getElementById("dark");
+const wygToggle = document.getElementById("wyg-enabled");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -92,7 +101,7 @@ function init() {
 
 function loadState() {
   const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (raw) state = JSON.parse(raw);
+  if (raw) state = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
   else state = DEFAULT_STATE();
 }
 
@@ -105,12 +114,14 @@ function loadConfig() {
     dark = false,
     outputHanzi: hanzi = true,
     hideImported = true,
-    romanizeIdentifiers = "none"
+    romanizeIdentifiers = "none",
+    wygEnabled = true
   } = state.config;
 
   toggleDark(dark);
   outputHanzi.checked = hanzi;
   hidestd.checked = hideImported;
+  wygToggle.checked = wygEnabled;
   selr.value = romanizeIdentifiers;
 }
 
@@ -119,7 +130,8 @@ function saveConfig() {
     dark: isDark,
     outputHanzi: outputHanzi.checked,
     hideImported: hidestd.checked,
-    romanizeIdentifiers: selr.value
+    romanizeIdentifiers: selr.value,
+    wygEnabled: wygToggle.checked
   };
   saveState();
 }
@@ -408,52 +420,77 @@ function getImportContext() {
     context[key] = state.files[key].code;
   }
 
+  if (wygToggle.checked) {
+    for (const pkg of state.wyg.packages) {
+      context[pkg.name] = {
+        entry: pkg.entry
+      };
+    }
+  }
+
   return context;
 }
 
+function loadWygPackages() {
+  if (
+    wygToggle.checked &&
+    Date.now() - state.wyg.last_updated > PACKAGES_LIFETIME
+  ) {
+    Wyg.list().then(packages => {
+      state.wyg.packages = packages;
+      state.wyg.last_updated = +Date.now();
+      saveState();
+      crun();
+    });
+  }
+}
+
 function resetOutput() {
+  outdiv.innerText = "";
   downloadRenderBtn.classList.toggle("hidden", true);
   renderedSVGs = [];
 }
 
 function compile() {
-  outdiv.innerText = "";
-  var log = "";
-  var code = Wenyan.compile(editorCM.getValue(), {
-    lang: "js",
-    romanizeIdentifiers: selr.value,
-    resetVarCnt: true,
-    errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-    importContext: getImportContext(),
-    importCache: cache,
-    logCallback: x => {
-      log += x + "\n";
-    },
-    strict: true
-  });
   resetOutput();
-  var sig = log
-    .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
-    .split("=== [PASS 3] COMPILER ===")[0];
-  outdiv.innerText = sig;
-  var showcode = hidestd.checked ? hideImportedModules(code) : code;
-  jsCM.setValue(js_beautify(showcode));
+  var log = "";
+  try {
+    var code = Wenyan.compile(editorCM.getValue(), {
+      lang: "js",
+      romanizeIdentifiers: selr.value,
+      resetVarCnt: true,
+      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      importContext: getImportContext(),
+      importCache: cache,
+      logCallback: x => {
+        log += x + "\n";
+      },
+      strict: true
+    });
+    var sig = log
+      .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
+      .split("=== [PASS 3] COMPILER ===")[0];
+    outdiv.innerText = sig;
+    var showcode = hidestd.checked ? hideImportedModules(code) : code;
+    jsCM.setValue(js_beautify(showcode));
+  } catch (e) {
+    outdiv.innerText = e.toString();
+    console.error(e);
+  }
 }
 
 function run() {
-  outdiv.innerText = "";
+  resetOutput();
   Wenyan.evalCompiled(jsCM.getValue(), {
     outputHanzi: outputHanzi.checked,
     output: (...args) => {
       outdiv.innerText += args.join(" ") + "\n";
     }
   });
-  resetOutput();
 }
 
 function crun() {
   resetOutput();
-  outdiv.innerText = "";
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: "js",
@@ -465,8 +502,6 @@ function crun() {
     });
     var showcode = hidestd.checked ? hideImportedModules(code) : code;
 
-    // CodeMirror.runMode(js_beautify(showcode),"JavaScript",document.getElementById("js"));
-
     jsCM.setValue(js_beautify(showcode));
 
     try {
@@ -477,9 +512,11 @@ function crun() {
         }
       });
     } catch (e) {
+      outdiv.innerText = e.toString();
       console.error(e);
     }
   } catch (e) {
+    outdiv.innerText = e.toString();
     jsCM.setValue("");
     console.error(e);
   }
@@ -617,11 +654,16 @@ selr.onchange = () => {
   saveConfig();
   crun();
 };
+wygToggle.onchange = () => {
+  saveConfig();
+  loadWygPackages();
+};
 
 document.body.onresize = setView;
 window.addEventListener("popstate", loadFromUrl);
 loadState();
 loadConfig();
+loadWygPackages();
 setView();
 loadFromUrl();
 initExplorer();
