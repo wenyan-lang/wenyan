@@ -59,7 +59,7 @@
       border: 1px solid gainsboro;
     }
     #current-file-name {
-      font-weight: bold;
+      color: unset;
       padding-right: 10px;
     }
     #out {
@@ -259,12 +259,11 @@
 
   <div id="in-outer">
     <div class="bar" id="in-bar">
-      <span class="title">文言</span>
-      <span id="current-file-name"></span>
-      <button id="crun">Compile</button>
-      <button id="compile" class="icon">
+      <span id="current-file-name" class="title"></span>
+      <button id="crun" class="icon">
         <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
       </button>
+      <button id="compile">Compile</button>
       <div class="right-aligned">
         <button id="delete-current" class="icon">        
           <span class="iconify" data-icon="mdi:trash-can-outline" data-inline="false"></span>
