@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>wenyan-lang Online IDE</title>
   <style>
     body {
@@ -27,7 +30,7 @@
     }
     .bar {
       height: 20px;
-      padding:5px 10px;
+      padding: 7px 10px;
       background: #f1f1f1;
       border: 1px solid gainsboro;
       z-index: 1000;
@@ -45,12 +48,13 @@
     }
     .bar .right-aligned {
       position: absolute;
-      top: 1px;
+      top: 0px;
       right: 0;
-      padding:5px;
+      padding: 7px;
       display: inline-block;
       height: 20px;
       background: #f1f1f1;
+      border: 1px solid gainsboro;
     }
     #current-file-name {
       font-weight: bold;
@@ -60,7 +64,7 @@
       position: absolute;
       padding: 10px;
       margin: 0px;
-      top: 30px;
+      top: 36px;
       bottom: 0;
       left: 0;
       right: 0;
@@ -180,6 +184,7 @@
       border: 1px solid gainsboro;
       border-radius: 3px;
       margin: 0 3px;
+      height: 22px;
     }
     button:hover{
       background:gainsboro;
@@ -191,7 +196,14 @@
     button:focus{
       outline:none;
     }
-    button.hidden {
+    button.icon {
+      padding: 0;
+      text-align: center;
+      width: 26px;
+      font-size: 16px;
+      line-height: 16px;
+    }
+    .hidden {
       display: none;
     }
   </style>
@@ -208,6 +220,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+  <script src="https://code.iconify.design/1/1.0.0-rc1/iconify.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
@@ -221,7 +234,9 @@
     <div class="bar" id="explorer-bar">
       <span class="title">Explorer</span>
       <div class="right-aligned">
-        <button id="new-file">New</button>
+        <button id="new-file" class="icon">
+          <span class="iconify" data-icon="mdi:plus" data-inline="false"></span>
+        </button>
       </div>
     </div>
     <div id="explorer">
@@ -244,11 +259,17 @@
     <div class="bar" id="in-bar">
       <span class="title">文言</span>
       <span id="current-file-name"></span>
-      <button id="compile">Compile</button>
-      <button id="crun">Run</button>
+      <button id="crun">Compile</button>
+      <button id="compile" class="icon">
+        <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
+      </button>
       <div class="right-aligned">
-        <button id="delete-current">Delete</button>
-        <button id="download-current">Download</button>
+        <button id="delete-current" class="icon">        
+          <span class="iconify" data-icon="mdi:trash-can-outline" data-inline="false"></span>
+        </button>
+        <button id="download-current" class="icon">
+          <span class="iconify" data-icon="mdi:download" data-inline="false"></span>
+        </button>
       </div>
     </div>
     <div id="in"></div>
@@ -258,15 +279,20 @@
   <div id="js-outer">
     <div class="bar" id="js-bar">
       <span class="title">Compiled</span>
-      &nbsp;&nbsp;
-      <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
+      &nbsp;
+      <button id="run" class="icon">
+        <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
+      </button>
       &nbsp;&nbsp;&nbsp;
-      <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
+      <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
       &nbsp;&nbsp;
-      <button id="run">Run JS</button>
+      <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
       
       <div class="right-aligned">
-        <button id="dark">Dark Mode</button>
+        <button id="dark" class="icon">
+          <span id="dark-icon-night" class="iconify" data-icon="mdi:weather-night" data-inline="false"></span>
+          <span id="dark-icon-sunny" class="iconify hidden" data-icon="mdi:weather-sunny" data-inline="false"></span>
+        </button>
       </div>
     </div>
     <div id="js" class="cm-s-wenyan-light"></div>
@@ -278,7 +304,9 @@
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
       <div class="right-aligned">
         <button id="rend">Render Book</button>
-        <button id="download-render">Download Renders</button>
+        <button id="download-render" class="icon">
+          <span class="iconify" data-icon="mdi:download" data-inline="false"></span>
+        </button>
       </div>
     </div>
     <pre id="out"></pre>
@@ -296,8 +324,8 @@ const DEFAULT_STATE = ()=> ({config: {}, files: {}})
 const EXPLORER_WIDTH_MIN = 0
 const EXPLORER_WIDTH_MAX = 400
 const EDITOR_WIDTH_MIN = 150
-const EDITOR_HEIGHT_MIN = 30
-const OUTPUT_HEIGHT_MIN = 30
+const EDITOR_HEIGHT_MIN = 36
+const OUTPUT_HEIGHT_MIN = 36
 
 var handv = window.innerWidth*0.6;
 var handh = window.innerHeight*0.7;
@@ -831,12 +859,13 @@ crun();
 var isDark = false;
 document.getElementById("dark").onclick = function(){
   if (!isDark){
-    document.getElementById("dark").innerHTML = "Light Mode"
     document.body.style.filter="invert(0.88)";
-  }else{
-    document.getElementById("dark").innerHTML = "Dark Mode"
+  } else {
     document.body.style.filter="invert(0)";
   }
+  document.getElementById("dark-icon-sunny").classList.toggle("hidden", isDark)
+  document.getElementById("dark-icon-night").classList.toggle("hidden", !isDark)
+
   isDark = !isDark;
 }
 document.getElementById("rend").onclick = function(){
