@@ -185,6 +185,65 @@ describe("stdlib", () => {
       }
     });
 
+    // hypot
+    describe("勾股求弦", () => {
+      // test for hypot(x, 0) = hypot(0, x) = |x|
+      for (const x of cases.ROUND) {
+        const expected = Math.abs(x);
+        const actual_x_0 = 算經.勾股求弦(x)(0);
+        const actual_0_x = 算經.勾股求弦(0)(x);
+        it(
+          `(${x}, 0)`,
+          () => assertNumberEqual(actual_x_0, expected,
+            `Expect 勾股求弦(${x}, 0) = ${expected}, actually ${actual_x_0}`)
+        );
+        it(
+          `(0, ${x})`,
+          () => assertNumberEqual(actual_0_x, expected,
+            `Expect 勾股求弦(0, ${x}) = ${expected}, actually ${actual_0_x}`)
+        );
+      }
+
+      for (const c of cases.TO_POLAR) {
+        const x = c.x;
+        const y = c.y;
+        const expected = c.r;
+        const actual = 算經.勾股求弦(x)(y);
+        it(
+          `(${x}, ${y})`,
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [[0, 0]],
+            relTol: Number.EPSILON * 1.5,
+            absTol: Number.MIN_VALUE
+          }, `Expect 勾股求弦(${x}, ${y}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
+    // atan2
+    describe("勾股求角", () => {
+      for (const c of cases.TO_POLAR) {
+        const x = c.x;
+        const y = c.y;
+        const expected = c.theta;
+        const actual = 算經.勾股求角(y)(x);
+        it(
+          `(${y}, ${x})`,
+          () => assertNearlyEqual(actual, expected, {
+            bounds: [
+              [-3.1415926535897931, -1.2246467991473532e-16],
+              [-1.5707963267948966, -6.123233995736766e-17],
+              [0, 0],
+              [1.5707963267948966, 6.123233995736766e-17],
+              [3.1415926535897931, 1.2246467991473532e-16]
+            ],
+            relTol: Number.EPSILON * 2,
+            absTol: Number.MIN_VALUE
+          }, `Expect 勾股求角(${y}, ${x}) = ${expected[0]}, actually ${actual}`)
+        );
+      }
+    });
+
     // exp
     describe("指數", () => {
       for (const c of cases.EXP) {
