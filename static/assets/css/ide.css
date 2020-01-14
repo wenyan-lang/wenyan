@@ -21,7 +21,7 @@ body {
 #out,
 #explorer {
   width: 100%;
-  height: calc(100% - 38px);
+  height: calc(100% - 37px);
   overflow: auto;
 }
 
@@ -115,15 +115,17 @@ body {
 #hand-v-inner,
 #hand-ex-inner {
   background: white;
-  border: 1px solid grey;
+  border-left: 1px solid grey;
+  border-right: 1px solid grey;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
-  height: calc(100% - 3px);
+  height: 100%;
   margin: 0px 3px 3px 3px;
 }
 
 #hand-h-inner {
   background: white;
-  border: 1px solid grey;
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
   margin: 4px 0px 4px 0px;
   width: 100%;

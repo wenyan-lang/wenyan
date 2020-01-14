@@ -161,7 +161,7 @@ function setView(){
   dhv.style.width=hw+"px"
   dhv.style.height=handh+"px";
 
-  dhh.style.left=handex+"px";
+  dhh.style.left=(handex+1)+"px";
   dhh.style.top=(handh-hw/2)+"px";
   dhh.style.width=(W-handex)+"px"
   dhh.style.height=hw+"px";
