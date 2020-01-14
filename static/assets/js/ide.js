@@ -336,6 +336,9 @@ function downloadRenders(){
   }
 }
 
+function toggleHelp() {
+  document.getElementById('help-panel').classList.toggle('hidden')
+}
 
 function renameCurrentFile() {
   if (currentFile.readonly)
@@ -395,10 +398,6 @@ function showHint() {
   }, { completeSingle: false })
 }
 
-editorCM.setOption('extraKeys', {
-  'Cmd-.': showHint,
-  'Ctrl-.': showHint
-})
 
 editorCM.on('change', (e)=>{
   if (savingLock)
@@ -531,6 +530,7 @@ document.getElementById("run").onclick = run;
 document.getElementById("crun").onclick = crun;
 document.getElementById("new-file").onclick = createNewFile;
 document.getElementById("download-current").onclick = downloadCurrentFile;
+document.getElementById("help-button").onclick = toggleHelp;
 downloadRenderBtn.onclick = downloadRenders
 deleteBtn.onclick = deleteCurrentFile
 fileNameSpan.onclick = renameCurrentFile
@@ -565,3 +565,10 @@ document.getElementById("rend").onclick = function(){
   }
   downloadRenderBtn.classList.toggle('hidden', false)
 }
+
+editorCM.setOption('extraKeys', {
+  'Cmd-.': showHint,
+  'Ctrl-.': showHint,
+  'Shift-Enter': crun,
+  'Alt-Enter': compile,
+})

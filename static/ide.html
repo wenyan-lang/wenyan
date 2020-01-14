@@ -90,6 +90,9 @@
       <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
       
       <div class="right-aligned">
+        <button id="help-button" class="icon">
+          <span class="iconify" data-icon="mdi:help-circle-outline" data-inline="false"></span>
+        </button>
         <button id="dark" class="icon">
           <span id="dark-icon-night" class="iconify" data-icon="mdi:weather-night" data-inline="false"></span>
           <span id="dark-icon-sunny" class="iconify hidden" data-icon="mdi:weather-sunny" data-inline="false"></span>
@@ -112,6 +115,20 @@
     </div>
     <pre id="out"></pre>
   </div>
+
+  <div id="help-panel" class="hidden">
+    <div class="title">Shortcuts</div>
+    
+    <table id="shortcut-table">
+      <tr><td>Ctrl+. / Cmd+.</td><td>Auto-complete</td></tr>
+      <tr><td>Shift + Enter</td><td>Execute</td></tr>
+      <tr><td>Alt + Enter</td><td>Compile</td></tr>
+    </table>
+
+    <a href="/old_ide.html"><button>Legacy IDE</button></a>
+  </div>
+
+
   <div id="hand-ex"><div id="hand-ex-inner"></div></div>
   <div id="hand-h"><div id="hand-h-inner"></div></div>
   <div id="hand-v"><div id="hand-v-inner"></div></div>
