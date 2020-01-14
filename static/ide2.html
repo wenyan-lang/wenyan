@@ -698,6 +698,18 @@ selr.onchange = crun;
 hidestd.onchange = crun;
 outputHanzi.onchange = crun;
 
+function getImportContext(){
+  let context =  { 
+    ...Examples.examples,
+  }
+
+  for(const key of Object.keys(state.files)){
+    context[key] = state.files[key].code
+  }
+
+  return context
+}
+
 function compile(){
   document.getElementById("out").innerText = "";
   var log = ""
@@ -706,7 +718,7 @@ function compile(){
     romanizeIdentifiers: selr.value,
     resetVarCnt: true,
     errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-    reader: x => Examples.examples[x],
+    importContext: getImportContext(),
     logCallback:(x)=>{log+=x+"\n"},
     strict:true
   });
@@ -733,7 +745,7 @@ function crun(){
     romanizeIdentifiers: selr.value,
     resetVarCnt: true,
     errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-    reader: x => Examples.examples[x]
+    importContext: getImportContext(),
   });
 
   var showcode = hidestd.checked ? hideImportedModules(code) : code;
