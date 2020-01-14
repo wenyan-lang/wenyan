@@ -30,21 +30,52 @@ function fetchTextSync(url, timeout) {
   throw new URIError(xmlHttp.responseText);
 }
 
-function defaultImportReader(
-  moduleName,
-  importPaths = [],
-  requestOptions = {}
-) {
+function fetchSync(uri, cache, requestTimeout) {
+  if (cache[uri]) return cache[uri];
+
+  const data = isHttpURL(uri)
+    ? fetchTextSync(uri, requestTimeout)
+    : eval("require")("fs").readFileSync(uri, "utf-8");
+
+  cache[uri] = data;
+
+  return data;
+}
+
+function defaultImportReader(moduleName, requestOptions = {}) {
   const {
     allowHttp = false,
+    entryFilepath,
+    importPaths = [],
+    importCache = {},
+    importContext = {},
     trustedHosts = [],
     requestTimeout = 2000
   } = requestOptions;
 
-  if (typeof importPaths === "string") importPaths = [importPaths];
+  if (importContext[moduleName]) return { src: importContext[moduleName] };
 
-  for (dir of importPaths) {
+  const pathes = [];
+
+  if (typeof importPaths === "string") {
+    pathes.push(importPaths);
+  } else {
+    pathes.push(...importPaths);
+  }
+
+  if (entryFilepath)
+    pathes.push(
+      entryFilepath
+        .replace(/\\/g, "/")
+        .split("/")
+        .slice(0, -1)
+        .join("/")
+    );
+
+  for (dir of pathes) {
     let uri = dir;
+    let entries = [];
+    let src;
 
     if (uri.endsWith("/")) uri = uri.slice(0, -1);
 
@@ -55,33 +86,23 @@ function defaultImportReader(
             `You can turn it on by specify the "allowHttp" option.`
         );
       }
-
-      try {
-        return fetchTextSync(
-          `${uri}/${encodeURIComponent(moduleName)}.wy`,
-          requestTimeout
-        );
-      } catch (e) {}
-      try {
-        return fetchTextSync(
-          `${uri}/${encodeURIComponent(moduleName)}/${encodeURIComponent(
-            INDEX_FILENAME
-          )}.wy`,
-          requestTimeout
-        );
-      } catch (e) {}
+      entries = [
+        `${uri}/${encodeURIComponent(moduleName)}.wy`,
+        `${uri}/${encodeURIComponent(moduleName)}/${encodeURIComponent(
+          INDEX_FILENAME
+        )}.wy`
+      ];
     } else {
+      entries = [
+        `${uri}/${moduleName}.wy`,
+        `${uri}/${moduleName}/${INDEX_FILENAME}.wy`
+      ];
+    }
+
+    for (const entry of entries) {
       try {
-        return eval("require")("fs").readFileSync(
-          `${dir}/${moduleName}.wy`,
-          "utf-8"
-        );
-      } catch (e) {}
-      try {
-        return eval("require")("fs").readFileSync(
-          `${dir}/${moduleName}/${INDEX_FILENAME}.wy`,
-          "utf-8"
-        );
+        src = fetchSync(entry, importCache, requestTimeout);
+        return { src, entry };
       } catch (e) {}
     }
   }

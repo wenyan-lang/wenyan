@@ -6,83 +6,107 @@ const helloworldContent = "吾有一言。曰「「問天地好在。」」。�
 describe("reader", () => {
   describe("local", () => {
     it("import local files", () => {
-      const content = reader("helloworld", "./examples");
+      const { src } = reader("helloworld", { importPaths: "./examples" });
 
-      expect(content).eq(helloworldContent);
+      expect(src).eq(helloworldContent);
     });
 
     it("search for files", () => {
-      const content = reader("helloworld", [
-        "./some/invalid/dir",
-        "./lib",
-        "./examples"
-      ]);
+      const { src } = reader("helloworld", {
+        importPaths: ["./some/invalid/dir", "./lib", "./examples"]
+      });
 
-      expect(content).eq(helloworldContent);
+      expect(src).eq(helloworldContent);
     });
 
     it("not found", () => {
       try {
-        reader("not_exists", "./examples");
+        reader("not_exists", { importPaths: "./examples" });
       } catch (e) {
         expect(e).to.be.an.instanceof(ReferenceError);
       }
     });
   });
 
+  describe("cache", () => {
+    it("saves cache", () => {
+      const importCache = {};
+      reader("helloworld", { importPaths: "./examples", importCache });
+
+      expect(importCache["./examples/helloworld.wy"]).eq(helloworldContent);
+    });
+
+    it("loads cache", () => {
+      const mockSrc = "you have been hacked!";
+      const importCache = { "./examples/helloworld.wy": mockSrc };
+      const { src } = reader("helloworld", {
+        importPaths: "./examples",
+        importCache
+      });
+
+      expect(src).eq(mockSrc);
+    });
+  });
+
+  describe("context", () => {
+    it("loads from context", () => {
+      const mockSrc = "you have been hacked!";
+      const importContext = { helloworld: mockSrc };
+      const { src } = reader("helloworld", {
+        importPaths: "./examples",
+        importContext
+      });
+
+      expect(src).eq(mockSrc);
+    });
+  });
+
   describe("http", () => {
     it("block http imports by default", async () => {
       try {
-        await reader(
-          "helloworld",
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
-        );
+        reader("helloworld", {
+          importPaths:
+            "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
+        });
       } catch (e) {
         expect(e).to.be.an.instanceof(URIError);
       }
     });
 
     it("load http contents", () => {
-      const content = reader(
-        "helloworld",
-        "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
-        {
-          allowHttp: true
-        }
-      );
+      const { src } = reader("helloworld", {
+        importPaths:
+          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
+        allowHttp: true
+      });
 
-      expect(content).eq(helloworldContent);
-    });
+      expect(src).eq(helloworldContent);
+    }).timeout(8000);
 
     it("load http contents in trusted hosts", () => {
-      const content = reader(
-        "helloworld",
-        "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
-        {
-          trustedHosts: [
-            "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples"
-          ]
-        }
-      );
+      const { src } = reader("helloworld", {
+        importPaths:
+          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
+        trustedHosts: [
+          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples"
+        ]
+      });
 
-      expect(content).eq(helloworldContent);
-    });
+      expect(src).eq(helloworldContent);
+    }).timeout(8000);
 
     it("search for http contents", () => {
-      const content = reader(
-        "helloworld",
-        [
+      const { src } = reader("helloworld", {
+        importPaths: [
           "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/lib/",
           "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
         ],
-        {
-          trustedHosts: [
-            "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
-          ]
-        }
-      );
+        trustedHosts: [
+          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
+        ]
+      });
 
-      expect(content).eq(helloworldContent);
-    });
+      expect(src).eq(helloworldContent);
+    }).timeout(8000);
   });
 });

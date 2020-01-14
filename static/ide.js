@@ -130,7 +130,7 @@ function main() {
       romanizeIdentifiers: selr.value,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-      reader: x => Examples.examples[x]
+      importContext: Examples.examples,
     });
 
     var showcode = hidestd.checked ? hideImportedModules(code) : code;

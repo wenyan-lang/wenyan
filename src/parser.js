@@ -224,6 +224,11 @@ function defaultLogCallback(x) {
     : console.dir(x, { depth: null, maxArrayLength: null });
 }
 
+function defaultErrorCallback(e) {
+  console.error(e);
+  process.exit();
+}
+
 function tokens2asc(
   tokens,
   assert = (msg, pos, b) => {
@@ -677,11 +682,15 @@ function compile(arg1, arg2, arg3) {
     romanizeIdentifiers = "none",
     resetVarCnt = true,
     logCallback = defaultLogCallback,
-    errorCallback = process.exit,
-    lib = typeof STDLIB == "undefined" ? {} : STDLIB,
-    reader = defaultImportReader,
-    importPaths = [],
+    errorCallback = defaultErrorCallback,
+    lib = STDLIB,
     strict = false,
+
+    // import options
+    entryFilepath = undefined,
+    importPaths = [],
+    importCache = {},
+    importContext = {},
     allowHttp = false,
     trustedHosts = [],
     requestTimeout = 2000
@@ -689,7 +698,13 @@ function compile(arg1, arg2, arg3) {
 
   trustedHosts.push(...defaultTrustedHosts);
 
-  const requestOptions = {
+  const reader = defaultImportReader;
+
+  const importOptions = {
+    entryFilepath,
+    importPaths,
+    importCache,
+    importContext,
     allowHttp,
     trustedHosts,
     requestTimeout
@@ -728,8 +743,7 @@ function compile(arg1, arg2, arg3) {
     lib,
     reader,
     lang,
-    importPaths,
-    requestOptions
+    importOptions
   });
   txt = expandMacros(txt, macros);
 
@@ -765,26 +779,29 @@ function compile(arg1, arg2, arg3) {
   }
   var klass = compilers[lang];
   var compiler = new klass(asc);
-  var result = compiler.compile({ imports });
-  var { imports, result } = result;
+  var { imports, result } = compiler.compile({ imports });
   var targ = result;
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
+  logCallback("Loading imports", imports);
   for (var i = 0; i < imports.length; i++) {
-    var isrc;
+    var isrc, entry;
     if (imports[i] in lib[lang]) {
       isrc = lib[lang][imports[i]];
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      isrc = reader(imports[i], importPaths, requestOptions);
+      const file = reader(imports[i], importOptions);
+      isrc = file.src;
+      entry = file.entry;
     }
     targ =
       mwrapper(
         imports[i],
         compile(isrc, {
           ...options,
+          entryFilepath: entry,
           resetVarCnt: false,
           strict: false
         })
