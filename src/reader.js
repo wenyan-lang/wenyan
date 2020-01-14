@@ -48,14 +48,20 @@ function defaultImportReader(moduleName, requestOptions = {}) {
     entryFilepath,
     importPaths = [],
     importCache = {},
+    importContext = {},
     trustedHosts = [],
     requestTimeout = 2000
   } = requestOptions;
 
+  if (importContext[moduleName]) return { src: importContext[moduleName] };
+
   const pathes = [];
 
-  if (typeof importPaths === "string") pathes.push(importPaths);
-  else pathes.push(...importPaths);
+  if (typeof importPaths === "string") {
+    pathes.push(importPaths);
+  } else {
+    pathes.push(...importPaths);
+  }
 
   if (entryFilepath)
     pathes.push(

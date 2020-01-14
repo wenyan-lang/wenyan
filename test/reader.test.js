@@ -48,6 +48,19 @@ describe("reader", () => {
     });
   });
 
+  describe("context", () => {
+    it("loads from context", () => {
+      const mockSrc = "you have been hacked!";
+      const importContext = { helloworld: mockSrc };
+      const { src } = reader("helloworld", {
+        importPaths: "./examples",
+        importContext
+      });
+
+      expect(src).eq(mockSrc);
+    });
+  });
+
   describe("http", () => {
     it("block http imports by default", async () => {
       try {
