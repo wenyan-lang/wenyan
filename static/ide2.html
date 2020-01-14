@@ -686,7 +686,7 @@ const snippets = [
 
 snippets.sort((a,b)=>a.trigger.localeCompare(b.trigger))
 snippets.forEach(s => {
-  s.displayText = s.trigger + " • " + s.text
+  s.displayText = s.text
 })
 
 function showHint() {
