@@ -26,7 +26,7 @@
       height: calc(100% - 54px);
     }
     .bar {
-      height:20px;
+      height: 20px;
       padding:5px 10px;
       background: #f1f1f1;
       border: 1px solid gainsboro;
@@ -35,10 +35,22 @@
       overflow: hidden;
       white-space: nowrap;
     }
+    .bar * {
+      vertical-align: middle;
+    }
     .bar .title {
       display: inline-block;
       color: #777;
       padding: 0 10px;
+    }
+    .bar .right-aligned {
+      position: absolute;
+      top: 1px;
+      right: 0;
+      padding:5px;
+      display: inline-block;
+      height: 20px;
+      background: #f1f1f1;
     }
     #current-file-name {
       font-weight: bold;
@@ -179,9 +191,6 @@
     button:focus{
       outline:none;
     }
-    button.right-aligned {
-      float: right;
-    }
     button.hidden {
       display: none;
     }
@@ -211,7 +220,9 @@
   <div id="ex-outer">
     <div class="bar" id="explorer-bar">
       <span class="title">Explorer</span>
-      <button id="new-file" class="right-aligned">New</button>
+      <div class="right-aligned">
+        <button id="new-file">New</button>
+      </div>
     </div>
     <div id="explorer">
       <ul id="explorer-list">
@@ -235,8 +246,10 @@
       <span id="current-file-name"></span>
       <button id="compile">Compile</button>
       <button id="crun">Run</button>
-      <button id="delete-current" class="right-aligned">Delete</button>
-      <button id="download-current" class="right-aligned">Download</button>
+      <div class="right-aligned">
+        <button id="delete-current">Delete</button>
+        <button id="download-current">Download</button>
+      </div>
     </div>
     <div id="in"></div>
     <div class="editor-hint" id="in-hint">Hint: Press <code>Ctrl+.</code> or <code>Cmd+.</code> to show autocomplete.</div>
@@ -251,8 +264,10 @@
       <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
       &nbsp;&nbsp;
       <button id="run">Run JS</button>
-
-      <button id="dark" class="right-aligned">Dark Mode</button>
+      
+      <div class="right-aligned">
+        <button id="dark">Dark Mode</button>
+      </div>
     </div>
     <div id="js" class="cm-s-wenyan-light"></div>
   </div>
@@ -261,9 +276,10 @@
     <div class="bar" id="out-bar">
       <span class="title">Output</span>
       <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <button id="rend">Render Book</button>
-      <button id="download-render">Download Renders</button>
+      <div class="right-aligned">
+        <button id="rend">Render Book</button>
+        <button id="download-render">Download Renders</button>
+      </div>
     </div>
     <pre id="out"></pre>
   </div>
