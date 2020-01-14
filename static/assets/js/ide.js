@@ -37,18 +37,55 @@ var currentFile = {};
 var renderedSVGs = [];
 var state;
 var examples = {};
+var snippets = [];
 
 var isDark = false;
 var savingLock = false; // to ignore changes made from switching files
 
-for (const key of Object.keys(Examples.examples)) {
-  examples[key] = {
-    name: key,
-    alias: Examples.examplesAlias[key],
-    author: "examples",
-    readonly: true,
-    code: Examples.examples[key]
-  };
+var editorCM;
+var jsCM;
+
+function init() {
+  for (const key of Object.keys(Examples.examples)) {
+    examples[key] = {
+      name: key,
+      alias: Examples.examplesAlias[key],
+      author: "examples",
+      readonly: true,
+      code: Examples.examples[key]
+    };
+  }
+
+  for (var k of ["none", "pinyin", "baxter", "unicode"]) {
+    var opt = document.createElement("option");
+    opt.value = k;
+    opt.innerHTML = k;
+    selr.appendChild(opt);
+  }
+
+  snippets = [
+    { text: "「", trigger: "`" },
+    { text: "」", trigger: "'" },
+    { text: "「「", trigger: "[" },
+    { text: "」」", trigger: "]" },
+    ...Object.keys(Wenyan.KEYWORDS).map(x => ({
+      text: x,
+      trigger:
+        x.length > 1
+          ? Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g, "$1")
+          : Wenyan.hanzi2pinyin(x)
+    }))
+  ];
+
+  snippets.sort((a, b) => a.trigger.localeCompare(b.trigger));
+  snippets.forEach(s => {
+    s.displayText = s.text;
+  });
+}
+
+function wenyanHint(editor, options) {
+  console.log(options);
+  // TODO:
 }
 
 function loadState() {
@@ -125,24 +162,6 @@ function registerHandlerEvents(handler, set) {
   handler.addEventListener("touchstart", start);
 }
 
-registerHandlerEvents(dhv, ({ x }) => {
-  x = Math.max(x, handex + EDITOR_WIDTH_MIN);
-  x = Math.min(x, window.innerWidth - EDITOR_WIDTH_MIN);
-  handv = x;
-});
-
-registerHandlerEvents(dhh, ({ y }) => {
-  y = Math.max(y, EDITOR_HEIGHT_MIN);
-  y = Math.min(y, window.innerHeight - OUTPUT_HEIGHT_MIN);
-  handh = y;
-});
-
-registerHandlerEvents(dhex, ({ x }) => {
-  x = Math.max(x, EXPLORER_WIDTH_MIN);
-  x = Math.min(x, EXPLORER_WIDTH_MAX, handv - EDITOR_WIDTH_MIN);
-  handex = x;
-});
-
 function setView() {
   var W = window.innerWidth;
   var H = window.innerHeight;
@@ -183,26 +202,6 @@ function setView() {
   dhh.style.width = W - handex + "px";
   dhh.style.height = hw + "px";
 }
-
-var editorCM = CodeMirror(document.getElementById("in"), {
-  value: "",
-  mode: "wenyan",
-  lineNumbers: true,
-  theme: "wenyan-light",
-  styleActiveLine: true
-});
-
-editorCM.setSize(null, "100%");
-
-var jsCM = CodeMirror(document.getElementById("js"), {
-  value: "",
-  mode: "javascript",
-  lineNumbers: true,
-  theme: "wenyan-light",
-  styleActiveLine: true
-});
-
-jsCM.setSize(null, "100%");
 
 function hideImportedModules(source) {
   const markerRegex = /\/\*___wenyan_module_([\s\S]+?)_(start|end)___\*\//g;
@@ -369,25 +368,6 @@ function renameCurrentFile() {
   }
 }
 
-const snippets = [
-  { text: "「", trigger: "`" },
-  { text: "」", trigger: "'" },
-  { text: "「「", trigger: "[" },
-  { text: "」」", trigger: "]" },
-  ...Object.keys(Wenyan.KEYWORDS).map(x => ({
-    text: x,
-    trigger:
-      x.length > 1
-        ? Wenyan.hanzi2pinyin(x).replace(/([A-z])[A-z]+?([1-9])/g, "$1")
-        : Wenyan.hanzi2pinyin(x)
-  }))
-];
-
-snippets.sort((a, b) => a.trigger.localeCompare(b.trigger));
-snippets.forEach(s => {
-  s.displayText = s.text;
-});
-
 function showHint() {
   CodeMirror.showHint(
     editorCM,
@@ -415,40 +395,6 @@ function showHint() {
     },
     { completeSingle: false }
   );
-}
-
-editorCM.on("change", e => {
-  if (savingLock) return;
-
-  if (!currentFile.readonly) {
-    currentFile.code = editorCM.getValue();
-    saveState();
-  } else {
-    // make a copy for examples
-    let num = 1;
-    while (state.files[`${currentFile.name}_${num}`]) {
-      num += 1;
-    }
-    const name = `${currentFile.name}_${num}`;
-    const newFile = {
-      name: name,
-      alias: currentFile.alias
-        ? `${currentFile.alias}「${Wenyan.num2hanzi(num)}」`
-        : "",
-      code: editorCM.getValue()
-    };
-    state.files[name] = newFile;
-    currentFile = newFile;
-    saveState();
-    openFile(name);
-  }
-});
-
-for (var k of ["none", "pinyin", "baxter", "unicode"]) {
-  var opt = document.createElement("option");
-  opt.value = k;
-  opt.innerHTML = k;
-  selr.appendChild(opt);
 }
 
 function getImportContext() {
@@ -563,6 +509,81 @@ function render() {
   downloadRenderBtn.classList.toggle("hidden", false);
 }
 
+/* =========== Scripts =========== */
+
+init();
+
+editorCM = CodeMirror(document.getElementById("in"), {
+  value: "",
+  mode: "wenyan",
+  lineNumbers: true,
+  theme: "wenyan-light",
+  styleActiveLine: true,
+  hintOptions: { hint: wenyanHint },
+  extraKeys: {
+    "/": showHint,
+    "Shift-Enter": crun,
+    "Alt-Enter": compile
+  }
+});
+
+editorCM.setSize(null, "100%");
+
+jsCM = CodeMirror(document.getElementById("js"), {
+  value: "",
+  mode: "javascript",
+  lineNumbers: true,
+  theme: "wenyan-light",
+  styleActiveLine: true
+});
+
+jsCM.setSize(null, "100%");
+
+editorCM.on("change", e => {
+  if (savingLock) return;
+
+  if (!currentFile.readonly) {
+    currentFile.code = editorCM.getValue();
+    saveState();
+  } else {
+    // make a copy for examples
+    let num = 1;
+    while (state.files[`${currentFile.name}_${num}`]) {
+      num += 1;
+    }
+    const name = `${currentFile.name}_${num}`;
+    const newFile = {
+      name: name,
+      alias: currentFile.alias
+        ? `${currentFile.alias}「${Wenyan.num2hanzi(num)}」`
+        : "",
+      code: editorCM.getValue()
+    };
+    state.files[name] = newFile;
+    currentFile = newFile;
+    saveState();
+    openFile(name);
+  }
+});
+
+registerHandlerEvents(dhv, ({ x }) => {
+  x = Math.max(x, handex + EDITOR_WIDTH_MIN);
+  x = Math.min(x, window.innerWidth - EDITOR_WIDTH_MIN);
+  handv = x;
+});
+
+registerHandlerEvents(dhh, ({ y }) => {
+  y = Math.max(y, EDITOR_HEIGHT_MIN);
+  y = Math.min(y, window.innerHeight - OUTPUT_HEIGHT_MIN);
+  handh = y;
+});
+
+registerHandlerEvents(dhex, ({ x }) => {
+  x = Math.max(x, EXPLORER_WIDTH_MIN);
+  x = Math.min(x, EXPLORER_WIDTH_MAX, handv - EDITOR_WIDTH_MIN);
+  handex = x;
+});
+
 document.getElementById("compile").onclick = compile;
 document.getElementById("run").onclick = run;
 document.getElementById("crun").onclick = crun;
@@ -590,13 +611,6 @@ selr.onchange = () => {
   saveConfig();
   crun();
 };
-
-editorCM.setOption("extraKeys", {
-  "Cmd-.": showHint,
-  "Ctrl-.": showHint,
-  "Shift-Enter": crun,
-  "Alt-Enter": compile
-});
 
 document.body.onresize = setView;
 window.addEventListener("popstate", loadFromUrl);
