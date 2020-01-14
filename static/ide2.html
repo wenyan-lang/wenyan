@@ -387,61 +387,63 @@ function saveState() {
 
 loadState()
 
-dhv.onmousedown = function(e){
-  e.preventDefault();
-  var handler = function(event) {
-    if (event.buttons === 1){
-      let x = event.pageX
-      if (x < handex + EDITOR_WIDTH_MIN)
-        return
-      if (x > window.innerWidth - EDITOR_WIDTH_MIN)
-        return
-      handv = x;
-      setView();
-    } else {
-      document.body.removeEventListener('mousemove', handler);
-    } 
-  };
-  document.body.addEventListener('mousemove', handler);
+function registerHandlerEvents(handler, set){
+  function start (e) {
+    e.preventDefault();
+    const mouseHandler = (event) => {
+      if (event.buttons === 1){
+        let x = event.pageX
+        let y = event.pageY
+        set({x, y})
+        setView();
+      }
+    }
+
+    const touchHanlder = (event) => {
+      if (event.touches.length) {
+        var x = event.touches[0].clientX
+        var y = event.touches[0].clientY
+        set({x, y})
+        setView();
+      }
+    }
+
+    const clear = () => {
+      document.body.removeEventListener('mousemove', mouseHandler);
+      document.body.removeEventListener('touchmove', touchHanlder);
+      document.body.removeEventListener('mouseup', clear);
+      document.body.removeEventListener('touchend', clear);
+      document.body.removeEventListener('touchcancel', clear);
+    }
+   
+    document.body.addEventListener('mousemove', mouseHandler);
+    document.body.addEventListener('touchmove', touchHanlder);
+    document.body.addEventListener('mouseup', clear);
+    document.body.addEventListener('touchend', clear);
+    document.body.addEventListener('touchcancel', clear);
+  }
+
+  handler.addEventListener('mousedown', start);
+  handler.addEventListener('touchstart', start);
 }
 
-dhh.onmousedown = function(e){
-  e.preventDefault();
-  var handler = function(event){
-    if (event.buttons === 1){
-      let y = event.pageY;
-      if (y < EDITOR_HEIGHT_MIN)
-        return
-      if (y > window.innerHeight - OUTPUT_HEIGHT_MIN)
-        return
-      handh = y;
-      setView();
-    }else{
-      document.body.removeEventListener('mousemove', handler);
-    } 
-  };
-  document.body.addEventListener('mousemove', handler);
-}
+registerHandlerEvents(dhv, ({x})=> {
+  x = Math.max(x, handex + EDITOR_WIDTH_MIN)
+  x = Math.min(x, window.innerWidth - EDITOR_WIDTH_MIN)
+  handv = x;
+})
 
-dhex.onmousedown = function(e){
-  e.preventDefault();
-  var handler = function(event){
-    if (event.buttons === 1){
-      let x = event.pageX
-      if (x < EXPLORER_WIDTH_MIN)
-        return
-      if (x > EXPLORER_WIDTH_MAX)
-        return
-      if (x > handv - EDITOR_WIDTH_MIN)
-        return
-      handex = x
-      setView();
-    }else{
-      document.body.removeEventListener('mousemove', handler);
-    } 
-  };
-  document.body.addEventListener('mousemove', handler);
-}
+registerHandlerEvents(dhh, ({y})=> {
+  y = Math.max(y, EDITOR_HEIGHT_MIN)
+  y = Math.min(y, window.innerHeight - OUTPUT_HEIGHT_MIN)
+  handh = y;
+})
+
+registerHandlerEvents(dhex, ({x})=> {
+  x = Math.max(x, EXPLORER_WIDTH_MIN)
+  x = Math.min(x, EXPLORER_WIDTH_MAX, handv - EDITOR_WIDTH_MIN)
+  handex = x
+})
 
 function setView(){
   // requestAnimationFrame(setView)
@@ -482,7 +484,7 @@ function setView(){
 
   dhh.style.left=handex+"px";
   dhh.style.top=(handh-hw/2)+"px";
-  dhh.style.width=W+"px"
+  dhh.style.width=(W-handex)+"px"
   dhh.style.height=hw+"px";
 }
 
