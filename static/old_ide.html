@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>wenyan-lang Online IDE</title>
+  <style>
+  [contenteditable="true"]:focus {outline: none;}
+  pre{tab-size: 4;}
+  .tbar{background:white;color:black;font-style:italic;font-family:monospace;font-size:14px;opacity:80%;margin-top:20px;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
+  <script src="./dist/core.js"></script>
+  <script src="./dist/examples.js"></script>
+  <script src="./dist/highlight.js"></script>
+</head>
+
+<body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
+  <h2><i>wenyan-lang</i></h2>
+  <table><tr><td>
+  <select id="pick-example"></select><button id="run">Run</button>
+  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="checkbox" id="output-hanzi" checked=""/><small>Output Hanzi</small>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <small>Romanization</small><select id="pick-roman"></select>
+  
+  </td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
+  <script src="/assets/js/old_ide.js"></script>
+</body>
+</html>

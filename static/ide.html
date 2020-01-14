@@ -2,35 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>wenyan-lang Online IDE</title>
-  <style>
-  [contenteditable="true"]:focus {outline: none;}
-  pre{tab-size: 4;}
-  .tbar{background:white;color:black;font-style:italic;font-family:monospace;font-size:14px;opacity:80%;margin-top:20px;}
-  </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/monokai-sublime.min.css">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" size="32x32" href="/assets/media/favicon-32x32.png">
+  <link rel="icon" type="image/png" size="16x16" href="/assets/media/favicon-16x16.png">
+
+  <title>文言 Wenyan Online IDE</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.css" />
+  <link rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/wenyan-light.codemirror.css'/>
+  <link rel='stylesheet' type='text/css' href='/assets/css/ide.css'/>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/runmode/runmode.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/mode/simple.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+  <script src="https://code.iconify.design/1/1.0.0-rc1/iconify.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.10.2/beautify.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
   <script src="./dist/core.js"></script>
   <script src="./dist/examples.js"></script>
-  <script src="./dist/highlight.js"></script>
+  <script src="./dist/render.js"></script>
 </head>
 
-<body style="background:#272822;padding:20px;color:white;font-family:sans-serif;">
-  <h2><i>wenyan-lang</i></h2>
-  <table><tr><td>
-  <select id="pick-example"></select><button id="run">Run</button>
+<body>
+  <div id="ex-outer">
+    <div class="bar" id="explorer-bar">
+      <span class="title">文言 Wenyan</span>
+      <div class="right-aligned">
+        <button id="new-file" class="icon">
+          <span class="iconify" data-icon="mdi:plus" data-inline="false"></span>
+        </button>
+      </div>
+    </div>
+    <div id="explorer">
+      <ul id="explorer-list">
+        <li>
+          <span class="caret">My Scripts</span>
+          <ul class="nested active" id="explorer-list-user">
+          </ul>
+        </li>
+        <li>
+          <span class="caret">Examples</span>
+          <ul class="nested active" id="explorer-list-examples">
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="in-outer">
+    <div class="bar" id="in-bar">
+      <span id="current-file-name" class="title"></span>
+      <button id="crun" class="icon">
+        <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
+      </button>
+      <button id="compile">Compile</button>
+      <div class="right-aligned">
+        <button id="delete-current" class="icon">        
+          <span class="iconify" data-icon="mdi:trash-can-outline" data-inline="false"></span>
+        </button>
+        <button id="download-current" class="icon">
+          <span class="iconify" data-icon="mdi:download" data-inline="false"></span>
+        </button>
+      </div>
+    </div>
+    <div id="in"></div>
+    <div class="editor-hint" id="in-hint">Changes are auto-saved.</div>
+  </div>
   
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <input type="checkbox" id="auto-hl"/><small>Auto Highlight</small>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported Code</small>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <input type="checkbox" id="output-hanzi" checked=""/><small>Output Hanzi</small>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <small>Romanization</small><select id="pick-roman"></select>
+  <div id="js-outer">
+    <div class="bar" id="js-bar">
+      <span class="title">Compiled</span>
+      &nbsp;
+      <button id="run" class="icon">
+        <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
+      </button>
+      &nbsp;&nbsp;&nbsp;
+      <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
+      &nbsp;&nbsp;
+      <input type="checkbox" id="hide-std" checked=""/><small>Hide Imported</small>
+      
+      <div class="right-aligned">
+        <button id="help-button" class="icon">
+          <span class="iconify" data-icon="mdi:help-circle-outline" data-inline="false"></span>
+        </button>
+        <button id="dark" class="icon">
+          <span id="dark-icon-night" class="iconify" data-icon="mdi:weather-night" data-inline="false"></span>
+          <span id="dark-icon-sunny" class="iconify hidden" data-icon="mdi:weather-sunny" data-inline="false"></span>
+        </button>
+      </div>
+    </div>
+    <div id="js" class="cm-s-wenyan-light"></div>
+  </div>
   
-  </td></tr><tr><td id="in" valign="top"><div class="tbar">EDITOR</div></td><td rowspan="2" valign="top"><div class="tbar">COMPILED JAVASCRIPT</div><pre id="js"></pre></td></tr><tr><td valign="top"><div class="tbar">OUTPUT</div><pre id="out"></pre></td></tr></table>
-  <script src="./ide.js"></script>
+  <div id="out-outer">
+    <div class="bar" id="out-bar">
+      <span class="title">Output</span>
+      <input type="checkbox" id="output-hanzi" checked=""/><small>Print Hanzi</small>
+      <div class="right-aligned">
+        <button id="rend">Render Book</button>
+        <button id="download-render" class="icon">
+          <span class="iconify" data-icon="mdi:download" data-inline="false"></span>
+        </button>
+      </div>
+    </div>
+    <pre id="out"></pre>
+  </div>
+
+  <div id="help-panel" class="hidden">
+    <div class="title">Shortcuts</div>
+    
+    <table id="shortcut-table">
+      <tr><td>Ctrl+. / Cmd+.</td><td>Auto-complete</td></tr>
+      <tr><td>Shift + Enter</td><td>Execute</td></tr>
+      <tr><td>Alt + Enter</td><td>Compile</td></tr>
+    </table>
+
+    <a href="/old_ide.html"><button>Legacy IDE</button></a>
+  </div>
+
+
+  <div id="hand-ex"><div id="hand-ex-inner"></div></div>
+  <div id="hand-h"><div id="hand-h-inner"></div></div>
+  <div id="hand-v"><div id="hand-v-inner"></div></div>
+
+  <div id="keywords"></div>
+
+  <script src="/assets/js/ide.js"></script>
 </body>
 </html>
