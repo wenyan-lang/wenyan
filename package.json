@@ -44,6 +44,11 @@
       "prettier --write",
       "eslint --fix",
       "git add"
+    ],
+    "static/assets/js/**/*.js": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
     ]
   },
   "devDependencies": {
