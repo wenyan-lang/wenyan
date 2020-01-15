@@ -209,34 +209,56 @@ ul.nested.active {
   opacity: 0.5
 }
 
-#help-panel {
+.panel {
   background: #fff;
   border: 1px solid gainsboro;
-  box-shadow: 2px 2px 11px 0px rgba(50, 50, 50, 0.38);
+  box-shadow: 2px 2px 11px 0px rgba(180, 180, 180, 0.38);
   border-radius: 3px;
+  padding: 16px 14px;
+}
+
+.panel .title {
+  opacity: 0.5;
+  font-size: 1.1em;
+  padding: 0 5px;
+}
+
+.panel .section {
+  font-size: 0.9em;
+  padding: 5px 5px;
+}
+
+.panel .details {
+  padding: 5px 5px;
+  font-style: italic;
+  font-size: 0.85em;
+  opacity: 0.6;
+}
+
+.panel .close {
+  position: absolute;
+  right: 5px;
+  top: 8px;
+  line-height: 26px;
+}
+
+#help-panel {
   position: fixed;
   top: 35px;
   right: 45px;
   width: 300px;
   z-index: 1000;
-  padding: 16px 14px;
 }
 
-#help-panel .title {
-  opacity: 0.5;
-  padding: 0 4px;
+#package-info-panel {
+  position: fixed;
+  width: 400px;
+  top: 50vh;
+  left: calc(50vw - 150px);
+  transform: translateY(-50%);
+  z-index: 1000;
 }
 
-#help-panel .section {
-  font-size: 0.9em;
-}
-
-#help-panel .details {
-  padding: 15px 5px 0 5px;
-  font-style: italic;
-  font-size: 0.85em;
-  opacity: 0.6;
-}
 
 #shortcut-table {
   font-size: 0.9em;

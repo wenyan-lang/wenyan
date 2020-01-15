@@ -36,6 +36,7 @@ const outdiv = document.getElementById("out");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
+const packageInfoPanel = document.getElementById("package-info-panel");
 
 const configDark = document.getElementById("config-dark");
 const configHideImported = document.getElementById("cofig-hide-imported");
@@ -321,9 +322,7 @@ function createExplorerPackageEntry(pkg) {
   a.classList.add("alias");
   a.innerText = "by " + author;
   item.appendChild(a);
-  item.onclick = () => {
-    // TODO:
-  };
+  item.onclick = () => showPackageInfo(pkg);
   return item;
 }
 
@@ -582,6 +581,31 @@ function render() {
     outdiv.innerHTML += svg + "<br>";
   }
   downloadRenderBtn.classList.toggle("hidden", false);
+}
+
+function showPackageInfo(pkg) {
+  packageInfoPanel.querySelector(".import").onclick = () =>
+    importPackageIntoCurrent(pkg);
+  packageInfoPanel.querySelector(".title").innerText = pkg.name;
+  packageInfoPanel.querySelector(".author").innerText = pkg.author;
+  packageInfoPanel
+    .querySelector(".description")
+    .classList.toggle("hidden", !pkg.description);
+  packageInfoPanel.querySelector(".description").innerText = pkg.description;
+  packageInfoPanel
+    .querySelector(".home-link")
+    .classList.toggle("hidden", !pkg.href);
+  packageInfoPanel.querySelector(".home-link").href = pkg.href;
+  packageInfoPanel.classList.toggle("hidden", false);
+}
+
+function closePackageInfo() {
+  packageInfoPanel.classList.toggle("hidden", true);
+}
+
+function importPackageIntoCurrent({ name }) {
+  editorCM.setValue(`吾嘗觀「「${name}」」之書。\n${editorCM.getValue()}`);
+  closePackageInfo();
 }
 
 /* =========== Scripts =========== */

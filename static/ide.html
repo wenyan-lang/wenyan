@@ -133,7 +133,7 @@
     <pre id="out"></pre>
   </div>
 
-  <div id="help-panel" class="hidden">
+  <div id="help-panel" class="panel hidden">
     <div class="title">Shortcuts</div>
     
     <table id="shortcut-table">
@@ -144,9 +144,27 @@
     <a href="/old_ide.html"><button>Legacy IDE</button></a>
     <a href="https://github.com/wenyan-lang/wenyan" target="__blank"><button>Docs</button></a>
 
+    <br><br>
+
     <div class="details">All changes are auto-saved.</div>
   </div>
 
+  <div id="package-info-panel" class="panel hidden">
+    <div class="title">{name}</div>
+    <div class="section description">{description}</div>
+    <div class="details">
+      by <a class="author">{author}</a>
+    </div>
+
+    <br>
+
+    <a class="home-link" href="" target="_blank"><button>Goto Homepage</button></a>
+    <button class="import">Import into current script</button>
+
+    <button class="close icon" onclick='closePackageInfo()'>
+      <span class="iconify" data-icon="mdi:close" data-inline="false"></span>
+    </button>
+  </div>
 
   <div id="hand-ex"><div id="hand-ex-inner"></div></div>
   <div id="hand-h"><div id="hand-h-inner"></div></div>
