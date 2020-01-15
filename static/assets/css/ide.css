@@ -280,6 +280,7 @@ button.icon {
   width: 26px;
   font-size: 16px;
   line-height: 16px;
+  cursor: pointer;
 }
 
 button.checkbox {
@@ -301,9 +302,42 @@ button.checkbox .iconify {
 }
 button.checkbox:hover .iconify {
   border: 1px solid grey;
+  background: gainsboro;
 }
 button.checkbox:not(.checked) .iconify {
   color: transparent;
+}
+
+button.dropdown {
+  position: relative;
+  user-select: none;
+}
+
+button.dropdown select {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: -4;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  cursor: pointer;
+}
+
+button.dropdown label {
+  border-right: 1px solid gainsboro;
+  height: 100%;
+  margin: -5px 0;
+  padding-right: 6px;
+  margin-right: 3px;
+  width: 16px;
+  margin-bottom: 1px;
+}
+
+button.dropdown:hover label {
+  border-right: 1px solid grey;
 }
 
 .hidden {

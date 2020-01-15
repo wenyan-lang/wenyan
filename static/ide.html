@@ -88,11 +88,16 @@
       <button id="run" class="icon">
         <span class="iconify" data-icon="mdi:play" data-inline="false"></span>
       </button>
+      <button class="dropdown" id="config-romanize" data-config="romanizeIdentifiers">
+        <label>Romanization</label>
+        <span class="value">none</span>
+        <span class="iconify" data-icon="mdi:menu-down" data-inline="false"></span>
+        <select></select>
+      </button>
       <button id="cofig-hide-imported" class="checkbox" data-config="hideImported">
         <span class="iconify" data-icon="mdi:check" data-inline="false"></span>
-        <span>Hide Imported</span>
+        <label>Hide Imported</label>
       </button>
-      <small>Romanization</small>&nbsp;<select id="pick-roman"></select>
       
       <div class="right-aligned">
         <button id="help-button" class="icon">
@@ -112,11 +117,11 @@
       <span class="title">Output</span>
       <button id="config-output-hanzi" class="checkbox" data-config="outputHanzi">
         <span class="iconify" data-icon="mdi:check" data-inline="false"></span>
-        <span>Print Hanzi</span>
+        <label>Print Hanzi</label>
       </button>
       <button id="config-enable-packages" class="checkbox" data-config="enablePackages">
         <span class="iconify" data-icon="mdi:check" data-inline="false"></span>
-        <span>Use Packages</span>
+        <label>Use Packages</label>
       </button>
       <div class="right-aligned">
         <button id="rend">Render Book</button>

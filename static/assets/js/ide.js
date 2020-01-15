@@ -32,7 +32,6 @@ const exlistExamples = document.getElementById("explorer-list-examples");
 const exlistPackages = document.getElementById("explorer-list-packages");
 const explorerPackages = document.getElementById("explorer-packages");
 
-const selr = document.getElementById("pick-roman");
 const outdiv = document.getElementById("out");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
@@ -42,6 +41,7 @@ const configDark = document.getElementById("config-dark");
 const configHideImported = document.getElementById("cofig-hide-imported");
 const configEnablePackages = document.getElementById("config-enable-packages");
 const configOutputHanzi = document.getElementById("config-output-hanzi");
+const configRomanize = document.getElementById("config-romanize");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -74,7 +74,7 @@ function init() {
     var opt = document.createElement("option");
     opt.value = k;
     opt.innerHTML = k;
-    selr.appendChild(opt);
+    document.querySelector("#config-romanize select").appendChild(opt);
   }
 
   snippets = [
@@ -102,7 +102,9 @@ function init() {
 }
 
 function initConfigComponents() {
-  const checkboxes = document.querySelectorAll("button[data-config]");
+  const checkboxes = document.querySelectorAll(
+    "button[data-config]:not(.dropdown)"
+  );
   for (const cb of checkboxes) {
     cb.classList.toggle("checked", state.config[cb.dataset.config]);
 
@@ -111,6 +113,18 @@ function initConfigComponents() {
       state.config[cb.dataset.config] = cb.classList.contains("checked");
       saveState();
       if (cb.onchange) cb.onchange();
+    });
+  }
+
+  const dropdowns = document.querySelectorAll("button.dropdown[data-config]");
+  for (const dd of dropdowns) {
+    const value = dd.querySelector(".value");
+    const select = dd.querySelector("select");
+    value.innerText = select.value = state.config[dd.dataset.config];
+    select.addEventListener("change", () => {
+      state.config[dd.dataset.config] = value.innerText = select.value;
+      saveState();
+      if (dd.onchange) dd.onchange();
     });
   }
 }
@@ -126,18 +140,7 @@ function saveState() {
 }
 
 function loadConfig() {
-  const { dark = false, romanizeIdentifiers = "none" } = state.config;
-
-  selr.value = romanizeIdentifiers;
   updateDark();
-}
-
-function saveConfig() {
-  state.config = {
-    ...state.config,
-    romanizeIdentifiers: selr.value
-  };
-  saveState();
 }
 
 function registerHandlerEvents(handler, set) {
@@ -490,7 +493,7 @@ function compile() {
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: "js",
-      romanizeIdentifiers: selr.value,
+      romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
@@ -527,7 +530,7 @@ function crun() {
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: "js",
-      romanizeIdentifiers: selr.value,
+      romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
@@ -672,12 +675,9 @@ fileNameSpan.onclick = renameCurrentFile;
 configDark.onchange = updateDark;
 configHideImported.onchange = crun;
 configOutputHanzi.onchange = crun;
+configRomanize.onchange = crun;
 configEnablePackages.onchange = () => {
   loadPackages();
-  crun();
-};
-selr.onchange = () => {
-  saveConfig();
   crun();
 };
 
