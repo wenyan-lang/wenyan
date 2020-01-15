@@ -1,13 +1,19 @@
-const { compile, execute } = require("../src/parser");
-const { expect } = require("chai");
+import { execute, compile } from "../src/parser";
+import { CompileOptions } from "../src/types";
+
 var utils = require("../tools/utils");
+const lib = utils.loadlib();
 
-var lib = utils.loadlib();
+export interface Options {
+  prefix: string;
+  suffix: string;
+  compileOptions: Partial<CompileOptions>;
+}
 
-function createTestUtil(options = {}) {
+function createTestUtil(options: Partial<Options> = {}) {
   const { prefix = "", suffix = "書之", compileOptions = {} } = options;
 
-  function expectOutput(source, expected) {
+  function expectOutput(source: string, expected: string) {
     let output = "";
     execute(prefix + source + suffix, {
       lang: "js",
@@ -18,13 +24,13 @@ function createTestUtil(options = {}) {
       output: (...args) => (output += args.join(" ") + "\n")
     });
 
-    expect(output.trim()).eq(expected.trim());
+    expect(output.trim()).toEqual(expected.trim());
   }
 
   return { expectOutput };
 }
 
-function compileLib(name, options = {}) {
+function compileLib(name: string, options: Partial<CompileOptions> = {}) {
   const jsCode = compile(lib[name], {
     lang: "js",
     romanizeIdentifiers: "none",
@@ -46,15 +52,20 @@ function compileLib(name, options = {}) {
  * @param {number} expected - Expected value.
  * @param {string} [message] - Debug message.
  */
-function assertNumberEqual(actual, expected, message = undefined) {
-  if (Number.isNaN(expected)) {
-    expect(actual, message).NaN;
-  } else {
-    expect(actual, message).eq(expected);
+function assertNumberEqual(actual: number, expected: number, message?: string) {
+  try {
+    if (Number.isNaN(expected)) {
+      expect(actual).toBeNaN();
+    } else {
+      expect(actual === expected).toBeTruthy();
+    }
+  } catch (e) {
+    if (message) throw new Error(message);
+    else throw e;
   }
 }
 
-function compareResults(x, y) {
+function compareResults(x: number, y: number) {
   const ax = [].concat(x);
   const ay = [].concat(y);
   const len = Math.min(ax.length, ay.length);
@@ -72,13 +83,13 @@ function compareResults(x, y) {
   return 0;
 }
 
-function isOnCorrectSide(actual, expected, boundary) {
+function isOnCorrectSide(actual: number, expected: number, boundary: number) {
   return (
     compareResults(actual, boundary) * compareResults(expected, boundary) >= 0
   );
 }
 
-function calcError(actual, expected) {
+function calcError(actual: number, expected: number | number[]) {
   if (Array.isArray(expected)) {
     return expected.reduce((err, y) => err - y, actual);
   } else {
@@ -86,7 +97,15 @@ function calcError(actual, expected) {
   }
 }
 
-function nearlyEqual(actual, expected, options = {}) {
+function nearlyEqual(
+  actual: number,
+  expected: number,
+  options: {
+    relTol?: number;
+    absTol?: number;
+    bounds?: number[] | number[][];
+  } = {}
+) {
   const {
     relTol = Number.EPSILON, // relative error
     absTol = 0, // absolute error
@@ -124,10 +143,15 @@ function nearlyEqual(actual, expected, options = {}) {
  * @param {string} [message] - Debug message.
  */
 function assertNearlyEqual(
-  actual,
-  expected,
-  options = {},
-  message = undefined
+  actual: number,
+  expected: number,
+  options: {
+    relTol?: number;
+    absTol?: number;
+    alts?: number[];
+    bounds?: number[] | number[][]; // boundary values (shall not cross into the wrong side)
+  } = {},
+  message?: string
 ) {
   const {
     relTol = Number.EPSILON, // relative error
@@ -136,16 +160,16 @@ function assertNearlyEqual(
     bounds = [] // boundary values (shall not cross into the wrong side)
   } = options;
 
-  expect(actual, message).satisfy(a =>
-    [expected]
-      .concat(alts)
-      .some(e => nearlyEqual(a, e, { relTol, absTol, bounds }))
-  );
+  try {
+    expect(
+      [expected]
+        .concat(alts)
+        .some(e => nearlyEqual(actual, e, { relTol, absTol, bounds }))
+    ).toBeTruthy();
+  } catch (e) {
+    if (message) throw new Error(message);
+    else throw e;
+  }
 }
 
-module.exports = {
-  createTestUtil,
-  compileLib,
-  assertNumberEqual,
-  assertNearlyEqual
-};
+export { createTestUtil, compileLib, assertNumberEqual, assertNearlyEqual };

@@ -1,4 +1,4 @@
-const { compileLib, assertNumberEqual, assertNearlyEqual } = require("./utils");
+import { compileLib, assertNumberEqual, assertNearlyEqual } from "./utils";
 const cases = require("./stdlib.math.test.cases");
 
 const 算經 = compileLib("算經");
