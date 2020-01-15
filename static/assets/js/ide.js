@@ -1,7 +1,13 @@
 const LOCAL_STORAGE_KEY = "wenyang-ide";
 const TITLE = " - 文言 Wenyan Online IDE";
 const DEFAULT_STATE = () => ({
-  config: {},
+  config: {
+    romanizeIdentifiers: "none",
+    dark: false,
+    enablePackages: true,
+    outputHanzi: true,
+    hideImported: true
+  },
   files: {},
   wyg: {
     packages: [],
@@ -132,16 +138,19 @@ function initConfigComponents() {
 
 function loadState() {
   const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (raw) state = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
-  else state = DEFAULT_STATE();
+  const defaultState = DEFAULT_STATE();
+
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    state = Object.assign({}, defaultState, parsed);
+    state.config = Object.assign({}, defaultState.config, parsed.config);
+  } else state = defaultState;
+
+  updateDark();
 }
 
 function saveState() {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadConfig() {
-  updateDark();
 }
 
 function registerHandlerEvents(handler, set) {
@@ -558,17 +567,17 @@ function crun() {
 }
 
 function updateDark() {
-  if (!state.config.dark) {
+  if (state.config.dark) {
     document.body.style.filter = "invert(0.88)";
   } else {
     document.body.style.filter = "invert(0)";
   }
   document
     .getElementById("dark-icon-sunny")
-    .classList.toggle("hidden", state.config.dark);
+    .classList.toggle("hidden", !state.config.dark);
   document
     .getElementById("dark-icon-night")
-    .classList.toggle("hidden", !state.config.dark);
+    .classList.toggle("hidden", state.config.dark);
 }
 
 function render() {
@@ -594,8 +603,8 @@ function showPackageInfo(pkg) {
   packageInfoPanel.querySelector(".description").innerText = pkg.description;
   packageInfoPanel
     .querySelector(".home-link")
-    .classList.toggle("hidden", !pkg.href);
-  packageInfoPanel.querySelector(".home-link").href = pkg.href;
+    .classList.toggle("hidden", !pkg.repo);
+  packageInfoPanel.querySelector(".home-link").href = Wyg.getRepoRoot(pkg.repo);
   packageInfoPanel.classList.toggle("hidden", false);
 }
 
@@ -708,7 +717,6 @@ configEnablePackages.onchange = () => {
 document.body.onresize = setView;
 window.addEventListener("popstate", loadFromUrl);
 loadState();
-loadConfig();
 initConfigComponents();
 loadPackages();
 setView();
