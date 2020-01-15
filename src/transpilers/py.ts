@@ -1,5 +1,5 @@
 import { BaseTranspiler } from "./base";
-import { TranspilerOptions } from "../types";
+import { TranspilerOptions, ASCNodeOperator } from "../types";
 
 export default class PYCompiler extends BaseTranspiler {
   transpile(options: Partial<TranspilerOptions> = {}) {
@@ -200,9 +200,10 @@ export default class PYCompiler extends BaseTranspiler {
         py += "\t".repeat(curlvl);
         py += `return ${getval(a.value)}\n`;
       } else if (a.op.startsWith("op")) {
+        let _a = a as ASCNodeOperator;
         py += "\t".repeat(curlvl);
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
+        var lhs = getval(_a.lhs);
+        var rhs = getval(_a.rhs);
         var vname = this.nextTmpVar();
         py += `${vname}=${lhs}${
           lop[a.op.slice(2)] ? lop[a.op.slice(2)] : a.op.slice(2)

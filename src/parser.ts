@@ -4,7 +4,6 @@ import {
   LogCallback,
   ASCNode,
   Token,
-  ASCType,
   TokenType
 } from "./types";
 import {
@@ -352,7 +351,7 @@ function tokens2asc(
       asc.push({ op: "print", pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funstart") {
-      var x: any = { op: "fun", arity: 0, args: [], pos };
+      var x: ASCNode = { op: "fun", arity: 0, args: [], pos };
       i++;
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
@@ -386,7 +385,7 @@ function tokens2asc(
         pos,
         gettok(i + 2, 0) == "ctrl" && gettok(i + 1, 0) == "iden"
       );
-      asc.push({ op: gettok(i + 2, 1), pos });
+      asc.push({ op: gettok(i + 2, 1) as "objend", pos });
       i += 3;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "objbody") {
       asc.push({ op: "objbody", pos });
@@ -438,7 +437,7 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "op") {
       typeassert(i + 2, ["opord"]);
-      var x: ASCNode = { pos };
+      var x: ASCNode = { op: "op+", pos };
       if (gettok(i + 2, 1) == "l") {
         x.lhs = tokens[i + 1];
         x.rhs = tokens[i + 3];
@@ -447,10 +446,10 @@ function tokens2asc(
         x.rhs = tokens[i + 1];
       }
       if (gettok(i, 1) == "/" && gettok(i + 4, 0) == "mod") {
-        x.op = "op" + "%";
+        x.op = "op%";
         i += 5;
       } else {
-        x.op = "op" + gettok(i, 1);
+        x.op = ("op" + gettok(i, 1)) as "op+";
         i += 4;
       }
       asc.push(x);
@@ -524,7 +523,7 @@ function tokens2asc(
       gettok(i + 3, 0) == "lop"
     ) {
       var x: ASCNode = {
-        op: "op" + gettok(i + 3, 1),
+        op: ("op" + gettok(i + 3, 1)) as "op+",
         lhs: tokens[i + 1],
         rhs: tokens[i + 2],
         pos
@@ -532,7 +531,7 @@ function tokens2asc(
       asc.push(x);
       i += 4;
     } else if (gettok(i, 0) == "expr") {
-      asc.push({ op: "temp", iden: tokens[i + 1] });
+      asc.push({ op: "temp", iden: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
       var x: ASCNode = { op: "cat", containers: [tokens[i + 1]], pos };

@@ -1,5 +1,5 @@
 import { BaseTranspiler } from "./base";
-import { TranspilerOptions } from "../types";
+import { TranspilerOptions, ASCNodeOperator } from "../types";
 
 export default class JSCompiler extends BaseTranspiler {
   transpile(options: Partial<TranspilerOptions> = {}) {
@@ -156,8 +156,9 @@ export default class JSCompiler extends BaseTranspiler {
       } else if (a.op == "return") {
         js += `return ${getval(a.value)};`;
       } else if (a.op.startsWith("op")) {
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
+        let _a = a as ASCNodeOperator;
+        var lhs = getval(_a.lhs);
+        var rhs = getval(_a.rhs);
         var vname = this.nextTmpVar();
         js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);

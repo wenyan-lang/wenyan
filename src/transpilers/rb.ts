@@ -1,5 +1,5 @@
 import { BaseTranspiler } from "./base";
-import { TranspilerOptions } from "../types";
+import { TranspilerOptions, ASCNodeOperator } from "../types";
 
 export default class RBCompiler extends BaseTranspiler {
   rename(name) {
@@ -212,8 +212,9 @@ export default class RBCompiler extends BaseTranspiler {
         rb += `return ${getval(a.value)}\n`;
       } else if (a.op.startsWith("op")) {
         rb += "\t".repeat(curlvl);
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
+        let _a = a as ASCNodeOperator;
+        var lhs = getval(_a.lhs);
+        var rhs = getval(_a.rhs);
         var vname = this.nextTmpVar();
         rb += `${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);

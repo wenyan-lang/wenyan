@@ -44,27 +44,6 @@ export interface ExecuteOptions {
   output: LogCallback;
 }
 
-export type ASCType =
-  | "str"
-  | "name"
-  | "whiletrue"
-  | "break"
-  | "end"
-  | "if"
-  | "comment"
-  | "decl";
-
-export type ASCOperator =
-  | "fun"
-  | "num"
-  | "str"
-  | "funbody"
-  | "var"
-  | "op+"
-  | "op-"
-  | "op/"
-  | "op*";
-
 export type TokenType =
   | "ans"
   | "assgn"
@@ -98,17 +77,165 @@ export type TokenType =
 
 export type Token = [TokenType, string | undefined, number];
 
-export type ASCNode = any;
-/*
-export interface ASCNode {
-  op: ASCOperator,
-  count: number,
-  type: ASCType
-  values: string[]
-  names: string[]
-  public: boolean
-  pos: number
-  lhs?: Token
-  rhs?: Token
+export interface ASCNodeCommon {
+  pos: number;
 }
-*/
+
+export interface ASCNodeOperator {
+  op: "op+" | "op-" | "op/" | "op%";
+  lhs?: Token;
+  rhs?: Token;
+}
+
+export interface ASCNodeReturn {
+  op: "return";
+  value?: Token | ["ans"];
+}
+
+export interface ASCNodeIf {
+  op: "if";
+  test: (Token | ["ans"])[];
+  elseif?: boolean;
+  not?: boolean;
+}
+
+export interface ASCNodeFunction {
+  op: "fun";
+  arity: number;
+  args: { name: string; type: string }[];
+  elseif?: boolean;
+  not?: boolean;
+}
+
+export interface ASCNodeWithValue {
+  op: "not" | "whilen" | "comment";
+  value: Token;
+}
+
+export interface ASCNodeName {
+  op: "name";
+  names: string[];
+}
+
+export interface ASCNodeReassign {
+  op: "reassign";
+  lhs: Token;
+  rhs?: Token;
+  lhssubs?: Token;
+  rhssubs?: Token;
+  del?: boolean;
+}
+
+export interface ASCNodeCat {
+  op: "cat";
+  containers: Token[];
+}
+
+export interface ASCNodeFor {
+  op: "for";
+  container: Token;
+  iterator: string;
+}
+
+export interface ASCNodeCall {
+  op: "call";
+  fun: Token;
+  args?: Token[];
+  pop?: boolean;
+}
+
+export interface ASCNodeLength {
+  op: "length";
+  container: Token;
+}
+
+export interface ASCNodeTake {
+  op: "take";
+  count: number;
+}
+
+export interface ASCNodeTemp {
+  op: "temp";
+  iden: Token;
+}
+
+export interface ASCNodeImport {
+  op: "import";
+  file: string;
+  iden: string[];
+}
+
+export interface ASCNodePush {
+  op: "push";
+  container: Token;
+  values: Token[];
+}
+
+export interface ASCNodeWithError {
+  op: "catcherr" | "throw";
+  error?: Token;
+}
+
+export interface ASCNodeSubscript {
+  op: "subscript";
+  container: Token;
+  value: Token;
+}
+
+export interface ASCNodeVariable {
+  op: "var";
+  count: number;
+  type: string;
+  values: (Token | [])[];
+  public: boolean;
+  names?: string[];
+}
+
+export interface ASCNodePropertry {
+  op: "prop";
+  type: string;
+  name: string;
+  value: Token;
+}
+
+export interface ASCNodeSimple {
+  op:
+    | "break"
+    | "end"
+    | "print"
+    | "else"
+    | "continue"
+    | "objbody"
+    | "funbody"
+    | "whiletrue"
+    | "try"
+    | "tryend"
+    | "catch"
+    | "discard"
+    | "funend"
+    | "objend";
+}
+
+export type ASCNode = ASCNodeCommon &
+  (
+    | ASCNodeOperator
+    | ASCNodeSimple
+    | ASCNodeReturn
+    | ASCNodeIf
+    | ASCNodeFunction
+    | ASCNodeWithValue
+    | ASCNodeName
+    | ASCNodeReassign
+    | ASCNodeImport
+    | ASCNodeTake
+    | ASCNodeWithError
+    | ASCNodeTemp
+    | ASCNodeCat
+    | ASCNodeFor
+    | ASCNodeLength
+    | ASCNodePush
+    | ASCNodeCall
+    | ASCNodeSubscript
+    | ASCNodeVariable
+    | ASCNodePropertry
+  );
