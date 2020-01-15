@@ -282,18 +282,25 @@ button.icon {
   line-height: 16px;
 }
 
+button.checkbox {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
 button.checkbox * {
   line-height: 100%;
+  vertical-align: middle;
 }
 button.checkbox .iconify {
-  border-right: 1px solid gainsboro;
-  height: 100%;
-  padding-right: 3px;
-  margin: -2px 0 -2px -2px;
-  padding-bottom: 1px;
+  border: 1px solid gainsboro;
+  border-radius: 3px;
+  height: 16px;
+  width: 16px;
+  margin-bottom: 1px;
+  background: white;
 }
 button.checkbox:hover .iconify {
-  border-right: 1px solid grey;
+  border: 1px solid grey;
 }
 button.checkbox:not(.checked) .iconify {
   color: transparent;
