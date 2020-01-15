@@ -4,7 +4,8 @@ import {
   LogCallback,
   ASCNode,
   Token,
-  ASCType
+  ASCType,
+  TokenType
 } from "./types";
 import {
   hanzi2num,
@@ -18,8 +19,8 @@ import { expandMacros, extractMacros } from "./macro";
 import { version } from "./version";
 import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
-import transpilers from "./transpilers";
 import { typecheck, printSignature } from "./typecheck";
+import transpilers from "./transpilers";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -31,7 +32,7 @@ function wy2tokens(
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var tokens: any[] = [];
+  var tokens: Token[] = [];
   var tok = "";
   var idt = false;
   var num = false;
@@ -142,11 +143,8 @@ function wy2tokens(
             if (ok) {
               enddata();
               var kinfo = KEYWORDS[k];
-              while (kinfo.length < 2) {
-                kinfo.push(undefined);
-              }
               i += k.length - 1;
-              tokens.push([...kinfo, i]);
+              tokens.push([...kinfo, i] as Token);
               break;
             }
           }
@@ -168,9 +166,9 @@ function wy2tokens(
     if (num) {
       const numStr = hanzi2numstr(tok);
       assert(`Invalid number "${tok}".`, i, numStr != null);
-      tokens.push(["num", numStr]);
+      tokens.push(["num", numStr, i]);
     } else if (data) {
-      tokens.push(["data", tok]);
+      tokens.push(["data", tok, i]);
     } else {
       assert("Unterminated identifier.", i, false);
     }
@@ -243,7 +241,7 @@ function defaultErrorCallback(e) {
 }
 
 function tokens2asc(
-  tokens: any[],
+  tokens: Token[],
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
@@ -255,11 +253,17 @@ function tokens2asc(
     var cmd = gettok(i, 0);
 
     // @ts-ignore
+    function gettok(idx: number, jdx: 0): TokenType;
+    // @ts-ignore
+    function gettok(idx: number, jdx: 1): string | undefined;
+    // @ts-ignore
+    function gettok(idx: number, jdx: 2): number;
+    // @ts-ignore
     function gettok(idx: number, jdx: number) {
       if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
-      return tokens[idx][jdx] as string;
+      return tokens[idx][jdx];
     }
 
     const typeassert = (idx: number, good, reason?: string) => {

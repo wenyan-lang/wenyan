@@ -66,20 +66,35 @@ export type ASCOperator =
   | "op*";
 
 export type TokenType =
-  | "name"
-  | "iden"
-  | "cmp"
-  | "ctrl"
   | "ans"
-  | "rassgn"
-  | "op"
-  | "lit"
-  | "opord"
-  | "num"
   | "assgn"
-  | "decl"
+  | "bool"
+  | "call"
+  | "cmp"
+  | "comment"
+  | "ctnr"
+  | "ctrl"
   | "data"
-  | "decl";
+  | "decl"
+  | "discard"
+  | "expr"
+  | "iden"
+  | "import"
+  | "lit"
+  | "lop"
+  | "macro"
+  | "mod"
+  | "name"
+  | "not"
+  | "num"
+  | "op"
+  | "opord"
+  | "print"
+  | "rassgn"
+  | "take"
+  | "try"
+  | "type"
+  | "throw";
 
 export type Token = [TokenType, string | undefined, number];
 
