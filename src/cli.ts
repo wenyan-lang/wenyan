@@ -1,10 +1,10 @@
-const fs = require("fs");
-const version = require("./version");
-const { compile, evalCompiled } = require("./parser");
-const { render, unrender } = require("./render");
-const path = require("path");
-const commander = require("commander");
-const findUp = require("find-up");
+import fs from "fs";
+import path from "path";
+import commander from "commander";
+import findUp from "find-up";
+import { version } from "./version";
+import { compile, evalCompiled } from "./parser";
+import { render, unrender } from "./render";
 
 var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
 const MODULE_LIBRARY_NAME = "藏書樓";
@@ -70,7 +70,7 @@ program.parse(process.argv);
   preprocess();
 
   if (program.compile) {
-    output(await getCompiled());
+    output(getCompiled());
   } else if (program.render) {
     doRender();
   } else if (program.interactive) {
@@ -215,7 +215,7 @@ function doRender() {
   }
 }
 
-async function intreactive() {
+function intreactive() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for intreactive mode.`
@@ -223,9 +223,10 @@ async function intreactive() {
     process.exit(1);
   }
   replscope();
-  repl(await getCompiled());
+  repl(getCompiled());
 }
-async function exec() {
+
+function exec() {
   if (program.lang !== "js") {
     console.error(
       `Target language "${program.lang}" is not supported for direct executing. Please use --compile option instead.`
@@ -233,7 +234,7 @@ async function exec() {
     process.exit(1);
   }
 
-  evalCompiled(await getCompiled(), {
+  evalCompiled(getCompiled(), {
     outputHanzi: program.outputHanzi,
     lang: program.lang
   });
@@ -263,34 +264,38 @@ function replscope() {
   // console.log("final stack size "+stackCallSize);
 }
 
-function repl() {
+function repl(prescript?: string) {
   const readline = require("readline");
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
+  if (prescript) {
+    try {
+      // @ts-ignore
+      global.__scope.evil(out);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  // @ts-ignore
   global.haserr = false;
   rl.question("> ", inp => {
-    var out = compile("js", inp, {
+    var out = compile(inp, {
+      lang: "js",
       romanizeIdentifiers: program.roman,
       logCallback: logHandler(null, "a"),
       errorCallback: function(x) {
         console.error(x);
+        // @ts-ignore
         global.haserr = true;
       }
     });
+    // @ts-ignore
     if (global.haserr) {
-      // console.log("Not evaulated.")
-    } else {
-      // console.log("\x1b[2m" + out + "\x1b[0m");
-      try {
-        global.__scope.evil(out);
-      } catch (e) {
-        console.log(e);
-      }
     }
     rl.close();
-    repl();
+    repl(out);
   });
 }
 

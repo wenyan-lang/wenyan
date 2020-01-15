@@ -5,7 +5,7 @@ const Cli = {
   ...baseConfig(),
   target: 'node',
   entry: {
-    cli: './src/cli.js',
+    cli: './src/cli.ts',
   },
   plugins: [
     new webpack.BannerPlugin({
@@ -31,8 +31,8 @@ Core.output.library = 'Wenyan'
 const Utils = {
   ...baseConfig(),
   entry: {
-    render: './src/render.js',
-    runtime: './src/browser_runtime.js',
+    render: './src/render.ts',
+    runtime: './src/browser_runtime.ts',
   }
 }
 

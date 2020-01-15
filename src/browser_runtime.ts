@@ -1,6 +1,6 @@
-(() => {
-  const { execute } = require("./parser");
+import { execute } from "./parser";
 
+(() => {
   const isDev = false;
 
   async function run(script) {
