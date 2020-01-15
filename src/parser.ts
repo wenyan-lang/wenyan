@@ -14,8 +14,7 @@ import { version } from "./version";
 import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
 import transpilers from "./transpilers";
-
-var { typecheck, printSignature } = require("./typecheck");
+import { typecheck, printSignature } from "./typecheck";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"

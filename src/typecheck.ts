@@ -142,7 +142,7 @@ function typecheck(
     if (type == "nil") {
       return { type: "nil" };
     }
-    let x = { type: type };
+    let x: any = { type: type };
     if (type == "fun") {
       x.in = { type: "any" };
       x.out = { type: "any" };
@@ -696,4 +696,4 @@ function typecheck(
   return signature;
 }
 
-module.exports = { typecheck, printType, printSignature };
+export { typecheck, printType, printSignature };
