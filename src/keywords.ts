@@ -4,7 +4,10 @@ export const NUMBER_KEYWORDS = Array.from(
   "負·又零〇一二三四五六七八九十百千萬億兆京垓秭穰溝澗正載極分釐毫絲忽微纖沙塵埃渺漠"
 );
 
-export const KEYWORDS: Record<string, [TokenType, string | undefined]> = {
+export const KEYWORDS_DEFINE: Record<
+  string,
+  [TokenType, string | undefined]
+> = {
   吾有: ["decl", "uninit"],
   今有: ["decl", "public"],
   物之: ["decl", "prop"],
@@ -111,3 +114,15 @@ export const KEYWORDS: Record<string, [TokenType, string | undefined]> = {
   疏曰: ["comment", undefined],
   批曰: ["comment", undefined]
 };
+
+var ke = Object.entries(KEYWORDS_DEFINE);
+ke.sort((a, b) => b[0].length - a[0].length);
+if (!Object.fromEntries) {
+  Object.fromEntries = l => {
+    var o = {};
+    l.map(x => (o[x[0]] = x[1]));
+    return o;
+  };
+}
+
+export const KEYWORDS = Object.fromEntries(ke);
