@@ -164,9 +164,9 @@ function wy2tokens(
     if (num) {
       const numStr = hanzi2numstr(tok);
       assert(`Invalid number "${tok}".`, i, numStr != null);
-      tokens.push(["num", numStr, i]);
+      tokens.push(["num", numStr]);
     } else if (data) {
-      tokens.push(["data", tok, i]);
+      tokens.push(["data", tok]);
     } else {
       assert("Unterminated identifier.", i, false);
     }

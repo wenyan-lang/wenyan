@@ -10,6 +10,9 @@ module.exports = () => {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name]/index.min.js',
     },
+    plugins: [
+      new (require('remove-strict-webpack-plugin'))()
+    ],
     resolve: {
       extensions: ['.ts', '.js'],
     },

@@ -9,6 +9,7 @@
       "dom",
       "dom.iterable"
     ],
+    "noImplicitUseStrict": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "target": "es5",
