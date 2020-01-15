@@ -33,14 +33,15 @@ const exlistPackages = document.getElementById("explorer-list-packages");
 const explorerPackages = document.getElementById("explorer-packages");
 
 const selr = document.getElementById("pick-roman");
-const hidestd = document.getElementById("hide-std");
-const outputHanzi = document.getElementById("output-hanzi");
 const outdiv = document.getElementById("out");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
-const darkToggle = document.getElementById("dark");
-const wygToggle = document.getElementById("wyg-enabled");
+
+const configDark = document.getElementById("config-dark");
+const configHideImported = document.getElementById("cofig-hide-imported");
+const configEnablePackages = document.getElementById("config-enable-packages");
+const configOutputHanzi = document.getElementById("config-output-hanzi");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -53,7 +54,6 @@ var examples = {};
 var cache = {};
 var snippets = [];
 
-var isDark = false;
 var savingLock = false; // to ignore changes made from switching files
 
 var editorCM;
@@ -101,6 +101,20 @@ function init() {
   });
 }
 
+function initConfigComponents() {
+  const checkboxes = document.querySelectorAll("button[data-config]");
+  for (const cb of checkboxes) {
+    cb.classList.toggle("checked", state.config[cb.dataset.config]);
+
+    cb.addEventListener("click", () => {
+      cb.classList.toggle("checked");
+      state.config[cb.dataset.config] = cb.classList.contains("checked");
+      saveState();
+      if (cb.onchange) cb.onchange();
+    });
+  }
+}
+
 function loadState() {
   const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (raw) state = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
@@ -112,28 +126,16 @@ function saveState() {
 }
 
 function loadConfig() {
-  const {
-    dark = false,
-    outputHanzi: hanzi = true,
-    hideImported = true,
-    romanizeIdentifiers = "none",
-    wygEnabled = true
-  } = state.config;
+  const { dark = false, romanizeIdentifiers = "none" } = state.config;
 
-  toggleDark(dark);
-  outputHanzi.checked = hanzi;
-  hidestd.checked = hideImported;
-  wygToggle.checked = wygEnabled;
   selr.value = romanizeIdentifiers;
+  updateDark();
 }
 
 function saveConfig() {
   state.config = {
-    dark: isDark,
-    outputHanzi: outputHanzi.checked,
-    hideImported: hidestd.checked,
-    romanizeIdentifiers: selr.value,
-    wygEnabled: wygToggle.checked
+    ...state.config,
+    romanizeIdentifiers: selr.value
   };
   saveState();
 }
@@ -274,8 +276,8 @@ function updateExplorerList() {
     exlistUser.appendChild(createExplorerEntry(file));
   }
 
-  explorerPackages.classList.toggle("hidden", !wygToggle.checked);
-  if (wygToggle.checked) {
+  explorerPackages.classList.toggle("hidden", !state.config.enablePackages);
+  if (state.config.enablePackages) {
     exlistPackages.innerHTML = "";
     for (let pkg of state.wyg.packages) {
       exlistPackages.appendChild(createExplorerPackageEntry(pkg));
@@ -449,7 +451,7 @@ function getImportContext() {
     context[key] = state.files[key].code;
   }
 
-  if (wygToggle.checked) {
+  if (state.config.enablePackages) {
     for (const pkg of state.wyg.packages) {
       context[pkg.name] = {
         entry: pkg.entry
@@ -460,10 +462,10 @@ function getImportContext() {
   return context;
 }
 
-function loadWygPackages() {
+function loadPackages() {
   updateExplorerList();
   if (
-    wygToggle.checked &&
+    state.config.enablePackages &&
     Date.now() - state.wyg.last_updated > PACKAGES_LIFETIME
   ) {
     Wyg.list().then(packages => {
@@ -502,7 +504,7 @@ function compile() {
       .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
       .split("=== [PASS 3] COMPILER ===")[0];
     outdiv.innerText = sig;
-    var showcode = hidestd.checked ? hideImportedModules(code) : code;
+    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
     jsCM.setValue(js_beautify(showcode));
   } catch (e) {
     outdiv.innerText = e.toString();
@@ -513,7 +515,7 @@ function compile() {
 function run() {
   resetOutput();
   Wenyan.evalCompiled(jsCM.getValue(), {
-    outputHanzi: outputHanzi.checked,
+    outputHanzi: state.config.outputHanzi,
     output: (...args) => {
       outdiv.innerText += args.join(" ") + "\n";
     }
@@ -531,13 +533,13 @@ function crun() {
       importContext: getImportContext(),
       importCache: cache
     });
-    var showcode = hidestd.checked ? hideImportedModules(code) : code;
+    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
 
     jsCM.setValue(js_beautify(showcode));
 
     try {
       Wenyan.evalCompiled(code, {
-        outputHanzi: outputHanzi.checked,
+        outputHanzi: state.config.outputHanzi,
         output: (...args) => {
           outdiv.innerText += args.join(" ") + "\n";
         }
@@ -553,20 +555,18 @@ function crun() {
   }
 }
 
-function toggleDark(value) {
-  if (value != null) isDark = !value;
-
-  if (!isDark) {
+function updateDark() {
+  if (!state.config.dark) {
     document.body.style.filter = "invert(0.88)";
   } else {
     document.body.style.filter = "invert(0)";
   }
-  document.getElementById("dark-icon-sunny").classList.toggle("hidden", isDark);
+  document
+    .getElementById("dark-icon-sunny")
+    .classList.toggle("hidden", state.config.dark);
   document
     .getElementById("dark-icon-night")
-    .classList.toggle("hidden", !isDark);
-
-  isDark = !isDark;
+    .classList.toggle("hidden", !state.config.dark);
 }
 
 function render() {
@@ -669,32 +669,24 @@ downloadRenderBtn.onclick = downloadRenders;
 deleteBtn.onclick = deleteCurrentFile;
 fileNameSpan.onclick = renameCurrentFile;
 
-darkToggle.onclick = () => {
-  toggleDark();
-  saveConfig();
-};
-hidestd.onchange = () => {
+configDark.onchange = updateDark;
+configHideImported.onchange = crun;
+configOutputHanzi.onchange = crun;
+configEnablePackages.onchange = () => {
+  loadPackages();
   crun();
-  saveConfig();
-};
-outputHanzi.onchange = () => {
-  crun();
-  saveConfig();
 };
 selr.onchange = () => {
   saveConfig();
   crun();
-};
-wygToggle.onchange = () => {
-  saveConfig();
-  loadWygPackages();
 };
 
 document.body.onresize = setView;
 window.addEventListener("popstate", loadFromUrl);
 loadState();
 loadConfig();
-loadWygPackages();
+initConfigComponents();
+loadPackages();
 setView();
 loadFromUrl();
 initExplorer();

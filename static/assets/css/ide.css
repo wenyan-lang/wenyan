@@ -131,7 +131,6 @@ body {
 #explorer {
   overflow-x: hidden;
   background: white;
-  padding: 8px 0;
 }
 
 .caret {
@@ -170,8 +169,8 @@ ul.nested.active {
 }
 
 #explorer-list {
-  padding: 0;
   margin: 0;
+  padding: 8px 0;
 }
 
 #explorer-list li,
@@ -281,6 +280,23 @@ button.icon {
   width: 26px;
   font-size: 16px;
   line-height: 16px;
+}
+
+button.checkbox * {
+  line-height: 100%;
+}
+button.checkbox .iconify {
+  border-right: 1px solid gainsboro;
+  height: 100%;
+  padding-right: 3px;
+  margin: -2px 0 -2px -2px;
+  padding-bottom: 1px;
+}
+button.checkbox:hover .iconify {
+  border-right: 1px solid grey;
+}
+button.checkbox:not(.checked) .iconify {
+  color: transparent;
 }
 
 .hidden {
