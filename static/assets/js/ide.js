@@ -1,6 +1,20 @@
 const LOCAL_STORAGE_KEY = "wenyang-ide";
 const TITLE = " - 文言 Wenyan Online IDE";
-const DEFAULT_STATE = () => ({ config: {}, files: {} });
+const DEFAULT_STATE = () => ({
+  config: {
+    romanizeIdentifiers: "none",
+    dark: false,
+    enablePackages: true,
+    outputHanzi: true,
+    hideImported: true
+  },
+  files: {},
+  wyg: {
+    packages: [],
+    last_updated: -Infinity
+  }
+});
+const PACKAGES_LIFETIME = 1000 * 60 * 60; // 60 min
 const EXPLORER_WIDTH_MIN = 0;
 const EXPLORER_WIDTH_MAX = 400;
 const EDITOR_WIDTH_MIN = 150;
@@ -21,15 +35,20 @@ var dhex = document.getElementById("hand-ex");
 const exlist = document.getElementById("explorer-list");
 const exlistUser = document.getElementById("explorer-list-user");
 const exlistExamples = document.getElementById("explorer-list-examples");
+const exlistPackages = document.getElementById("explorer-list-packages");
+const explorerPackages = document.getElementById("explorer-packages");
 
-const selr = document.getElementById("pick-roman");
-const hidestd = document.getElementById("hide-std");
-const outputHanzi = document.getElementById("output-hanzi");
 const outdiv = document.getElementById("out");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
-const darkToggle = document.getElementById("dark");
+const packageInfoPanel = document.getElementById("package-info-panel");
+
+const configDark = document.getElementById("config-dark");
+const configHideImported = document.getElementById("cofig-hide-imported");
+const configEnablePackages = document.getElementById("config-enable-packages");
+const configOutputHanzi = document.getElementById("config-output-hanzi");
+const configRomanize = document.getElementById("config-romanize");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -42,7 +61,6 @@ var examples = {};
 var cache = {};
 var snippets = [];
 
-var isDark = false;
 var savingLock = false; // to ignore changes made from switching files
 
 var editorCM;
@@ -63,7 +81,7 @@ function init() {
     var opt = document.createElement("option");
     opt.value = k;
     opt.innerHTML = k;
-    selr.appendChild(opt);
+    document.querySelector("#config-romanize select").appendChild(opt);
   }
 
   snippets = [
@@ -90,38 +108,49 @@ function init() {
   });
 }
 
+function initConfigComponents() {
+  const checkboxes = document.querySelectorAll(
+    "button[data-config]:not(.dropdown)"
+  );
+  for (const cb of checkboxes) {
+    cb.classList.toggle("checked", state.config[cb.dataset.config]);
+
+    cb.addEventListener("click", () => {
+      cb.classList.toggle("checked");
+      state.config[cb.dataset.config] = cb.classList.contains("checked");
+      saveState();
+      if (cb.onchange) cb.onchange();
+    });
+  }
+
+  const dropdowns = document.querySelectorAll("button.dropdown[data-config]");
+  for (const dd of dropdowns) {
+    const value = dd.querySelector(".value");
+    const select = dd.querySelector("select");
+    value.innerText = select.value = state.config[dd.dataset.config];
+    select.addEventListener("change", () => {
+      state.config[dd.dataset.config] = value.innerText = select.value;
+      saveState();
+      if (dd.onchange) dd.onchange();
+    });
+  }
+}
+
 function loadState() {
   const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (raw) state = JSON.parse(raw);
-  else state = DEFAULT_STATE();
+  const defaultState = DEFAULT_STATE();
+
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    state = Object.assign({}, defaultState, parsed);
+    state.config = Object.assign({}, defaultState.config, parsed.config);
+  } else state = defaultState;
+
+  updateDark();
 }
 
 function saveState() {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadConfig() {
-  const {
-    dark = false,
-    outputHanzi: hanzi = true,
-    hideImported = true,
-    romanizeIdentifiers = "none"
-  } = state.config;
-
-  toggleDark(dark);
-  outputHanzi.checked = hanzi;
-  hidestd.checked = hideImported;
-  selr.value = romanizeIdentifiers;
-}
-
-function saveConfig() {
-  state.config = {
-    dark: isDark,
-    outputHanzi: outputHanzi.checked,
-    hideImported: hidestd.checked,
-    romanizeIdentifiers: selr.value
-  };
-  saveState();
 }
 
 function registerHandlerEvents(handler, set) {
@@ -259,6 +288,14 @@ function updateExplorerList() {
   for (let file of Object.values(state.files)) {
     exlistUser.appendChild(createExplorerEntry(file));
   }
+
+  explorerPackages.classList.toggle("hidden", !state.config.enablePackages);
+  if (state.config.enablePackages) {
+    exlistPackages.innerHTML = "";
+    for (let pkg of state.wyg.packages) {
+      exlistPackages.appendChild(createExplorerPackageEntry(pkg));
+    }
+  }
 }
 
 function createExplorerEntry({ name, alias }) {
@@ -278,6 +315,23 @@ function createExplorerEntry({ name, alias }) {
     item.appendChild(a);
   }
   item.onclick = () => openFile(name);
+  return item;
+}
+
+function createExplorerPackageEntry(pkg) {
+  const { name, author } = pkg;
+  const item = document.createElement("li");
+  item.value = name;
+
+  const a = document.createElement("span");
+  const n = document.createElement("span");
+  n.classList.add("name");
+  n.innerText = name;
+  item.appendChild(n);
+  a.classList.add("alias");
+  a.innerText = "by " + author;
+  item.appendChild(a);
+  item.onclick = () => showPackageInfo(pkg);
   return item;
 }
 
@@ -408,97 +462,122 @@ function getImportContext() {
     context[key] = state.files[key].code;
   }
 
+  if (state.config.enablePackages) {
+    for (const pkg of state.wyg.packages) {
+      context[pkg.name] = {
+        entry: pkg.entry
+      };
+    }
+  }
+
   return context;
 }
 
+function loadPackages() {
+  updateExplorerList();
+  if (
+    state.config.enablePackages &&
+    Date.now() - state.wyg.last_updated > PACKAGES_LIFETIME
+  ) {
+    Wyg.list().then(packages => {
+      state.wyg.packages = packages;
+      state.wyg.last_updated = +Date.now();
+      saveState();
+      updateExplorerList();
+      crun();
+    });
+  }
+}
+
 function resetOutput() {
+  outdiv.innerText = "";
   downloadRenderBtn.classList.toggle("hidden", true);
   renderedSVGs = [];
 }
 
 function compile() {
-  outdiv.innerText = "";
-  var log = "";
-  var code = Wenyan.compile(editorCM.getValue(), {
-    lang: "js",
-    romanizeIdentifiers: selr.value,
-    resetVarCnt: true,
-    errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
-    importContext: getImportContext(),
-    importCache: cache,
-    logCallback: x => {
-      log += x + "\n";
-    },
-    strict: true
-  });
   resetOutput();
-  var sig = log
-    .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
-    .split("=== [PASS 3] COMPILER ===")[0];
-  outdiv.innerText = sig;
-  var showcode = hidestd.checked ? hideImportedModules(code) : code;
-  jsCM.setValue(js_beautify(showcode));
+  var log = "";
+  try {
+    var code = Wenyan.compile(editorCM.getValue(), {
+      lang: "js",
+      romanizeIdentifiers: state.config.romanizeIdentifiers,
+      resetVarCnt: true,
+      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      importContext: getImportContext(),
+      importCache: cache,
+      logCallback: x => {
+        log += x + "\n";
+      },
+      strict: true
+    });
+    var sig = log
+      .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
+      .split("=== [PASS 3] COMPILER ===")[0];
+    outdiv.innerText = sig;
+    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
+    jsCM.setValue(js_beautify(showcode));
+  } catch (e) {
+    outdiv.innerText = e.toString();
+    console.error(e);
+  }
 }
 
 function run() {
-  outdiv.innerText = "";
+  resetOutput();
   Wenyan.evalCompiled(jsCM.getValue(), {
-    outputHanzi: outputHanzi.checked,
+    outputHanzi: state.config.outputHanzi,
     output: (...args) => {
       outdiv.innerText += args.join(" ") + "\n";
     }
   });
-  resetOutput();
 }
 
 function crun() {
   resetOutput();
-  outdiv.innerText = "";
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: "js",
-      romanizeIdentifiers: selr.value,
+      romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache
     });
-    var showcode = hidestd.checked ? hideImportedModules(code) : code;
-
-    // CodeMirror.runMode(js_beautify(showcode),"JavaScript",document.getElementById("js"));
+    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
 
     jsCM.setValue(js_beautify(showcode));
 
     try {
       Wenyan.evalCompiled(code, {
-        outputHanzi: outputHanzi.checked,
+        outputHanzi: state.config.outputHanzi,
         output: (...args) => {
           outdiv.innerText += args.join(" ") + "\n";
         }
       });
     } catch (e) {
+      outdiv.innerText = e.toString();
       console.error(e);
     }
   } catch (e) {
+    outdiv.innerText = e.toString();
     jsCM.setValue("");
     console.error(e);
   }
 }
 
-function toggleDark(value) {
-  if (value != null) isDark = !value;
-
-  if (!isDark) {
+function updateDark() {
+  if (state.config.dark) {
     document.body.style.filter = "invert(0.88)";
   } else {
     document.body.style.filter = "invert(0)";
   }
-  document.getElementById("dark-icon-sunny").classList.toggle("hidden", isDark);
+  document
+    .getElementById("dark-icon-sunny")
+    .classList.toggle("hidden", !state.config.dark);
   document
     .getElementById("dark-icon-night")
-    .classList.toggle("hidden", !isDark);
-
-  isDark = !isDark;
+    .classList.toggle("hidden", state.config.dark);
 }
 
 function render() {
@@ -511,6 +590,31 @@ function render() {
     outdiv.innerHTML += svg + "<br>";
   }
   downloadRenderBtn.classList.toggle("hidden", false);
+}
+
+function showPackageInfo(pkg) {
+  packageInfoPanel.querySelector(".import").onclick = () =>
+    importPackageIntoCurrent(pkg);
+  packageInfoPanel.querySelector(".title").innerText = pkg.name;
+  packageInfoPanel.querySelector(".author").innerText = pkg.author;
+  packageInfoPanel
+    .querySelector(".description")
+    .classList.toggle("hidden", !pkg.description);
+  packageInfoPanel.querySelector(".description").innerText = pkg.description;
+  packageInfoPanel
+    .querySelector(".home-link")
+    .classList.toggle("hidden", !pkg.repo);
+  packageInfoPanel.querySelector(".home-link").href = Wyg.getRepoRoot(pkg.repo);
+  packageInfoPanel.classList.toggle("hidden", false);
+}
+
+function closePackageInfo() {
+  packageInfoPanel.classList.toggle("hidden", true);
+}
+
+function importPackageIntoCurrent({ name }) {
+  editorCM.setValue(`吾嘗觀「「${name}」」之書。\n${editorCM.getValue()}`);
+  closePackageInfo();
 }
 
 /* =========== Scripts =========== */
@@ -601,27 +705,20 @@ downloadRenderBtn.onclick = downloadRenders;
 deleteBtn.onclick = deleteCurrentFile;
 fileNameSpan.onclick = renameCurrentFile;
 
-darkToggle.onclick = () => {
-  toggleDark();
-  saveConfig();
-};
-hidestd.onchange = () => {
-  crun();
-  saveConfig();
-};
-outputHanzi.onchange = () => {
-  crun();
-  saveConfig();
-};
-selr.onchange = () => {
-  saveConfig();
+configDark.onchange = updateDark;
+configHideImported.onchange = crun;
+configOutputHanzi.onchange = crun;
+configRomanize.onchange = crun;
+configEnablePackages.onchange = () => {
+  loadPackages();
   crun();
 };
 
 document.body.onresize = setView;
 window.addEventListener("popstate", loadFromUrl);
 loadState();
-loadConfig();
+initConfigComponents();
+loadPackages();
 setView();
 loadFromUrl();
 initExplorer();
