@@ -1,5 +1,4 @@
-var { expect } = require("chai");
-const { defaultImportReader: reader } = require("../src/reader");
+import { importReader as reader } from "../src/reader";
 
 const helloworldContent = "吾有一言。曰「「問天地好在。」」。書之。";
 
@@ -8,7 +7,7 @@ describe("reader", () => {
     it("import local files", () => {
       const { src } = reader("helloworld", { importPaths: "./examples" });
 
-      expect(src).eq(helloworldContent);
+      expect(src).toEqual(helloworldContent);
     });
 
     it("search for files", () => {
@@ -16,14 +15,14 @@ describe("reader", () => {
         importPaths: ["./some/invalid/dir", "./lib", "./examples"]
       });
 
-      expect(src).eq(helloworldContent);
+      expect(src).toEqual(helloworldContent);
     });
 
     it("not found", () => {
       try {
         reader("not_exists", { importPaths: "./examples" });
       } catch (e) {
-        expect(e).to.be.an.instanceof(ReferenceError);
+        expect(e).toBeInstanceOf(ReferenceError);
       }
     });
   });
@@ -33,7 +32,9 @@ describe("reader", () => {
       const importCache = {};
       reader("helloworld", { importPaths: "./examples", importCache });
 
-      expect(importCache["./examples/helloworld.wy"]).eq(helloworldContent);
+      expect(importCache["./examples/helloworld.wy"]).toEqual(
+        helloworldContent
+      );
     });
 
     it("loads cache", () => {
@@ -44,7 +45,7 @@ describe("reader", () => {
         importCache
       });
 
-      expect(src).eq(mockSrc);
+      expect(src).toEqual(mockSrc);
     });
   });
 
@@ -57,7 +58,7 @@ describe("reader", () => {
         importContext
       });
 
-      expect(src).eq(mockSrc);
+      expect(src).toEqual(mockSrc);
     });
   });
 
@@ -69,7 +70,7 @@ describe("reader", () => {
             "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
         });
       } catch (e) {
-        expect(e).to.be.an.instanceof(URIError);
+        expect(e).toBeInstanceOf(URIError);
       }
     });
 
@@ -80,8 +81,8 @@ describe("reader", () => {
         allowHttp: true
       });
 
-      expect(src).eq(helloworldContent);
-    }).timeout(8000);
+      expect(src).toEqual(helloworldContent);
+    });
 
     it("load http contents in trusted hosts", () => {
       const { src } = reader("helloworld", {
@@ -92,8 +93,8 @@ describe("reader", () => {
         ]
       });
 
-      expect(src).eq(helloworldContent);
-    }).timeout(8000);
+      expect(src).toEqual(helloworldContent);
+    });
 
     it("search for http contents", () => {
       const { src } = reader("helloworld", {
@@ -106,7 +107,7 @@ describe("reader", () => {
         ]
       });
 
-      expect(src).eq(helloworldContent);
-    }).timeout(8000);
+      expect(src).toEqual(helloworldContent);
+    });
   });
 });

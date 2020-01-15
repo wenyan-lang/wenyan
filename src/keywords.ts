@@ -1,5 +1,5 @@
-var NUMBER_KEYWORDS = "負·又零〇一二三四五六七八九十百千萬億兆京垓秭穰溝澗正載極分釐毫絲忽微纖沙塵埃渺漠".split(
-  ""
+export const NUMBER_KEYWORDS = Array.from(
+  "負·又零〇一二三四五六七八九十百千萬億兆京垓秭穰溝澗正載極分釐毫絲忽微纖沙塵埃渺漠"
 );
 
 var KEYWORDS_DEFINE = {
@@ -119,6 +119,5 @@ if (!Object.fromEntries) {
     return o;
   };
 }
-var KEYWORDS = Object.fromEntries(ke);
 
-module.exports = { NUMBER_KEYWORDS, KEYWORDS };
+export const KEYWORDS = Object.fromEntries(ke);

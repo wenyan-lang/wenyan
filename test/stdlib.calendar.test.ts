@@ -1,6 +1,6 @@
 require("set-tz")("UTC");
 
-const { createTestUtil } = require("./utils");
+import { createTestUtil } from "./utils";
 
 const { expectOutput } = createTestUtil({
   prefix: "吾嘗觀「「曆法」」之書。",

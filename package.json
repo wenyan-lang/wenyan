@@ -28,11 +28,11 @@
     "publish": "bump --commit && node ./tools/publish.js",
     "publish:ci": "node ./tools/publish.js",
     "release": "bump --commit --tag && git push --follow-tags",
-    "test": "ts-mocha --require mocha-snapshots",
-    "test:update": "ts-mocha --require mocha-snapshots --update",
+    "test": "jest",
+    "test:update": "jest --updateSnapshot",
     "lint:fix": "npm run lint -- --fix",
-    "lint": "eslint {src,tools,test}/**/*.js",
-    "prettify": "prettier {src,tools,test}/**/*.js --write --quote-props preserve"
+    "lint": "eslint {src,tools,test}/**/*.{js|ts}",
+    "prettify": "prettier {src,tools,test}/**/*.{js|ts} --write --quote-props preserve"
   },
   "husky": {
     "hooks": {
@@ -40,7 +40,7 @@
     }
   },
   "lint-staged": {
-    "{src,tools,test}/**/*.js": [
+    "{src,tools,test}/**/*.{js|ts}": [
       "prettier --write",
       "eslint --fix",
       "git add"
@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@types/expect": "^24.3.0",
+    "@types/jest": "^24.9.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^13.1.7",
     "@typescript-eslint/eslint-plugin": "^2.16.0",
@@ -64,10 +65,12 @@
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-jest": "^23.6.0",
     "eslint-plugin-prettier": "^3.1.2",
     "find-up": "^4.1.0",
     "fs-extra": "^8.1.0",
     "husky": "^3.1.0",
+    "jest": "^24.9.0",
     "lint-staged": "^9.5.0",
     "mocha": "^6.2.2",
     "mocha-snapshots": "^4.2.0",
@@ -76,6 +79,7 @@
     "raw-loader": "^4.0.0",
     "rimraf": "^3.0.0",
     "set-tz": "^0.2.0",
+    "ts-jest": "^24.3.0",
     "ts-loader": "^6.2.1",
     "ts-mocha": "^6.0.0",
     "typescript": "^3.7.4",

@@ -1,5 +1,8 @@
-function extractMacros(txt, options = {}) {
-  const { lib, reader, lang, importOptions } = options;
+import { MarcoOptions } from "./types";
+import { importReader } from "./reader";
+
+export function extractMacros(txt, options: MarcoOptions) {
+  const { lib, lang, importOptions } = options;
 
   function getImports() {
     var imps = [];
@@ -46,7 +49,7 @@ function extractMacros(txt, options = {}) {
         continue;
       }
       if (txt[i] == "或" && txt[i + 1] == "云") {
-        function grabLit() {
+        const grabLit = () => {
           var lvl = 0;
           var s = "";
           while (true) {
@@ -69,7 +72,7 @@ function extractMacros(txt, options = {}) {
             }
           }
           return s;
-        }
+        };
         var j = i + 2;
         var s0 = grabLit();
         while (!(txt[j] == "蓋" && txt[j + 1] == "謂")) {
@@ -81,7 +84,7 @@ function extractMacros(txt, options = {}) {
         j += 2;
         var s1 = grabLit();
 
-        function stripQuotes(s) {
+        const stripQuotes = s => {
           if (s[0] == "「") {
             s = s.slice(2);
           } else {
@@ -93,7 +96,7 @@ function extractMacros(txt, options = {}) {
             s = s.slice(0, -1);
           }
           return s;
-        }
+        };
         s0 = stripQuotes(s0);
         s1 = stripQuotes(s1);
         var ins = s0.match(/「[甲乙丙丁戊己庚辛壬癸]」/g);
@@ -118,12 +121,12 @@ function extractMacros(txt, options = {}) {
   var macros = getMacros();
   for (var i = 0; i < imports.length; i++) {
     var isrc, entry;
-    if (imports[i] in lib[lang]) {
+    if (lib[lang][imports[i]]) {
       isrc = lib[lang][imports[i]];
     } else if (imports[i] in lib) {
       isrc = lib[imports[i]];
     } else {
-      const file = reader(imports[i], importOptions);
+      const file = importReader(imports[i], importOptions);
       isrc = file.src;
       entry = file.entry;
     }
@@ -140,7 +143,7 @@ function extractMacros(txt, options = {}) {
   return macros;
 }
 
-function expandMacros(txt, macros) {
+export function expandMacros(txt, macros) {
   function calclmask(ntxt) {
     var lmask = [];
     var qlvl = 0;
@@ -159,7 +162,7 @@ function expandMacros(txt, macros) {
     return lmask;
   }
   for (var i = 0; i < macros.length; i++) {
-    function doit(ntxt) {
+    const doit = ntxt => {
       var lmask = calclmask(ntxt);
       var re = new RegExp(macros[i][0]);
       var idx = ntxt.search(re);
@@ -178,10 +181,8 @@ function expandMacros(txt, macros) {
         ntxt = doit(ntxt.replace(re, macros[i][1]));
       }
       return ntxt;
-    }
+    };
     txt = doit(txt);
   }
   return txt;
 }
-
-module.exports = { extractMacros, expandMacros };

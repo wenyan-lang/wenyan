@@ -2,12 +2,16 @@
   "compilerOptions": {
     "outDir": "dist",
     "module": "esnext",
+    "moduleResolution": "node",
     "lib": [
-      "ESNext",
-      "DOM"
+      "esnext",
+      "esnext.asynciterable",
+      "dom",
+      "dom.iterable"
     ],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "target": "es5",
-    "noEmit": true,
     "allowJs": true,
     "strict": false
   }

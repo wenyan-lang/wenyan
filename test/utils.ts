@@ -1,10 +1,16 @@
-const { execute } = require("../src/parser");
-const { expect } = require("chai");
+import { execute } from "../src/parser";
+import { CompileOptions } from "../src/types";
+
 var utils = require("../tools/utils");
+const lib = utils.loadlib();
 
-var lib = utils.loadlib();
+export interface Options {
+  prefix: string;
+  suffix: string;
+  compileOptions: Partial<CompileOptions>;
+}
 
-function createTestUtil(options = {}) {
+export function createTestUtil(options: Partial<Options> = {}) {
   const { prefix = "", suffix = "書之", compileOptions = {} } = options;
 
   function expectOutput(source, expected) {
@@ -18,12 +24,8 @@ function createTestUtil(options = {}) {
       output: (...args) => (output += args.join(" ") + "\n")
     });
 
-    expect(output.trim()).eq(expected.trim());
+    expect(output.trim()).toEqual(expected.trim());
   }
 
   return { expectOutput };
 }
-
-module.exports = {
-  createTestUtil
-};

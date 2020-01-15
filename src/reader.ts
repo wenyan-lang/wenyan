@@ -1,6 +1,8 @@
+import { ImportOptions, CacheObject } from "./types";
+
 const INDEX_FILENAME = "序";
 
-function isHostTrusted(url, trustedHosts) {
+function isHostTrusted(url: string, trustedHosts: string[]) {
   for (const host of trustedHosts) {
     // FIXME: it can be bypassed by relative path resolving,
     // for examples: https://trusted.com/a/../../hijack.com/a/
@@ -9,18 +11,18 @@ function isHostTrusted(url, trustedHosts) {
   return false;
 }
 
-function isHttpURL(uri) {
+function isHttpURL(uri: string) {
   return !!uri.match(/^https?\:\/\//);
 }
 
-function fetchTextSync(url, timeout) {
+function fetchTextSync(url: string, timeout: number) {
   let XHR;
   if (typeof window !== "undefined" && "XMLHttpRequest" in window)
     XHR = window.XMLHttpRequest;
   else XHR = eval("require")("xmlhttprequest").XMLHttpRequest;
 
   var xmlHttp = new XHR();
-  xmlHttp.timeout = timeout;
+  // xmlHttp.timeout = timeout;
   xmlHttp.open("GET", url, false); // false for synchronous request
   xmlHttp.send(null);
 
@@ -30,11 +32,11 @@ function fetchTextSync(url, timeout) {
   throw new URIError(xmlHttp.responseText);
 }
 
-function fetchSync(uri, cache, requestTimeout) {
+function fetchSync(uri: string, cache: CacheObject, requestTimeout: number) {
   if (cache[uri]) return cache[uri];
 
   const data = isHttpURL(uri)
-    ? fetchTextSync(uri)
+    ? fetchTextSync(uri, requestTimeout)
     : eval("require")("fs").readFileSync(uri, "utf-8");
 
   cache[uri] = data;
@@ -42,7 +44,10 @@ function fetchSync(uri, cache, requestTimeout) {
   return data;
 }
 
-function defaultImportReader(moduleName, requestOptions = {}) {
+export function importReader(
+  moduleName: string,
+  importOptions: Partial<ImportOptions> = {}
+) {
   const {
     allowHttp = false,
     entryFilepath,
@@ -51,7 +56,7 @@ function defaultImportReader(moduleName, requestOptions = {}) {
     importContext = {},
     trustedHosts = [],
     requestTimeout = 2000
-  } = requestOptions;
+  } = importOptions;
 
   const context = importContext[moduleName];
   if (context) {
@@ -69,7 +74,7 @@ function defaultImportReader(moduleName, requestOptions = {}) {
     }
   }
 
-  const pathes = [];
+  const pathes: string[] = [];
 
   if (typeof importPaths === "string") {
     pathes.push(importPaths);
@@ -86,7 +91,7 @@ function defaultImportReader(moduleName, requestOptions = {}) {
         .join("/")
     );
 
-  for (dir of pathes) {
+  for (const dir of pathes) {
     let uri = dir;
     let entries = [];
     let src;
@@ -125,7 +130,3 @@ function defaultImportReader(moduleName, requestOptions = {}) {
     `Module "${moduleName}" is not found. Searched in ${importPaths}`
   );
 }
-
-module.exports = {
-  defaultImportReader
-};

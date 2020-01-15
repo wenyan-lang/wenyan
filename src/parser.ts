@@ -1,14 +1,21 @@
-import { CompileOptions, ExecuteOptions, LogCallback, ASCNode, Token, ASCType } from "./types";
+import {
+  CompileOptions,
+  ExecuteOptions,
+  LogCallback,
+  ASCNode,
+  Token,
+  ASCType
+} from "./types";
+import { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } from "./hanzi2num";
+import { hanzi2pinyin } from "./hanzi2pinyin";
+import { importReader } from "./reader";
+import { expandMacros, extractMacros } from "./macro";
+import { version } from "./version";
+import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 
-var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
-var hanzi2pinyin = require("./hanzi2pinyin");
 var STDLIB = require("./stdlib");
-var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-var version = require("./version");
 var compilers = require("./compiler/compilers");
 var { typecheck, printSignature } = require("./typecheck");
-var { expandMacros, extractMacros } = require("./macro.js");
-var { defaultImportReader } = require("./reader");
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -20,7 +27,7 @@ function wy2tokens(
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var tokens: Token[] = [];
+  var tokens: any[] = [];
   var tok = "";
   var idt = false;
   var num = false;
@@ -135,7 +142,7 @@ function wy2tokens(
                 kinfo.push(undefined);
               }
               i += k.length - 1;
-              tokens.push(kinfo.concat([i]));
+              tokens.push([...kinfo, i]);
               break;
             }
           }
@@ -200,9 +207,9 @@ function tokenRomanize(tokens, method) {
         tokens[i][1] = r;
       } else {
         if (method == "pinyin") {
-          r = hanzi2pinyin(tokens[i][1], (system = "pinyin"));
+          r = hanzi2pinyin(tokens[i][1], "pinyin");
         } else if (method == "baxter") {
-          r = hanzi2pinyin(tokens[i][1], (system = "baxter"));
+          r = hanzi2pinyin(tokens[i][1], "baxter");
         } else if (method == "unicode") {
           r = hanzi2unicodeEntry(tokens[i][1]);
         } else {
@@ -232,7 +239,7 @@ function defaultErrorCallback(e) {
 }
 
 function tokens2asc(
-  tokens: Token[],
+  tokens: any[],
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
@@ -243,10 +250,6 @@ function tokens2asc(
     var pos = gettok(i, 2);
     var cmd = gettok(i, 0);
 
-    // @ts-ignore
-    function gettok(idx: number, jdx: 0): ASCType
-    // @ts-ignore
-    function gettok(idx: number, jdx: 1): string
     // @ts-ignore
     function gettok(idx: number, jdx: number) {
       if (tokens[idx] === undefined) {
@@ -264,7 +267,7 @@ function tokens2asc(
         pos,
         good.includes(typ)
       );
-    }
+    };
 
     if (
       gettok(i, 0) == "decl" &&
@@ -310,7 +313,7 @@ function tokens2asc(
         "variable initialization"
       );
 
-      var x = {
+      var x: ASCNode = {
         op: "var",
         count: 1,
         type: gettok(i + 1, 1),
@@ -328,7 +331,7 @@ function tokens2asc(
       typeassert(i + 1, ["lit"], "property key");
       typeassert(i + 3, ["type"], "property type");
       typeassert(i + 4, ["assgn"], "property value");
-      var x = {
+      var x: ASCNode = {
         op: "prop",
         type: gettok(i + 3, 1),
         name: tokens[i + 1][1],
@@ -341,7 +344,7 @@ function tokens2asc(
       asc.push({ op: "print", pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funstart") {
-      var x = { op: "fun", arity: 0, args: [], pos };
+      var x: any = { op: "fun", arity: 0, args: [], pos };
       i++;
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
@@ -381,7 +384,7 @@ function tokens2asc(
       asc.push({ op: "objbody", pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "if") {
-      var x = { op: "if", test: [], pos };
+      var x: ASCNode = { op: "if", test: [], pos };
       i++;
       while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "conj")) {
         x.test.push(tokens[i]);
@@ -396,7 +399,7 @@ function tokens2asc(
       asc.push({ op: "if", test: [["ans"]], not: true, pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "elseif") {
-      var x = { op: "if", test: [], elseif: true, pos };
+      var x: ASCNode = { op: "if", test: [], elseif: true, pos };
       i++;
       while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "conj")) {
         x.test.push(tokens[i]);
@@ -427,7 +430,7 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "op") {
       typeassert(i + 2, ["opord"]);
-      var x = { pos };
+      var x: ASCNode = { pos };
       if (gettok(i + 2, 1) == "l") {
         x.lhs = tokens[i + 1];
         x.rhs = tokens[i + 3];
@@ -448,7 +451,7 @@ function tokens2asc(
       i += 2;
     } else if (gettok(i, 0) == "name") {
       typeassert(i + 1, ["iden"]);
-      var x = { op: "name", names: [gettok(i + 1, 1)], pos };
+      var x: ASCNode = { op: "name", names: [gettok(i + 1, 1)], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "assgn") {
         x.names.push(gettok(i + 1, 1));
@@ -456,7 +459,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
+      var x: ASCNode = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -470,7 +473,7 @@ function tokens2asc(
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
-      var x = {
+      var x: ASCNode = {
         op: "push",
         container: tokens[i + 1],
         values: [tokens[i + 3]],
@@ -489,7 +492,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "subs"
     ) {
       typeassert(i + 1, ["iden", "lit", "ans"]);
-      var x = {
+      var x: ASCNode = {
         op: "subscript",
         container: tokens[i + 1],
         value: tokens[i + 3],
@@ -504,7 +507,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "len"
     ) {
       typeassert(i + 1, ["iden", "lit", "subs"]);
-      var x = { op: "length", container: tokens[i + 1], pos };
+      var x: ASCNode = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -512,7 +515,7 @@ function tokens2asc(
       tokens[i + 3] &&
       gettok(i + 3, 0) == "lop"
     ) {
-      var x = {
+      var x: ASCNode = {
         op: "op" + gettok(i + 3, 1),
         lhs: tokens[i + 1],
         rhs: tokens[i + 2],
@@ -524,7 +527,7 @@ function tokens2asc(
       asc.push({ op: "temp", iden: tokens[i + 1] });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
-      var x = { op: "cat", containers: [tokens[i + 1]], pos };
+      var x: ASCNode = { op: "cat", containers: [tokens[i + 1]], pos };
       i += 2;
       while (gettok(i, 0) == "opord" && gettok(i, 1) == "l") {
         x.containers.push(tokens[i + 1]);
@@ -537,7 +540,7 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctrl" &&
       gettok(i + 2, 1) == "forin"
     ) {
-      var x = {
+      var x: ASCNode = {
         op: "for",
         container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
@@ -557,7 +560,7 @@ function tokens2asc(
       asc.push({ op: "whilen", value: tokens[i + 1], pos });
       i += 3;
     } else if (gettok(i, 0) == "rassgn" && gettok(i, 1) == "a") {
-      var x = { op: "reassign", lhs: tokens[i + 1], pos };
+      var x: ASCNode = { op: "reassign", lhs: tokens[i + 1], pos };
       if (gettok(i + 2, 0) == "ctnr" && gettok(i + 2, 1) == "subs") {
         x.lhssubs = tokens[i + 3];
         if (gettok(i + 6, 0) == "rassgn" && gettok(i + 6, 1) == "delete") {
@@ -610,7 +613,7 @@ function tokens2asc(
       asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
-      var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
+      var x: ASCNode = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
       i += 2;
       while (gettok(i, 0) == "import" && gettok(i, 1) == "in") {
         x.file += "/" + gettok(i + 1, 1);
@@ -693,7 +696,7 @@ function compile(txt: string, options?: Partial<CompileOptions>) {
 
   trustedHosts.push(...defaultTrustedHosts);
 
-  const reader = defaultImportReader;
+  const reader = importReader;
 
   const importOptions = {
     entryFilepath,
@@ -736,7 +739,6 @@ function compile(txt: string, options?: Partial<CompileOptions>) {
 
   var macros = extractMacros(txt, {
     lib,
-    reader,
     lang,
     importOptions
   });
@@ -831,7 +833,10 @@ function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
   };
 }
 
-function evalCompiled(compiledCode: string, options: Partial<ExecuteOptions> = {}) {
+function evalCompiled(
+  compiledCode: string,
+  options: Partial<ExecuteOptions> = {}
+) {
   const {
     outputHanzi = true,
     scoped = false,
@@ -860,14 +865,17 @@ function evalCompiled(compiledCode: string, options: Partial<ExecuteOptions> = {
   })();
 }
 
-function execute(source: string, options: Partial<ExecuteOptions & CompileOptions> = {}) {
+function execute(
+  source: string,
+  options: Partial<ExecuteOptions & CompileOptions> = {}
+) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
   const compiled = compile(source, options);
   evalCompiled(compiled, options);
 }
 
-var parser = {
+export {
   compile,
   evalCompiled,
   execute,
@@ -883,4 +891,3 @@ var parser = {
   NUMBER_KEYWORDS,
   STDLIB
 };
-module.exports = parser;

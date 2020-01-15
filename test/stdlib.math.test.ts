@@ -1,4 +1,4 @@
-const { createTestUtil } = require("./utils");
+import { createTestUtil } from "./utils";
 
 const { expectOutput } = createTestUtil({
   prefix: "吾嘗觀「「算經」」之書。",
