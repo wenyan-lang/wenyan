@@ -6,8 +6,13 @@ import {
   Token,
   ASCType
 } from "./types";
-import { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } from "./hanzi2num";
-import { hanzi2pinyin } from "./hanzi2pinyin";
+import {
+  hanzi2num,
+  hanzi2numstr,
+  num2hanzi,
+  bool2hanzi
+} from "./converts/hanzi2num";
+import { hanzi2pinyin } from "./converts/hanzi2pinyin";
 import { importReader } from "./reader";
 import { expandMacros, extractMacros } from "./macro";
 import { version } from "./version";

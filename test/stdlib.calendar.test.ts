@@ -1,6 +1,9 @@
-require("set-tz")("UTC");
-
 import { createTestUtil } from "./utils";
+
+const warn = console.warn;
+console.warn = jest.fn();
+require("set-tz")("UTC");
+console.warn = warn;
 
 const { expectOutput } = createTestUtil({
   prefix: "吾嘗觀「「曆法」」之書。",

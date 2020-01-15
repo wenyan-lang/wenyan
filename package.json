@@ -31,8 +31,8 @@
     "test": "jest",
     "test:update": "jest --updateSnapshot",
     "lint:fix": "npm run lint -- --fix",
-    "lint": "eslint {src,tools,test}/**/*.{js|ts}",
-    "prettify": "prettier {src,tools,test}/**/*.{js|ts} --write --quote-props preserve"
+    "lint": "eslint {src,tools,test}/**/*.{js,ts}",
+    "prettify": "prettier {src,tools,test}/**/*.{js,ts} --write --quote-props preserve"
   },
   "husky": {
     "hooks": {
@@ -40,7 +40,7 @@
     }
   },
   "lint-staged": {
-    "{src,tools,test}/**/*.{js|ts}": [
+    "{src,tools,test}/**/*.{js,ts}": [
       "prettier --write",
       "eslint --fix",
       "git add"

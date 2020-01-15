@@ -1,5 +1,5 @@
 import { semantic } from "./highlight";
-import { num2hanzi } from "./hanzi2num";
+import { num2hanzi } from "./converts/hanzi2num";
 import { wy2tokens, compile } from "./parser";
 
 const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"; //"Source Han Serif TC"

@@ -1,6 +1,6 @@
-import { RomanizeSystem } from "./types";
-import pinyin from "./converts/hanzi2roman-map-pinyin.json";
-import baxter from "./converts/hanzi2roman-map-baxter.json";
+import { RomanizeSystem } from "../types";
+import pinyin from "./hanzi2roman-map-pinyin.json";
+import baxter from "./hanzi2roman-map-baxter.json";
 
 export function hanzi2pinyin(a: string, system: RomanizeSystem = "pinyin") {
   var tab = { pinyin, baxter }[system];

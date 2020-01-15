@@ -1,4 +1,4 @@
-var { num2hanzi } = require("./hanzi2num");
+var { num2hanzi } = require("./converts/hanzi2num");
 var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
 
 var DEFAULT_COLORS = {
