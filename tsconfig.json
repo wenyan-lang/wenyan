@@ -15,5 +15,12 @@
     "target": "es5",
     "allowJs": true,
     "strict": false
-  }
+  },
+  "include": [
+    "src",
+    "package.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

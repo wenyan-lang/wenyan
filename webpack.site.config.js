@@ -1,6 +1,6 @@
 const webpack = require('webpack')
 const path = require('path')
-const baseConfig = require('./webpack.base.config')
+const {baseConfig} = require('./webpack.base.config')
 
 const makeConfig = (entry, filename, entryName) => {
   const config = {

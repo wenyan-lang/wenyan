@@ -1,5 +1,5 @@
 const webpack = require('webpack')
-const baseConfig = require('./webpack.base.config')
+const {baseConfig, defaultPlugins, DtsBundlePlugin} = require('./webpack.base.config')
 
 const Cli = {
   ...baseConfig(),
@@ -8,6 +8,7 @@ const Cli = {
     cli: './src/cli.ts',
   },
   plugins: [
+    ...defaultPlugins(),
     new webpack.BannerPlugin({
       banner: '#!/usr/bin/env node',
       raw: true,
@@ -23,7 +24,16 @@ const Core = {
   ...baseConfig(),
   entry: {
     core: './src/parser.ts',
-  }
+  },
+  plugins: [
+    ...defaultPlugins(),
+    new DtsBundlePlugin({
+      name: 'Wenyan',
+      baseDir: 'typings/src',
+      main: 'typings/src/parser.d.ts',
+      out: '../../dist/core/index.d.ts',
+    })
+  ]
 }
 
 Core.output.library = 'Wenyan'
