@@ -28,8 +28,8 @@
     "publish": "bump --commit && node ./tools/publish.js",
     "publish:ci": "node ./tools/publish.js",
     "release": "bump --commit --tag && git push --follow-tags",
-    "test": "mocha --require mocha-snapshots",
-    "test:update": "mocha --require mocha-snapshots --update",
+    "test": "ts-mocha --require mocha-snapshots",
+    "test:update": "ts-mocha --require mocha-snapshots --update",
     "lint:fix": "npm run lint -- --fix",
     "lint": "eslint {src,tools,test}/**/*.js",
     "prettify": "prettier {src,tools,test}/**/*.js --write --quote-props preserve"
@@ -52,6 +52,11 @@
     ]
   },
   "devDependencies": {
+    "@types/expect": "^24.3.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^13.1.7",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
     "chai": "^4.2.0",
     "commander": "^4.0.1",
     "enzyme": "^3.10.0",
@@ -71,6 +76,9 @@
     "raw-loader": "^4.0.0",
     "rimraf": "^3.0.0",
     "set-tz": "^0.2.0",
+    "ts-loader": "^6.2.1",
+    "ts-mocha": "^6.0.0",
+    "typescript": "^3.7.4",
     "version-bump-prompt": "^5.0.6",
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",

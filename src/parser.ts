@@ -1,3 +1,5 @@
+import { CompileOptions, ExecuteOptions, LogCallback, ASCNode, Token, ASCType } from "./types";
+
 var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
 var hanzi2pinyin = require("./hanzi2pinyin");
 var STDLIB = require("./stdlib");
@@ -13,12 +15,12 @@ const defaultTrustedHosts = [
 ];
 
 function wy2tokens(
-  txt,
+  txt: string,
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var tokens = [];
+  var tokens: Token[] = [];
   var tok = "";
   var idt = false;
   var num = false;
@@ -155,9 +157,9 @@ function wy2tokens(
     if (num) {
       const numStr = hanzi2numstr(tok);
       assert(`Invalid number "${tok}".`, i, numStr != null);
-      tokens.push(["num", numStr]);
+      tokens.push(["num", numStr, i]);
     } else if (data) {
-      tokens.push(["data", tok]);
+      tokens.push(["data", tok, i]);
     } else {
       assert("Unterminated identifier.", i, false);
     }
@@ -230,25 +232,30 @@ function defaultErrorCallback(e) {
 }
 
 function tokens2asc(
-  tokens,
+  tokens: Token[],
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var asc = [];
+  var asc: ASCNode[] = [];
   var i = 0;
   while (i < tokens.length) {
     var pos = gettok(i, 2);
     var cmd = gettok(i, 0);
 
-    function gettok(idx, jdx) {
+    // @ts-ignore
+    function gettok(idx: number, jdx: 0): ASCType
+    // @ts-ignore
+    function gettok(idx: number, jdx: 1): string
+    // @ts-ignore
+    function gettok(idx: number, jdx: number) {
       if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
-      return tokens[idx][jdx];
+      return tokens[idx][jdx] as string;
     }
 
-    function typeassert(idx, good, reason) {
+    const typeassert = (idx: number, good, reason?: string) => {
       var typ = gettok(idx, 0);
       assert(
         `<${cmd}> Expecting ${good.join("/")}${
@@ -272,7 +279,7 @@ function tokens2asc(
         Number.isSafeInteger(cnt) && cnt > 0
       );
 
-      var x = {
+      var x: ASCNode = {
         op: "var",
         count: cnt,
         type: gettok(i + 2, 1),
@@ -664,19 +671,7 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-function compile(arg1, arg2, arg3) {
-  let options = {};
-  let txt = "";
-
-  if (typeof arg2 === "string") {
-    // backward compatible
-    txt = arg2;
-    options = { ...arg3, lang: arg1 };
-  } else {
-    txt = arg1;
-    options = arg2;
-  }
-
+function compile(txt: string, options?: Partial<CompileOptions>) {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
@@ -771,7 +766,6 @@ function compile(arg1, arg2, arg3) {
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
-  var imports = [];
   var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
   if (!compilers[lang]) {
     console.log(compilers);
@@ -831,13 +825,13 @@ function hanzinize(value) {
   }
 }
 
-function outputHanziWrapper(log, outputHanzi) {
+function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
   return function output(...args) {
     log(...args.map(i => (outputHanzi ? hanzinize(i) : i)));
   };
 }
 
-function evalCompiled(compiledCode, options = {}) {
+function evalCompiled(compiledCode: string, options: Partial<ExecuteOptions> = {}) {
   const {
     outputHanzi = true,
     scoped = false,
@@ -866,7 +860,7 @@ function evalCompiled(compiledCode, options = {}) {
   })();
 }
 
-function execute(source, options = {}) {
+function execute(source: string, options: Partial<ExecuteOptions & CompileOptions> = {}) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
   const compiled = compile(source, options);

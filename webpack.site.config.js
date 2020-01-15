@@ -19,7 +19,7 @@ const makeConfig = (entry, filename, entryName) => {
   return config
 }
 
-const core = makeConfig('./src/parser.js', 'dist/core.js', 'Wenyan')
+const core = makeConfig('./src/parser.ts', 'dist/core.js', 'Wenyan')
 const examples = makeConfig('./tools/examples.js', 'dist/examples.js', 'Examples')
 const highlighter = makeConfig('./src/highlight.js', 'dist/highlight.js', 'Highlighter')
 const render = makeConfig('./src/render.js', 'dist/render.js', 'Render')

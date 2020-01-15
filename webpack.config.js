@@ -22,7 +22,7 @@ const Cli = {
 const Core = {
   ...baseConfig(),
   entry: {
-    core: './src/parser.js',
+    core: './src/parser.ts',
   }
 }
 

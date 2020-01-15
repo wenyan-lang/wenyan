@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "esnext",
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "target": "es5",
+    "noEmit": true,
+    "allowJs": true,
+    "strict": false
+  }
+}
