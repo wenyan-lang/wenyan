@@ -2,7 +2,8 @@ export type TargetLanguages = "js" | "py" | "rb";
 export type RomanizeSystem = "none" | "pinyin" | "unicode" | "baxter";
 export type LogCallback = (...args: any[]) => void;
 export type CacheObject = Record<string, string>;
-export type StandardLibraryObject = Record<string, string>;
+export type StandardLibraryObject = Record<string, string> &
+  Record<TargetLanguages, Record<string, string>>;
 
 export interface CompileOnlyOptions {
   lang: TargetLanguages;
@@ -30,6 +31,10 @@ export interface MarcoOptions {
   lib: CompileOnlyOptions["lib"];
   lang: TargetLanguages;
   importOptions: ImportOptions;
+}
+
+export interface TranspilerOptions {
+  imports: string[];
 }
 
 export interface ExecuteOptions {

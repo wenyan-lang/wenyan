@@ -1,7 +1,8 @@
-var Base = require("./base");
+import { BaseTranspiler } from "./base";
+import { TranspilerOptions } from "../types";
 
-class JSCompiler extends Base {
-  compile(options = {}) {
+export default class JSCompiler extends BaseTranspiler {
+  transpile(options: Partial<TranspilerOptions> = {}) {
     var imports = options.imports || [];
     var js = ``; //`"use strict";`;
     var prevfun = "";
@@ -230,7 +231,7 @@ class JSCompiler extends Base {
       } else if (a.op == "continue") {
         js += "continue;";
       } else if (a.op == "not") {
-        var v = getval(a.value);
+        let v = getval(a.value);
         var vname = this.nextTmpVar();
         js += `var ${vname}=!${v};`;
 
@@ -317,5 +318,3 @@ class JSCompiler extends Base {
     return { result: js, imports };
   }
 }
-const JS = JSCompiler;
-module.exports = JS;

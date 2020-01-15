@@ -12,9 +12,9 @@ import { importReader } from "./reader";
 import { expandMacros, extractMacros } from "./macro";
 import { version } from "./version";
 import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
+import { STDLIB } from "./stdlib";
+import transpilers from "./transpilers";
 
-var STDLIB = require("./stdlib");
-var compilers = require("./compiler/compilers");
 var { typecheck, printSignature } = require("./typecheck");
 
 const defaultTrustedHosts = [
@@ -674,7 +674,7 @@ function pyWrapModule(name, src) {
   return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
 }
 
-function compile(txt: string, options?: Partial<CompileOptions>) {
+function compile(txt: string, options?: Partial<CompileOptions>): string {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
@@ -769,13 +769,12 @@ function compile(txt: string, options?: Partial<CompileOptions>) {
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
-  if (!compilers[lang]) {
-    console.log(compilers);
-    return logCallback("Target language not supported.");
+  if (!transpilers[lang]) {
+    console.log(transpilers);
+    new Error("Target language not supported.");
   }
-  var klass = compilers[lang];
-  var compiler = new klass(asc);
-  var { imports, result } = compiler.compile({ imports });
+  var transpiler = new transpilers[lang](asc);
+  var { imports, result } = transpiler.transpile({ imports });
   var targ = result;
   logCallback(targ);
   imports = imports || [];
