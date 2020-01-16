@@ -1,13 +1,8 @@
 import {
   CompileOptions,
-  ExecuteOptions,
-  LogCallback,
   ASCNode,
   Token,
   TokenType,
-  StandardLibraryObject,
-  TargetLanguages,
-  ImportOptions,
   RomanizeSystem
 } from "./types";
 import {
@@ -25,10 +20,13 @@ import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
 import { match } from "./utils";
+import { evalCompiled, execute } from "./exec";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
 ];
+
+const IGNORE_SYMBOLS = "。、\n\r\t ";
 
 function wy2tokens(
   txt: string,
@@ -63,7 +61,7 @@ function wy2tokens(
   }
 
   while (i < txt.length) {
-    if ("。、\n\r\t ".includes(txt[i])) {
+    if (IGNORE_SYMBOLS.includes(txt[i])) {
       if (idt || data) {
         tok += txt[i];
       }
@@ -167,7 +165,7 @@ function wy2tokens(
   return tokens;
 }
 
-var idenMap = {};
+let idenMap = {};
 
 function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
   function noDup(x: string) {
@@ -643,16 +641,6 @@ function tokens2asc(
   return asc;
 }
 
-function jsWrapModule(name, src) {
-  var splitted = name.split("/");
-  var bname = splitted[splitted.length - 1];
-  return `/*___wenyan_module_${name}_start___*/var ${bname} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
-}
-function pyWrapModule(name, src) {
-  // return `#/*___wenyan_module_${name}_start___*/\nclass ${name}:\n${src.split("\n").map(x=>"\t"+x).join("\n")}\n#/*___wenyan_module_${name}_end___*/\n`;
-  return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
-}
-
 function compile(txt: string, options?: Partial<CompileOptions>): string {
   const {
     lang = "js",
@@ -674,8 +662,6 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   } = options;
 
   trustedHosts.push(...defaultTrustedHosts);
-
-  const reader = importReader;
 
   const importOptions = {
     entryFilepath,
@@ -773,74 +759,6 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   );
 
   return targ;
-}
-
-function isLangSupportedForEval(lang) {
-  if (lang !== "js")
-    throw new Error(
-      `Executing for target language "${lang}" is not supported in current environment`
-    );
-  return true;
-}
-
-function hanzinize(value) {
-  if (typeof value == "number") {
-    return num2hanzi(value);
-  } else if (typeof value == "boolean") {
-    return bool2hanzi(value);
-  } else if (Array.isArray(value)) {
-    return value.map(i => hanzinize(i)).join("。");
-  } else {
-    return value;
-  }
-}
-
-function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
-  return function output(...args) {
-    log(...args.map(i => (outputHanzi ? hanzinize(i) : i)));
-  };
-}
-
-function evalCompiled(
-  compiledCode: string,
-  options: Partial<ExecuteOptions> = {}
-) {
-  const {
-    outputHanzi = true,
-    scoped = false,
-    lang = "js",
-    output = console.log
-  } = options;
-
-  isLangSupportedForEval(lang);
-
-  let code = compiledCode;
-
-  (() => {
-    const _console_log = console.log;
-    console.log = outputHanziWrapper(output, outputHanzi);
-    try {
-      if (!scoped && "window" in this) {
-        window.eval(code);
-      } else {
-        eval(code);
-      }
-    } catch (e) {
-      throw e;
-    } finally {
-      console.log = _console_log;
-    }
-  })();
-}
-
-function execute(
-  source: string,
-  options: Partial<ExecuteOptions & CompileOptions> = {}
-) {
-  const { lang = "js" } = options;
-  isLangSupportedForEval(lang);
-  const compiled = compile(source, options);
-  evalCompiled(compiled, options);
 }
 
 export {
