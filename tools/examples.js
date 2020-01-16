@@ -1,11 +1,13 @@
 function loadExamples() {
   const examples = {};
 
-  const raw = require.context("../examples", false, /.*\.wy$/);
+  try {
+    const raw = require.context("../examples", false, /.*\.wy$/);
 
-  raw.keys().forEach(key => {
-    examples[key.slice(2, -3)] = raw(key).default;
-  });
+    raw.keys().forEach(key => {
+      examples[key.slice(2, -3)] = raw(key).default;
+    });
+  } catch (e) {}
 
   return examples;
 }

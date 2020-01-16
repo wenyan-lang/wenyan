@@ -1,17 +1,32 @@
 const fs = require("fs-extra");
 const path = require("path");
 
-const LibDir = path.resolve(__dirname, "../lib");
-const StdlibDocFilePath = path.resolve(
-  __dirname,
-  "../documentation/Standard-Lib.md"
-);
 const DocRegex = /注曰「「(.+?)。同Javascript之(.+?)也。」」/g;
-const GithubRoot = "..";
+const GithubRoot = "https://github.com/wenyan-lang/wenyan/tree/master";
+
+const Info = {
+  易經: {
+    name: "Random"
+  },
+  曆法: {
+    name: "Calendar",
+    description: "> 💬 This library uses your system timezone setting"
+  },
+  算經: {
+    name: "Math"
+  },
+  籌經: {
+    name: "Collection Operations"
+  },
+  位經: {
+    name: "Bit Manipulation"
+  },
+  畫譜: {
+    name: "Canvas"
+  }
+};
 
 const HEAD = `<!-- GENERATED FILE, DO NOT MODIFY-->
-
-[Back to README](../README.md)
 
 # Standard Library Cheatsheet
 `;
@@ -19,7 +34,7 @@ const HEAD = `<!-- GENERATED FILE, DO NOT MODIFY-->
 const BODY = `
 ## Usage
 
-\`\`\`
+\`\`\`wenyan
 吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」「圓周率」之義。
 \`\`\`
 `;
@@ -31,16 +46,12 @@ const TAIL = `
 This cheatsheet is generated direct from stdlibs. There are still a lot of functions are not listed above. If you would like to hep update this cheatsheet, here is the steps.
 
 Add comments in the stdlib files (one line above the function/value), the format should look like this:
-\`\`\`
+
+\`\`\`wenyan
 注曰「「餘弦。同Javascript之Math.cos也。」」
 \`\`\`
 
-After you fill the comments, you need to update the document by running
-\`\`\`bash
-npm run build:docs
-\`\`\`
-
-Check the output document out and submit a pull request. Thank you!
+After you fill the comments, commit and open a pull request. Thank you!
 `;
 
 function escapeMarkdown(text) {
@@ -82,11 +93,21 @@ function readFile(filepath, relativePath) {
     });
   }
 
-  // console.log(name, results)
-
   const GithubPath = `${GithubRoot}/lib/${relativePath}`;
 
-  let markdown = `## [${name}](${GithubPath})\n\n`;
+  let markdown = "";
+
+  let displayName = name;
+
+  if (Info[name] && Info[name].name) {
+    displayName += ` - ${Info[name].name}`;
+  }
+
+  markdown += `## [${displayName}](${GithubPath})\n\n`;
+
+  if (Info[name] && Info[name].description) {
+    markdown += `${Info[name].description}\n\n`;
+  }
 
   markdown += `| Wenyan | Javascript Equivalent |\n|---|---|\n`;
 
@@ -98,28 +119,37 @@ function readFile(filepath, relativePath) {
   return markdown + "\n";
 }
 
-function update() {
+function update(srcDir, outputFile) {
   let markdown = HEAD + "\n";
   markdown += `Last updated: ${new Date().toGMTString()}\n\n`;
 
   markdown += BODY + "\n";
 
   const files = [
-    ...fs.readdirSync(LibDir),
-    ...fs.readdirSync(path.join(LibDir, "js")).map(i => "js/" + i)
+    ...fs.readdirSync(srcDir),
+    ...fs.readdirSync(path.join(srcDir, "js")).map(i => "js/" + i)
   ];
 
   for (const file of files) {
     if (file.endsWith(".wy")) {
-      markdown += readFile(path.join(LibDir, file), file);
+      markdown += readFile(path.join(srcDir, file), file);
     }
   }
 
   markdown += "\n" + TAIL;
 
-  fs.writeFileSync(StdlibDocFilePath, markdown, "utf-8");
+  fs.writeFileSync(outputFile, markdown, "utf-8");
 
-  console.log("Standard Library Cheatsheet Updated.");
+  console.log("Standard Library Cheatsheet updated.");
 }
 
-if (require.main === module) update();
+module.exports = {
+  update
+};
+
+if (require.main === module) {
+  update(
+    path.resolve(__dirname, "../lib"),
+    path.resolve(__dirname, "../documentation/Standard-Lib.md")
+  );
+}
