@@ -1,5 +1,5 @@
 <head>
-<script src="./dist/core.js"></script>
+<script src="./dist/execute.js"></script>
 </head>
 <body>
 <pre id="out"></pre>
@@ -14,6 +14,7 @@ window.addEventListener('message', (e) => {
     outdiv.innerText = text
   
   if (code){
+    outdiv.innerText = ""
     try {
       Wenyan.evalCompiled(code, {
         ...options,

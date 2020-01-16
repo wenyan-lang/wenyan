@@ -19,9 +19,12 @@ const makeConfig = (entry, filename, entryName) => {
   return config
 }
 
-const core = makeConfig('./src/parser.js', 'dist/core.js', 'Wenyan')
-const examples = makeConfig('./tools/examples.js', 'dist/examples.js', 'Examples')
-const highlighter = makeConfig('./src/highlight.js', 'dist/highlight.js', 'Highlighter')
-const render = makeConfig('./src/render.js', 'dist/render.js', 'Render')
 
-module.exports = [core, examples, highlighter, render]
+
+module.exports = [
+  makeConfig('./src/parser.js', 'dist/core.js', 'Wenyan'),
+  makeConfig('./src/execute.js', 'dist/execute.js', 'Wenyan'),
+  makeConfig('./tools/examples.js', 'dist/examples.js', 'Examples'),
+  makeConfig('./src/highlight.js', 'dist/highlight.js', 'Highlighter'),
+  makeConfig('./src/render.js', 'dist/render.js', 'Render'),
+]
