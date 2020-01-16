@@ -44,6 +44,8 @@ export interface ExecuteOptions {
   output: LogCallback;
 }
 
+export type MacroDefinition = [string, string];
+
 export interface ImportedModule {
   moduleName: string;
   src: string;

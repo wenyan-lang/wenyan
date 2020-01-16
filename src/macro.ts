@@ -1,73 +1,73 @@
-import { MarcoOptions } from "./types";
+import { MarcoOptions, MacroDefinition } from "./types";
 import { bundleImports } from "./reader";
 
-export function extractMacros(txt, options: MarcoOptions) {
+export function extractMacros(src: string, options: MarcoOptions) {
   const { lib, lang, importOptions } = options;
 
-  function getImports() {
-    var imps = [];
+  function getImports(): string[] {
+    var imports = [];
     var qlvl = 0;
-    for (var i = 0; i < txt.length; i++) {
-      if (txt[i] == "「") {
+    for (var i = 0; i < src.length; i++) {
+      if (src[i] == "「") {
         qlvl++;
-      } else if (txt[i] == "」") {
+      } else if (src[i] == "」") {
         qlvl--;
-      } else if (txt[i] == "『") {
+      } else if (src[i] == "『") {
         qlvl += 2;
-      } else if (txt[i] == "』") {
+      } else if (src[i] == "』") {
         qlvl -= 2;
       }
       if (qlvl != 0) {
         continue;
       }
-      if (txt[i] == "吾" && txt[i + 1] == "嘗" && txt[i + 2] == "觀") {
-        var imp = txt
+      if (src[i] == "吾" && src[i + 1] == "嘗" && src[i + 2] == "觀") {
+        var imp = src
           .slice(i + 3)
           .split("之書")[0]
           .split("中")
           .map(x => x.replace(/[「」『』]/g, ""))
           .join("/");
-        imps.push(imp);
+        imports.push(imp);
       }
     }
-    return imps;
+    return imports;
   }
   function getMacros() {
-    var macs = [];
+    var macros: MacroDefinition[] = [];
     var qlvl = 0;
-    for (var i = 0; i < txt.length; i++) {
-      if (txt[i] == "「") {
+    for (var i = 0; i < src.length; i++) {
+      if (src[i] == "「") {
         qlvl++;
-      } else if (txt[i] == "」") {
+      } else if (src[i] == "」") {
         qlvl--;
-      } else if (txt[i] == "『") {
+      } else if (src[i] == "『") {
         qlvl += 2;
-      } else if (txt[i] == "』") {
+      } else if (src[i] == "』") {
         qlvl -= 2;
       }
       if (qlvl != 0) {
         continue;
       }
-      if (txt[i] == "或" && txt[i + 1] == "云") {
+      if (src[i] == "或" && src[i + 1] == "云") {
         const grabLit = () => {
           var lvl = 0;
           var s = "";
           while (true) {
-            if (txt[j] == "「") {
+            if (src[j] == "「") {
               lvl++;
-            } else if (txt[j] == "」") {
+            } else if (src[j] == "」") {
               lvl--;
-            } else if (txt[j] == "『") {
+            } else if (src[j] == "『") {
               lvl += 2;
-            } else if (txt[j] == "』") {
+            } else if (src[j] == "』") {
               lvl -= 2;
             }
-            s += txt[j];
+            s += src[j];
             j++;
             if (lvl == 0) {
               break;
             }
-            if (j >= txt.length) {
+            if (j >= src.length) {
               return s;
             }
           }
@@ -75,10 +75,10 @@ export function extractMacros(txt, options: MarcoOptions) {
         };
         var j = i + 2;
         var s0 = grabLit();
-        while (!(txt[j] == "蓋" && txt[j + 1] == "謂")) {
+        while (!(src[j] == "蓋" && src[j + 1] == "謂")) {
           j++;
-          if (j >= txt.length) {
-            return macs;
+          if (j >= src.length) {
+            return macros;
           }
         }
         j += 2;
@@ -111,14 +111,14 @@ export function extractMacros(txt, options: MarcoOptions) {
           }
         }
         s0 = s0.replace(/「[甲乙丙丁戊己庚辛壬癸]」/g, "(.+?)");
-        macs.push([s0, s1]);
+        macros.push([s0, s1]);
         i = j;
       }
     }
-    return macs;
+    return macros;
   }
-  var imports = getImports();
-  var macros = getMacros();
+  const imports = getImports();
+  const macros = getMacros();
 
   bundleImports(imports, { lib, lang }, importOptions).forEach(
     ({ src, entry }) => {
@@ -136,46 +136,48 @@ export function extractMacros(txt, options: MarcoOptions) {
   return macros;
 }
 
-export function expandMacros(txt, macros) {
-  function calclmask(ntxt) {
-    var lmask = [];
-    var qlvl = 0;
-    for (var i = 0; i < ntxt.length; i++) {
-      if (ntxt[i] == "「") {
-        qlvl++;
-      } else if (ntxt[i] == "」") {
-        qlvl--;
-      } else if (ntxt[i] == "『") {
-        qlvl += 2;
-      } else if (ntxt[i] == "』") {
-        qlvl -= 2;
-      }
-      lmask.push(qlvl > 0);
+function calcBracketStarts(src: string) {
+  const starts: number[] = [];
+  let level = 0;
+  for (var i = 0; i < src.length; i++) {
+    let c = src[i];
+    if (c == "「") {
+      level++;
+    } else if (c == "」") {
+      level--;
+    } else if (c == "『") {
+      level += 2;
+    } else if (c == "』") {
+      level -= 2;
     }
-    return lmask;
+    if (level > 0) starts.push(i);
   }
-  for (var i = 0; i < macros.length; i++) {
-    const doit = ntxt => {
-      var lmask = calclmask(ntxt);
-      var re = new RegExp(macros[i][0]);
-      var idx = ntxt.search(re);
+  return starts;
+}
+
+export function expandMacros(src: string, macros: MacroDefinition[]) {
+  for (const [from, to] of macros) {
+    let re = new RegExp(from);
+    const expand = ntxt => {
+      let starts = calcBracketStarts(ntxt);
+      let idx = ntxt.search(re);
       if (idx == -1) {
         return ntxt;
       }
-      if (lmask[idx]) {
+      if (starts.includes(idx)) {
         // console.log("refused to expand macro inside string")
-        var nxtend = idx;
-        while (lmask[nxtend] == true && nxtend < lmask.length) {
+        let nxtend = idx + 1;
+        while (starts.includes(nxtend) && nxtend < starts.length) {
           nxtend++;
         }
         nxtend++;
-        ntxt = ntxt.slice(0, nxtend) + doit(ntxt.slice(nxtend));
+        ntxt = ntxt.slice(0, nxtend) + expand(ntxt.slice(nxtend));
       } else {
-        ntxt = doit(ntxt.replace(re, macros[i][1]));
+        ntxt = expand(ntxt.replace(re, to));
       }
       return ntxt;
     };
-    txt = doit(txt);
+    src = expand(src);
   }
-  return txt;
+  return src;
 }
