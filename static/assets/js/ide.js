@@ -545,13 +545,12 @@ function send(data) {
 
 function run() {
   resetOutput();
-  const output = "";
-  Wenyan.evalCompiled(jsCM.getValue(), {
-    outputHanzi: state.config.outputHanzi,
-    output: (...args) => (output += args.join(" ") + "\n")
+  send({
+    code: jsCM.getValue(),
+    options: {
+      outputHanzi: state.config.outputHanzi
+    }
   });
-
-  send({ text: output });
 }
 
 function crun() {
