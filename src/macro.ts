@@ -1,5 +1,6 @@
 import { MarcoOptions, MacroDefinition } from "./types";
 import { bundleImports } from "./reader";
+import { match } from "./utils";
 
 export function extractMacros(src: string, options: MarcoOptions) {
   const { lib, lang, importOptions } = options;
@@ -20,7 +21,7 @@ export function extractMacros(src: string, options: MarcoOptions) {
       if (qlvl != 0) {
         continue;
       }
-      if (src[i] == "吾" && src[i + 1] == "嘗" && src[i + 2] == "觀") {
+      if (match(src, i, "吾嘗觀")) {
         var imp = src
           .slice(i + 3)
           .split("之書")[0]

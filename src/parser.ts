@@ -7,7 +7,8 @@ import {
   TokenType,
   StandardLibraryObject,
   TargetLanguages,
-  ImportOptions
+  ImportOptions,
+  RomanizeSystem
 } from "./types";
 import {
   hanzi2num,
@@ -23,6 +24,7 @@ import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
+import { match } from "./utils";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -61,18 +63,11 @@ function wy2tokens(
   }
 
   while (i < txt.length) {
-    if (
-      txt[i] == "。" ||
-      txt[i] == "、" ||
-      txt[i] == "\n" ||
-      txt[i] == "\r" ||
-      txt[i] == "\t" ||
-      txt[i] == " "
-    ) {
+    if ("。、\n\r\t ".includes(txt[i])) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+    } else if (match(txt, i, "「「") || txt[i] == "『") {
       var is_sin = txt[i] == "「";
       if (litlvl == 0) {
         enddata();
@@ -135,13 +130,7 @@ function wy2tokens(
         } else {
           var ok = false;
           for (var k in KEYWORDS) {
-            ok = true;
-            for (var j = 0; j < k.length; j++) {
-              if (txt[i + j] != k[j]) {
-                ok = false;
-                break;
-              }
-            }
+            ok = match(txt, i, k);
             if (ok) {
               enddata();
               var kinfo = KEYWORDS[k];
@@ -179,8 +168,9 @@ function wy2tokens(
 }
 
 var idenMap = {};
-function tokenRomanize(tokens, method) {
-  function noDup(x) {
+
+function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
+  function noDup(x: string) {
     for (var k in idenMap) {
       if (idenMap[k] == x) {
         return false;
@@ -188,56 +178,35 @@ function tokenRomanize(tokens, method) {
     }
     return true;
   }
-  function isRoman(x) {
+  function isRoman(x: string) {
     return x.replace(/[ -~]/g, "").length == 0;
   }
-  function hanzi2unicodeEntry(s) {
-    var y = "";
-    for (var c of s) {
-      y +=
-        "U" +
-        c
-          .charCodeAt(0)
-          .toString(16)
-          .toUpperCase();
-    }
-    return y;
-  }
-  for (var i = 0; i < tokens.length; i++) {
-    if (tokens[i][0] == "iden" && !isRoman(tokens[i][1])) {
-      var r = idenMap[tokens[i][1]];
-      var key = tokens[i][1];
+
+  for (const token of tokens) {
+    if (token[0] == "iden" && !isRoman(token[1])) {
+      var r = idenMap[token[1]];
+      var key = token[1];
       if (r !== undefined) {
-        tokens[i][1] = r;
+        token[1] = r;
       } else {
-        if (method == "pinyin") {
-          r = hanzi2pinyin(tokens[i][1], "pinyin");
-        } else if (method == "baxter") {
-          r = hanzi2pinyin(tokens[i][1], "baxter");
-        } else if (method == "unicode") {
-          r = hanzi2unicodeEntry(tokens[i][1]);
-        } else {
-          r = hanzi2pinyin(tokens[i][1]); // legacy
-          //console.log("Unrecognized Romanization method");
-          //return;
-        }
+        r = hanzi2pinyin(token[1], system);
         while (!noDup(r)) {
           r += "_";
         }
-        tokens[i][1] = r;
+        token[1] = r;
       }
       idenMap[key] = r;
     }
   }
 }
 
-function defaultLogCallback(x) {
+function defaultLogCallback(x: any) {
   return typeof x == "string"
     ? console.log(x)
     : console.dir(x, { depth: null, maxArrayLength: null });
 }
 
-function defaultErrorCallback(e) {
+function defaultErrorCallback(e: any) {
   console.error(e);
   process.exit();
 }
