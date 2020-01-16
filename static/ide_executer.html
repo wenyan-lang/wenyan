@@ -1,0 +1,29 @@
+<head>
+<script src="./dist/core.js"></script>
+</head>
+<body>
+<pre id="out"></pre>
+<script>
+const outdiv = document.getElementById('out')
+
+window.addEventListener('message', (e) => {
+  console.log(e.data)
+  const { text, code, options } = e.data
+  
+  if (text)
+    outdiv.innerText = text
+  
+  if (code){
+    try {
+      Wenyan.evalCompiled(code, {
+        ...options,
+        output: (...args) => outdiv.innerText += args.join(" ") + "\n"
+      });
+    } catch (e) {
+      outdiv.innerText = e.toString();
+      console.error(e);
+    }
+  }
+}, false);
+</script>
+</body>
