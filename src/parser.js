@@ -7,7 +7,7 @@ var compilers = require("./compiler/compilers");
 var { typecheck, printSignature } = require("./typecheck");
 var { expandMacros, extractMacros } = require("./macro.js");
 var { defaultImportReader } = require("./reader");
-var { evalCompiled } = require("./execute");
+var { evalCompiled, isLangSupportedForEval } = require("./execute");
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"

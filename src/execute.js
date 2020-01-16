@@ -56,5 +56,6 @@ function evalCompiled(compiledCode, options = {}) {
 }
 
 module.exports = {
+  isLangSupportedForEval,
   evalCompiled
 };
