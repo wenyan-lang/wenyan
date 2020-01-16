@@ -1,4 +1,9 @@
-import { ImportOptions, CacheObject } from "./types";
+import {
+  ImportOptions,
+  CacheObject,
+  CompileOptions,
+  ImportedModule
+} from "./types";
 
 const INDEX_FILENAME = "序";
 
@@ -47,7 +52,7 @@ function fetchSync(uri: string, cache: CacheObject, requestTimeout: number) {
 export function importReader(
   moduleName: string,
   importOptions: Partial<ImportOptions> = {}
-) {
+): ImportedModule {
   const {
     allowHttp = false,
     entryFilepath,
@@ -61,17 +66,23 @@ export function importReader(
   const context = importContext[moduleName];
   if (context) {
     if (typeof context === "string") {
-      return { src: context };
-    } else if (context.entry) {
       return {
+        src: context,
+        moduleName
+      };
+    }
+
+    if (context.entry) {
+      return {
+        moduleName,
         entry: context.entry,
         src: context.src
           ? context.src
           : fetchSync(context.entry, importCache, requestTimeout)
       };
-    } else {
-      throw new SyntaxError("Failed to parse context: " + context);
     }
+
+    throw new SyntaxError("Failed to parse context: " + context);
   }
 
   const pathes: string[] = [];
@@ -121,7 +132,7 @@ export function importReader(
     for (const entry of entries) {
       try {
         src = fetchSync(entry, importCache, requestTimeout);
-        return { src, entry };
+        return { src, entry, moduleName };
       } catch (e) {}
     }
   }
@@ -129,4 +140,30 @@ export function importReader(
   throw new ReferenceError(
     `Module "${moduleName}" is not found. Searched in ${importPaths}`
   );
+}
+
+export function bundleImports(
+  imports: string[],
+  options: { lib: CompileOptions["lib"]; lang: CompileOptions["lang"] },
+  importOptions: ImportOptions
+): ImportedModule[] {
+  const { lib, lang } = options;
+
+  return imports.map(moduleName => {
+    if (lib[lang][moduleName]) {
+      return {
+        moduleName,
+        src: lib[lang][moduleName]
+      };
+    }
+
+    if (lib[moduleName]) {
+      return {
+        moduleName,
+        src: lib[moduleName]
+      };
+    }
+
+    return importReader(moduleName, importOptions);
+  });
 }

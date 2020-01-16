@@ -1,7 +1,15 @@
-import { BaseTranspiler } from "./base";
+import { BaseTranspiler, ModuleWrapperOptions } from "./base";
 import { TranspilerOptions, ASCNodeOperator } from "../types";
 
-export default class PYCompiler extends BaseTranspiler {
+export default class PythonTranspiler extends BaseTranspiler {
+  protected moduleWrapper({
+    src,
+    markerStart,
+    markerEnd
+  }: ModuleWrapperOptions) {
+    return `#${markerStart}\n${src}\n#${markerEnd}\n`;
+  }
+
   transpile(options: Partial<TranspilerOptions> = {}) {
     var imports = options.imports || [];
     var lop = {

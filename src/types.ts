@@ -44,6 +44,12 @@ export interface ExecuteOptions {
   output: LogCallback;
 }
 
+export interface ImportedModule {
+  moduleName: string;
+  src: string;
+  entry?: string;
+}
+
 export type TokenType =
   | "ans"
   | "assgn"

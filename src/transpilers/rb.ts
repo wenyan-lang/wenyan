@@ -1,10 +1,19 @@
-import { BaseTranspiler } from "./base";
+import { BaseTranspiler, ModuleWrapperOptions } from "./base";
 import { TranspilerOptions, ASCNodeOperator } from "../types";
 
-export default class RBCompiler extends BaseTranspiler {
+export default class RubyCompiler extends BaseTranspiler {
+  protected moduleWrapper({
+    src,
+    markerStart,
+    markerEnd
+  }: ModuleWrapperOptions) {
+    return `#${markerStart}\n${src}\n#${markerEnd}\n`;
+  }
+
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
+
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       const item = asc[i];

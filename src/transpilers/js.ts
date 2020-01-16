@@ -1,7 +1,16 @@
-import { BaseTranspiler } from "./base";
+import { BaseTranspiler, ModuleWrapperOptions } from "./base";
 import { TranspilerOptions, ASCNodeOperator } from "../types";
 
 export default class JSCompiler extends BaseTranspiler {
+  protected moduleWrapper({
+    src,
+    scopeName,
+    markerStart,
+    markerEnd
+  }: ModuleWrapperOptions) {
+    return `${markerStart} var ${scopeName} = new function(){ ${src} };${markerEnd}`;
+  }
+
   transpile(options: Partial<TranspilerOptions> = {}) {
     var imports = options.imports || [];
     var js = ``; //`"use strict";`;

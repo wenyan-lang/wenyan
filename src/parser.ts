@@ -4,7 +4,10 @@ import {
   LogCallback,
   ASCNode,
   Token,
-  TokenType
+  TokenType,
+  StandardLibraryObject,
+  TargetLanguages,
+  ImportOptions
 } from "./types";
 import {
   hanzi2num,
@@ -13,7 +16,7 @@ import {
   bool2hanzi
 } from "./converts/hanzi2num";
 import { hanzi2pinyin } from "./converts/hanzi2pinyin";
-import { importReader } from "./reader";
+import { importReader, bundleImports } from "./reader";
 import { expandMacros, extractMacros } from "./macro";
 import { version } from "./version";
 import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
@@ -775,7 +778,6 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
-  var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
   if (!transpilers[lang]) {
     console.log(transpilers);
     new Error("Target language not supported.");
@@ -786,29 +788,20 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
-  logCallback("Loading imports", imports);
-  for (var i = 0; i < imports.length; i++) {
-    var isrc, entry;
-    if (imports[i] in lib[lang]) {
-      isrc = lib[lang][imports[i]];
-    } else if (imports[i] in lib) {
-      isrc = lib[imports[i]];
-    } else {
-      const file = reader(imports[i], importOptions);
-      isrc = file.src;
-      entry = file.entry;
+  logCallback("Loading imports " + imports.join(", "));
+
+  bundleImports(imports, { lib, lang }, importOptions).forEach(
+    ({ src, moduleName, entry }) => {
+      const compiledModule = compile(src, {
+        ...options,
+        entryFilepath: entry,
+        resetVarCnt: false,
+        strict: false
+      });
+
+      targ = transpiler.wrapModule(moduleName, compiledModule) + targ;
     }
-    targ =
-      mwrapper(
-        imports[i],
-        compile(isrc, {
-          ...options,
-          entryFilepath: entry,
-          resetVarCnt: false,
-          strict: false
-        })
-      ) + targ;
-  }
+  );
 
   return targ;
 }

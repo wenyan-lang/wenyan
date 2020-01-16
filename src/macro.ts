@@ -1,5 +1,5 @@
 import { MarcoOptions } from "./types";
-import { importReader } from "./reader";
+import { bundleImports } from "./reader";
 
 export function extractMacros(txt, options: MarcoOptions) {
   const { lib, lang, importOptions } = options;
@@ -119,27 +119,20 @@ export function extractMacros(txt, options: MarcoOptions) {
   }
   var imports = getImports();
   var macros = getMacros();
-  for (var i = 0; i < imports.length; i++) {
-    var isrc, entry;
-    if (lib[lang][imports[i]]) {
-      isrc = lib[lang][imports[i]];
-    } else if (imports[i] in lib) {
-      isrc = lib[imports[i]];
-    } else {
-      const file = importReader(imports[i], importOptions);
-      isrc = file.src;
-      entry = file.entry;
-    }
-    macros = macros.concat(
-      extractMacros(isrc, {
+
+  bundleImports(imports, { lib, lang }, importOptions).forEach(
+    ({ src, entry }) => {
+      const moduleMacros = extractMacros(src, {
         ...options,
         importOptions: {
           ...importOptions,
           entryFilepath: entry
         }
-      })
-    );
-  }
+      });
+      macros.push(...moduleMacros);
+    }
+  );
+
   return macros;
 }
 
