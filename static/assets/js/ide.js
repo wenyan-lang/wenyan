@@ -381,8 +381,17 @@ function loadFile(name) {
   deleteBtn.classList.toggle("hidden", !!currentFile.readonly);
 }
 
-function loadFromUrl() {
-  loadFile(new URLSearchParams(location.search).get("file") || "mandelbrot");
+function parseUrlQuery() {
+  const query = new URLSearchParams(location.search);
+
+  loadFile(query.get("file") || "mandelbrot");
+  updateExperimentFeatures(query.get("experiment") != null);
+}
+
+function updateExperimentFeatures(value) {
+  document
+    .querySelectorAll('[experiment="true"]')
+    .forEach(i => i.classList.toggle("hidden", !value));
 }
 
 function deleteCurrentFile() {
@@ -752,11 +761,11 @@ configEnablePackages.onchange = () => {
 };
 
 document.body.onresize = setView;
-window.addEventListener("popstate", loadFromUrl);
+window.addEventListener("popstate", parseUrlQuery);
 loadState();
 initConfigComponents();
 loadPackages();
 setView();
-loadFromUrl();
+parseUrlQuery();
 initExplorer();
 crun();
