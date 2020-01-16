@@ -7,7 +7,6 @@ const makeConfig = (entry, filename, entryName) => {
     ...baseConfig(),
     target: 'node',
     entry: entry,
-    devtool: undefined,
     mode: "development",
     optimization: {
       minimize: false,
