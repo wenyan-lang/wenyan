@@ -357,7 +357,8 @@ function loadFile(name) {
     savingLock = true;
     editorCM.setValue(currentFile.code || "");
     savingLock = false;
-    crun();
+
+    if (currentFile.readonly) crun();
   }
   document.title = (currentFile.alias || currentFile.name) + TITLE;
   fileNameSpan.innerText = currentFile.alias || currentFile.name;
