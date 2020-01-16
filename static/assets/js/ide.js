@@ -6,7 +6,8 @@ const DEFAULT_STATE = () => ({
     dark: false,
     enablePackages: true,
     outputHanzi: true,
-    hideImported: true
+    hideImported: true,
+    strict: false
   },
   files: {},
   wyg: {
@@ -509,12 +510,14 @@ function compile() {
       logCallback: x => {
         log += x + "\n";
       },
-      strict: true
+      strict: state.config.strict
     });
-    var sig = log
-      .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
-      .split("=== [PASS 3] COMPILER ===")[0];
-    outdiv.innerText = sig;
+    if (state.config.strict) {
+      var sig = log
+        .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
+        .split("=== [PASS 3] COMPILER ===")[0];
+      outdiv.innerText = sig;
+    }
     var showcode = state.config.hideImported ? hideImportedModules(code) : code;
     jsCM.setValue(js_beautify(showcode));
   } catch (e) {
@@ -542,7 +545,8 @@ function crun() {
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
-      importCache: cache
+      importCache: cache,
+      strict: state.config.strict
     });
     var showcode = state.config.hideImported ? hideImportedModules(code) : code;
 
