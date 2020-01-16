@@ -20,6 +20,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/python/python.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/ruby/ruby.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
   <script src="https://code.iconify.design/1/1.0.0-rc1/iconify.min.js"></script>
@@ -91,6 +93,11 @@
       <button class="dropdown" id="config-romanize" data-config="romanizeIdentifiers">
         <label>Romanization</label>
         <span class="value">none</span>
+        <span class="iconify" data-icon="mdi:menu-down" data-inline="false"></span>
+        <select></select>
+      </button>
+      <button class="dropdown" id="config-lang" data-config="lang">
+        <span class="value">js</span>
         <span class="iconify" data-icon="mdi:menu-down" data-inline="false"></span>
         <select></select>
       </button>

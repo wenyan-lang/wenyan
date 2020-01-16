@@ -2,6 +2,7 @@ const LOCAL_STORAGE_KEY = "wenyang-ide";
 const TITLE = " - 文言 Wenyan Online IDE";
 const DEFAULT_STATE = () => ({
   config: {
+    lang: "js",
     romanizeIdentifiers: "none",
     dark: false,
     enablePackages: true,
@@ -49,6 +50,7 @@ const configHideImported = document.getElementById("cofig-hide-imported");
 const configEnablePackages = document.getElementById("config-enable-packages");
 const configOutputHanzi = document.getElementById("config-output-hanzi");
 const configRomanize = document.getElementById("config-romanize");
+const configLang = document.getElementById("config-lang");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -82,6 +84,17 @@ function init() {
     opt.value = k;
     opt.innerHTML = k;
     document.querySelector("#config-romanize select").appendChild(opt);
+  }
+
+  for (var [value, display] of [
+    ["js", "Javascript"],
+    ["py", "Python"],
+    ["rb", "Ruby"]
+  ]) {
+    var opt = document.createElement("option");
+    opt.value = value;
+    opt.innerHTML = display;
+    document.querySelector("#config-lang select").appendChild(opt);
   }
 
   snippets = [
@@ -127,9 +140,13 @@ function initConfigComponents() {
   for (const dd of dropdowns) {
     const value = dd.querySelector(".value");
     const select = dd.querySelector("select");
-    value.innerText = select.value = state.config[dd.dataset.config];
+
+    select.value = state.config[dd.dataset.config];
+    value.innerText = select.selectedOptions[0].innerText;
+
     select.addEventListener("change", () => {
-      state.config[dd.dataset.config] = value.innerText = select.value;
+      value.innerText = select.selectedOptions[0].innerText;
+      state.config[dd.dataset.config] = select.value;
       saveState();
       if (dd.onchange) dd.onchange();
     });
@@ -495,12 +512,31 @@ function resetOutput() {
   renderedSVGs = [];
 }
 
+function updateCompiled(code) {
+  var showcode = state.config.hideImported ? hideImportedModules(code) : code;
+
+  jsCM.setOption(
+    "mode",
+    {
+      js: "javascript",
+      py: "python",
+      rb: "ruby"
+    }[state.config.lang]
+  );
+
+  if (state.config.lang === "js") {
+    jsCM.setValue(js_beautify(showcode));
+  } else {
+    jsCM.setValue(code);
+  }
+}
+
 function compile() {
   resetOutput();
   var log = "";
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
-      lang: "js",
+      lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
@@ -515,8 +551,8 @@ function compile() {
       .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
       .split("=== [PASS 3] COMPILER ===")[0];
     outdiv.innerText = sig;
-    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
-    jsCM.setValue(js_beautify(showcode));
+
+    updateCompiled(code);
   } catch (e) {
     outdiv.innerText = e.toString();
     console.error(e);
@@ -537,19 +573,19 @@ function crun() {
   resetOutput();
   try {
     var code = Wenyan.compile(editorCM.getValue(), {
-      lang: "js",
+      lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
       errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache
     });
-    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
 
-    jsCM.setValue(js_beautify(showcode));
+    updateCompiled(code);
 
     try {
       Wenyan.evalCompiled(code, {
+        lang: state.config.lang,
         outputHanzi: state.config.outputHanzi,
         output: (...args) => {
           outdiv.innerText += args.join(" ") + "\n";
@@ -709,6 +745,7 @@ configDark.onchange = updateDark;
 configHideImported.onchange = crun;
 configOutputHanzi.onchange = crun;
 configRomanize.onchange = crun;
+configLang.onchange = crun;
 configEnablePackages.onchange = () => {
   loadPackages();
   crun();
