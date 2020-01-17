@@ -52,7 +52,8 @@ module.exports = {
     tree2: "畫樹二",
     try: "異常處理示例",
     clock: "畫鐘",
-    pascal_triangle: "賈憲三角"
+    pascal_triangle: "賈憲三角",
+    zh_sqrt: "增乘開平方"
   },
   examplesLinks: {
     fizzbuzz: "[1]: https://en.wikipedia.org/wiki/Fizz_buzz",
