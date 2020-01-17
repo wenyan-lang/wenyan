@@ -2,6 +2,7 @@ const LOCAL_STORAGE_KEY = "wenyang-ide";
 const TITLE = " - 文言 Wenyan Online IDE";
 const DEFAULT_STATE = () => ({
   config: {
+    lang: "js",
     romanizeIdentifiers: "none",
     dark: false,
     enablePackages: true,
@@ -39,7 +40,8 @@ const exlistExamples = document.getElementById("explorer-list-examples");
 const exlistPackages = document.getElementById("explorer-list-packages");
 const explorerPackages = document.getElementById("explorer-packages");
 
-const outdiv = document.getElementById("out");
+const outIframe = document.getElementById("out-iframe");
+const outRender = document.getElementById("out-render");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
@@ -50,6 +52,7 @@ const configHideImported = document.getElementById("cofig-hide-imported");
 const configEnablePackages = document.getElementById("config-enable-packages");
 const configOutputHanzi = document.getElementById("config-output-hanzi");
 const configRomanize = document.getElementById("config-romanize");
+const configLang = document.getElementById("config-lang");
 
 var handv = window.innerWidth * 0.6;
 var handh = window.innerHeight * 0.7;
@@ -83,6 +86,17 @@ function init() {
     opt.value = k;
     opt.innerHTML = k;
     document.querySelector("#config-romanize select").appendChild(opt);
+  }
+
+  for (var [value, display] of [
+    ["js", "Javascript"],
+    ["py", "Python"],
+    ["rb", "Ruby"]
+  ]) {
+    var opt = document.createElement("option");
+    opt.value = value;
+    opt.innerHTML = display;
+    document.querySelector("#config-lang select").appendChild(opt);
   }
 
   snippets = [
@@ -128,9 +142,13 @@ function initConfigComponents() {
   for (const dd of dropdowns) {
     const value = dd.querySelector(".value");
     const select = dd.querySelector("select");
-    value.innerText = select.value = state.config[dd.dataset.config];
+
+    select.value = state.config[dd.dataset.config];
+    value.innerText = select.selectedOptions[0].innerText;
+
     select.addEventListener("change", () => {
-      state.config[dd.dataset.config] = value.innerText = select.value;
+      value.innerText = select.selectedOptions[0].innerText;
+      state.config[dd.dataset.config] = select.value;
       saveState();
       if (dd.onchange) dd.onchange();
     });
@@ -198,6 +216,7 @@ function setView() {
   var W = window.innerWidth;
   var H = window.innerHeight;
   var hw = 9;
+  var barHeight = 36;
 
   dex.style.left = "0px";
   dex.style.top = "0px";
@@ -218,6 +237,11 @@ function setView() {
   dou.style.top = handh + "px";
   dou.style.width = W - handex + "px";
   dou.style.height = H - handh + "px";
+
+  outIframe.style.left = handex + "px";
+  outIframe.style.top = handh + barHeight + "px";
+  outIframe.style.width = W - handex + "px";
+  outIframe.style.height = H - handh - barHeight + "px";
 
   dhex.style.left = handex - hw / 2 + "px";
   dhex.style.top = "0px";
@@ -358,7 +382,7 @@ function loadFile(name) {
     editorCM.setValue(currentFile.code || "");
     savingLock = false;
 
-    if (currentFile.readonly) crun();
+    crun();
   }
   document.title = (currentFile.alias || currentFile.name) + TITLE;
   fileNameSpan.innerText = currentFile.alias || currentFile.name;
@@ -366,8 +390,17 @@ function loadFile(name) {
   deleteBtn.classList.toggle("hidden", !!currentFile.readonly);
 }
 
-function loadFromUrl() {
-  loadFile(new URLSearchParams(location.search).get("file") || "mandelbrot");
+function parseUrlQuery() {
+  const query = new URLSearchParams(location.search);
+
+  loadFile(query.get("file") || "mandelbrot");
+  updateExperimentFeatures(query.get("experiment") != null);
+}
+
+function updateExperimentFeatures(value) {
+  document
+    .querySelectorAll('[experiment="true"]')
+    .forEach(i => i.classList.toggle("hidden", !value));
 }
 
 function deleteCurrentFile() {
@@ -492,20 +525,43 @@ function loadPackages() {
 }
 
 function resetOutput() {
-  outdiv.innerText = "";
+  outIframe.onload = undefined;
+  outIframe.contentWindow.location.reload();
+  outIframe.classList.toggle("hidden", false);
+  outRender.classList.toggle("hidden", true);
   downloadRenderBtn.classList.toggle("hidden", true);
   renderedSVGs = [];
+}
+
+function updateCompiled(code) {
+  var showcode = state.config.hideImported ? hideImportedModules(code) : code;
+
+  jsCM.setOption(
+    "mode",
+    {
+      js: "javascript",
+      py: "python",
+      rb: "ruby"
+    }[state.config.lang]
+  );
+
+  if (state.config.lang === "js") {
+    jsCM.setValue(js_beautify(showcode));
+  } else {
+    jsCM.setValue(code);
+  }
 }
 
 function compile() {
   resetOutput();
   var log = "";
   try {
+    const errorLog = "";
     var code = Wenyan.compile(editorCM.getValue(), {
-      lang: "js",
+      lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
-      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      errorCallback: (...args) => (errorLog += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache,
       logCallback: x => {
@@ -513,59 +569,65 @@ function compile() {
       },
       strict: state.config.strict
     });
+    if (errorLog) {
+      send({ text: errorLog });
+      return;
+    }
     if (state.config.strict) {
       var sig = log
         .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
         .split("=== [PASS 3] COMPILER ===")[0];
-      outdiv.innerText = sig;
+      send({ text: sig });
     }
-    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
-    jsCM.setValue(js_beautify(showcode));
+
+    updateCompiled(code);
   } catch (e) {
-    outdiv.innerText = e.toString();
+    send({ text: e.toString() });
     console.error(e);
   }
 }
 
-function run() {
-  resetOutput();
-  Wenyan.evalCompiled(jsCM.getValue(), {
-    outputHanzi: state.config.outputHanzi,
-    output: (...args) => {
-      outdiv.innerText += args.join(" ") + "\n";
+function send(data) {
+  outIframe.onload = () => {
+    outIframe.contentWindow.postMessage(data);
+  };
+}
+
+function executeCode(code) {
+  send({
+    code,
+    options: {
+      lang: state.config.lang,
+      outputHanzi: state.config.outputHanzi
     }
   });
+}
+
+function run() {
+  resetOutput();
+  executeCode(jsCM.getValue());
 }
 
 function crun() {
   resetOutput();
   try {
+    let errorOutput = "";
     var code = Wenyan.compile(editorCM.getValue(), {
-      lang: "js",
+      lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
-      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      errorCallback: (...args) =>
+        (errorOutput.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache,
       strict: state.config.strict
     });
-    var showcode = state.config.hideImported ? hideImportedModules(code) : code;
 
-    jsCM.setValue(js_beautify(showcode));
+    updateCompiled(code);
 
-    try {
-      Wenyan.evalCompiled(code, {
-        outputHanzi: state.config.outputHanzi,
-        output: (...args) => {
-          outdiv.innerText += args.join(" ") + "\n";
-        }
-      });
-    } catch (e) {
-      outdiv.innerText = e.toString();
-      console.error(e);
-    }
+    executeCode(code);
   } catch (e) {
-    outdiv.innerText = e.toString();
+    send({ text: e.toString() });
     jsCM.setValue("");
     console.error(e);
   }
@@ -586,14 +648,16 @@ function updateDark() {
 }
 
 function render() {
-  outdiv.innerText = "";
+  outRender.innerText = "";
   renderedSVGs = Render.render(
     currentFile.alias || currentFile.name,
     currentFile.code
   );
   for (const svg of renderedSVGs) {
-    outdiv.innerHTML += svg + "<br>";
+    outRender.innerHTML += svg + "<br>";
   }
+  outIframe.classList.toggle("hidden", true);
+  outRender.classList.toggle("hidden", false);
   downloadRenderBtn.classList.toggle("hidden", false);
 }
 
@@ -714,17 +778,17 @@ configDark.onchange = updateDark;
 configHideImported.onchange = crun;
 configOutputHanzi.onchange = crun;
 configRomanize.onchange = crun;
+configLang.onchange = crun;
 configEnablePackages.onchange = () => {
   loadPackages();
   crun();
 };
 
 document.body.onresize = setView;
-window.addEventListener("popstate", loadFromUrl);
+window.addEventListener("popstate", parseUrlQuery);
 loadState();
 initConfigComponents();
 loadPackages();
 setView();
-loadFromUrl();
+parseUrlQuery();
 initExplorer();
-crun();
