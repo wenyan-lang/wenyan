@@ -1,3 +1,46 @@
+# v0.3.0
+
+## BREAKING CHANGE: `compile` API change
+
+As we mentioned in the [v0.2.0 release](https://github.com/wenyan-lang/wenyan/releases/tag/v0.2.0), the support of using `lang` as the first argument of  `compile` is now REMOVED. Please use the new API instead.
+
+```js
+// before
+compile('js', source, { ... })
+// after
+compile(source, { lang: 'js', ... })
+```
+
+## [New Online IDE](https://wy-lang.org/ide)
+The fresh new Online IDE is now landed. With file explorer, rendering, a better editor, auto-complete, [wyg](https://github.com/wenyan-lang/wyg) support, dark mode and more. Please do check it out! (PR #515 #526 #535 #536 #537 #546 #551 #552) 
+
+![](https://user-images.githubusercontent.com/7929704/72163213-68d0a480-3391-11ea-9196-9e21e5270149.png)
+![](https://user-images.githubusercontent.com/7929704/72163214-68d0a480-3391-11ea-989f-21322555294c.png)
+
+## We are now moved to Typescript! 
+
+We have rewritten our codebase to Typescript. The typing declaration file is also shipped in [@wanyanlang/code](https://www.npmjs.com/package/@wenyanlang/core).
+
+Check out for #543 for more details.
+
+### Features
+- Importing nested modules structure is now landed (PR #534, thanks @antfu)
+
+### Fixes
+- Functions containing elseif is miscompiled (PR #523, thanks @statementreply)
+
+### Stdlib
+- New 格物 library (PR #553, thanks @Fros1er)
+- Fix atan2(Infinity, Infinity) (PR #538 , thanks @statementreply)
+
+### Tests
+- A lot of tests have been added (#527, #530, thanks @statementreply)
+
+### Examples
+- Clock (#545, thanks @antfu)
+- Chinese-sqrt (增乘開平方術) (#550, thanks @jingkecn)
+
+
 # v0.2.4
 
 ## import in, elseif, if true, if false, any
