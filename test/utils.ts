@@ -152,7 +152,7 @@ function assertNearlyEqual(
   options: {
     relTol?: number;
     absTol?: number;
-    alts?: number[];
+    alts?: number[] | number[][];
     bounds?: number[] | number[][]; // boundary values (shall not cross into the wrong side)
   } = {},
   message?: string
