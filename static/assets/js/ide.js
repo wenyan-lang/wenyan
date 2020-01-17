@@ -588,10 +588,15 @@ function compile() {
 }
 
 function send(data) {
-  var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var is_safari = false; ///^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   if (!is_safari) {
     outIframe.onload = () => {
-      outIframe.contentWindow.postMessage(data);
+      try {
+        var win = outIframe.contentWindow;
+      } catch (e) {
+        var win = outIframe.contentWindow;
+      }
+      outIframe.contentWindow.postMessage(data, "*");
     };
   } else {
     // FU safari, why can't you just work
