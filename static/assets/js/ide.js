@@ -7,7 +7,8 @@ const DEFAULT_STATE = () => ({
     dark: false,
     enablePackages: true,
     outputHanzi: true,
-    hideImported: true
+    hideImported: true,
+    strict: false
   },
   files: {},
   wyg: {
@@ -380,6 +381,7 @@ function loadFile(name) {
     savingLock = true;
     editorCM.setValue(currentFile.code || "");
     savingLock = false;
+
     crun();
   }
   document.title = (currentFile.alias || currentFile.name) + TITLE;
@@ -523,6 +525,7 @@ function loadPackages() {
 }
 
 function resetOutput() {
+  outIframe.onload = undefined;
   outIframe.contentWindow.location.reload();
   outIframe.classList.toggle("hidden", false);
   outRender.classList.toggle("hidden", true);
@@ -564,16 +567,18 @@ function compile() {
       logCallback: x => {
         log += x + "\n";
       },
-      strict: true
+      strict: state.config.strict
     });
     if (errorLog) {
       send({ text: errorLog });
       return;
     }
-    var sig = log
-      .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
-      .split("=== [PASS 3] COMPILER ===")[0];
-    send({ text: sig });
+    if (state.config.strict) {
+      var sig = log
+        .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
+        .split("=== [PASS 3] COMPILER ===")[0];
+      send({ text: sig });
+    }
 
     updateCompiled(code);
   } catch (e) {
@@ -614,7 +619,8 @@ function crun() {
       errorCallback: (...args) =>
         (errorOutput.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
-      importCache: cache
+      importCache: cache,
+      strict: state.config.strict
     });
 
     updateCompiled(code);
@@ -786,4 +792,3 @@ loadPackages();
 setView();
 parseUrlQuery();
 initExplorer();
-crun();
