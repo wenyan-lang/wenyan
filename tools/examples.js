@@ -50,7 +50,9 @@ module.exports = {
     turing: "圖靈機",
     tree: "畫樹",
     tree2: "畫樹二",
-    try: "異常處理示例"
+    try: "異常處理示例",
+    clock: "畫鐘",
+    pascal_triangle: "賈憲三角"
   },
   examplesLinks: {
     fizzbuzz: "[1]: https://en.wikipedia.org/wiki/Fizz_buzz",
