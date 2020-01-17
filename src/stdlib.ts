@@ -1,3 +1,5 @@
+import { StandardLibraryObject } from "./types";
+
 function loadStdlib() {
   const STDLIB = {};
 
@@ -16,7 +18,7 @@ function loadStdlib() {
     });
   } catch (e) {} // ignore "require.context" error for testing
 
-  return STDLIB;
+  return STDLIB as StandardLibraryObject;
 }
 
-module.exports = loadStdlib();
+export const STDLIB = loadStdlib();

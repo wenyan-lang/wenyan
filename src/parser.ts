@@ -1,25 +1,41 @@
-var { hanzi2num, hanzi2numstr, num2hanzi, bool2hanzi } = require("./hanzi2num");
-var hanzi2pinyin = require("./hanzi2pinyin");
-var STDLIB = require("./stdlib");
-var { NUMBER_KEYWORDS, KEYWORDS } = require("./keywords");
-var version = require("./version");
-var compilers = require("./compiler/compilers");
-var { typecheck, printSignature } = require("./typecheck");
-var { expandMacros, extractMacros } = require("./macro.js");
-var { defaultImportReader } = require("./reader");
-var { evalCompiled, isLangSupportedForEval } = require("./execute");
+import {
+  CompileOptions,
+  ASCNode,
+  Token,
+  TokenType,
+  RomanizeSystem,
+  ExecuteOptions
+} from "./types";
+import {
+  hanzi2num,
+  hanzi2numstr,
+  num2hanzi,
+  bool2hanzi
+} from "./converts/hanzi2num";
+import { hanzi2pinyin } from "./converts/hanzi2pinyin";
+import { bundleImports } from "./reader";
+import { expandMacros, extractMacros } from "./macro";
+import { version } from "./version";
+import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
+import { STDLIB } from "./stdlib";
+import { typecheck, printSignature } from "./typecheck";
+import transpilers from "./transpilers";
+import { match } from "./utils";
+import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
 ];
 
+const IGNORE_SYMBOLS = "。、\n\r\t ";
+
 function wy2tokens(
-  txt,
+  txt: string,
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var tokens = [];
+  var tokens: Token[] = [];
   var tok = "";
   var idt = false;
   var num = false;
@@ -46,18 +62,11 @@ function wy2tokens(
   }
 
   while (i < txt.length) {
-    if (
-      txt[i] == "。" ||
-      txt[i] == "、" ||
-      txt[i] == "\n" ||
-      txt[i] == "\r" ||
-      txt[i] == "\t" ||
-      txt[i] == " "
-    ) {
+    if (IGNORE_SYMBOLS.includes(txt[i])) {
       if (idt || data) {
         tok += txt[i];
       }
-    } else if ((txt[i] == "「" && txt[i + 1] == "「") || txt[i] == "『") {
+    } else if (match(txt, i, "「「") || txt[i] == "『") {
       var is_sin = txt[i] == "「";
       if (litlvl == 0) {
         enddata();
@@ -120,21 +129,12 @@ function wy2tokens(
         } else {
           var ok = false;
           for (var k in KEYWORDS) {
-            ok = true;
-            for (var j = 0; j < k.length; j++) {
-              if (txt[i + j] != k[j]) {
-                ok = false;
-                break;
-              }
-            }
+            ok = match(txt, i, k);
             if (ok) {
               enddata();
               var kinfo = KEYWORDS[k];
-              while (kinfo.length < 2) {
-                kinfo.push(undefined);
-              }
               i += k.length - 1;
-              tokens.push(kinfo.concat([i]));
+              tokens.push([...kinfo, i] as Token);
               break;
             }
           }
@@ -156,9 +156,9 @@ function wy2tokens(
     if (num) {
       const numStr = hanzi2numstr(tok);
       assert(`Invalid number "${tok}".`, i, numStr != null);
-      tokens.push(["num", numStr]);
+      tokens.push(["num", numStr, i]);
     } else if (data) {
-      tokens.push(["data", tok]);
+      tokens.push(["data", tok, i]);
     } else {
       assert("Unterminated identifier.", i, false);
     }
@@ -166,9 +166,10 @@ function wy2tokens(
   return tokens;
 }
 
-var idenMap = {};
-function tokenRomanize(tokens, method) {
-  function noDup(x) {
+let idenMap = {};
+
+function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
+  function noDup(x: string) {
     for (var k in idenMap) {
       if (idenMap[k] == x) {
         return false;
@@ -176,80 +177,66 @@ function tokenRomanize(tokens, method) {
     }
     return true;
   }
-  function isRoman(x) {
+  function isRoman(x: string) {
     return x.replace(/[ -~]/g, "").length == 0;
   }
-  function hanzi2unicodeEntry(s) {
-    var y = "";
-    for (var c of s) {
-      y +=
-        "U" +
-        c
-          .charCodeAt(0)
-          .toString(16)
-          .toUpperCase();
-    }
-    return y;
-  }
-  for (var i = 0; i < tokens.length; i++) {
-    if (tokens[i][0] == "iden" && !isRoman(tokens[i][1])) {
-      var r = idenMap[tokens[i][1]];
-      var key = tokens[i][1];
+
+  for (const token of tokens) {
+    if (token[0] == "iden" && !isRoman(token[1])) {
+      var r = idenMap[token[1]];
+      var key = token[1];
       if (r !== undefined) {
-        tokens[i][1] = r;
+        token[1] = r;
       } else {
-        if (method == "pinyin") {
-          r = hanzi2pinyin(tokens[i][1], (system = "pinyin"));
-        } else if (method == "baxter") {
-          r = hanzi2pinyin(tokens[i][1], (system = "baxter"));
-        } else if (method == "unicode") {
-          r = hanzi2unicodeEntry(tokens[i][1]);
-        } else {
-          r = hanzi2pinyin(tokens[i][1]); // legacy
-          //console.log("Unrecognized Romanization method");
-          //return;
-        }
+        r = hanzi2pinyin(token[1], system);
         while (!noDup(r)) {
           r += "_";
         }
-        tokens[i][1] = r;
+        token[1] = r;
       }
       idenMap[key] = r;
     }
   }
 }
 
-function defaultLogCallback(x) {
+function defaultLogCallback(x: any) {
   return typeof x == "string"
     ? console.log(x)
     : console.dir(x, { depth: null, maxArrayLength: null });
 }
 
-function defaultErrorCallback(e) {
+function defaultErrorCallback(e: any) {
   console.error(e);
   process.exit();
 }
 
 function tokens2asc(
-  tokens,
+  tokens: Token[],
   assert = (msg, pos, b) => {
     if (!b) console.log(`ERROR@${pos}: ${msg}`);
   }
 ) {
-  var asc = [];
+  var asc: ASCNode[] = [];
   var i = 0;
   while (i < tokens.length) {
     var pos = gettok(i, 2);
     var cmd = gettok(i, 0);
 
-    function gettok(idx, jdx) {
+    // @ts-ignore
+    function gettok(idx: number, jdx: 0): TokenType;
+    // @ts-ignore
+    function gettok(idx: number, jdx: 1): string | undefined;
+    // @ts-ignore
+    function gettok(idx: number, jdx: 2): number;
+    // @ts-ignore
+    function gettok(idx: number, jdx: number) {
       if (tokens[idx] === undefined) {
         assert(`Unexpected EOF`, pos, false);
       }
       return tokens[idx][jdx];
     }
 
-    function typeassert(idx, good, reason) {
+    const typeassert = (idx: number, good, reason?: string) => {
       var typ = gettok(idx, 0);
       assert(
         `<${cmd}> Expecting ${good.join("/")}${
@@ -258,7 +245,7 @@ function tokens2asc(
         pos,
         good.includes(typ)
       );
-    }
+    };
 
     if (
       gettok(i, 0) == "decl" &&
@@ -273,7 +260,7 @@ function tokens2asc(
         Number.isSafeInteger(cnt) && cnt > 0
       );
 
-      var x = {
+      var x: ASCNode = {
         op: "var",
         count: cnt,
         type: gettok(i + 2, 1),
@@ -304,7 +291,7 @@ function tokens2asc(
         "variable initialization"
       );
 
-      var x = {
+      var x: ASCNode = {
         op: "var",
         count: 1,
         type: gettok(i + 1, 1),
@@ -322,7 +309,7 @@ function tokens2asc(
       typeassert(i + 1, ["lit"], "property key");
       typeassert(i + 3, ["type"], "property type");
       typeassert(i + 4, ["assgn"], "property value");
-      var x = {
+      var x: ASCNode = {
         op: "prop",
         type: gettok(i + 3, 1),
         name: tokens[i + 1][1],
@@ -335,7 +322,7 @@ function tokens2asc(
       asc.push({ op: "print", pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funstart") {
-      var x = { op: "fun", arity: 0, args: [], pos };
+      var x: ASCNode = { op: "fun", arity: 0, args: [], pos };
       i++;
       if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "funarg") {
         i++;
@@ -369,13 +356,13 @@ function tokens2asc(
         pos,
         gettok(i + 2, 0) == "ctrl" && gettok(i + 1, 0) == "iden"
       );
-      asc.push({ op: gettok(i + 2, 1), pos });
+      asc.push({ op: gettok(i + 2, 1) as "objend", pos });
       i += 3;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "objbody") {
       asc.push({ op: "objbody", pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "if") {
-      var x = { op: "if", test: [], pos };
+      var x: ASCNode = { op: "if", test: [], pos };
       i++;
       while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "conj")) {
         x.test.push(tokens[i]);
@@ -390,7 +377,7 @@ function tokens2asc(
       asc.push({ op: "if", test: [["ans"]], not: true, pos });
       i++;
     } else if (gettok(i, 0) == "ctrl" && gettok(i, 1) == "elseif") {
-      var x = { op: "if", test: [], elseif: true, pos };
+      var x: ASCNode = { op: "if", test: [], elseif: true, pos };
       i++;
       while (!(gettok(i, 0) == "ctrl" && gettok(i, 1) == "conj")) {
         x.test.push(tokens[i]);
@@ -421,7 +408,7 @@ function tokens2asc(
       i += 1;
     } else if (gettok(i, 0) == "op") {
       typeassert(i + 2, ["opord"]);
-      var x = { pos };
+      var x: ASCNode = { op: "op+", pos };
       if (gettok(i + 2, 1) == "l") {
         x.lhs = tokens[i + 1];
         x.rhs = tokens[i + 3];
@@ -430,10 +417,10 @@ function tokens2asc(
         x.rhs = tokens[i + 1];
       }
       if (gettok(i, 1) == "/" && gettok(i + 4, 0) == "mod") {
-        x.op = "op" + "%";
+        x.op = "op%";
         i += 5;
       } else {
-        x.op = "op" + gettok(i, 1);
+        x.op = ("op" + gettok(i, 1)) as "op+";
         i += 4;
       }
       asc.push(x);
@@ -442,7 +429,7 @@ function tokens2asc(
       i += 2;
     } else if (gettok(i, 0) == "name") {
       typeassert(i + 1, ["iden"]);
-      var x = { op: "name", names: [gettok(i + 1, 1)], pos };
+      var x: ASCNode = { op: "name", names: [gettok(i + 1, 1)], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "assgn") {
         x.names.push(gettok(i + 1, 1));
@@ -450,7 +437,7 @@ function tokens2asc(
       }
       asc.push(x);
     } else if (gettok(i, 0) == "call" && gettok(i, 1) == "r") {
-      var x = { op: "call", fun: tokens[i + 1], args: [], pos };
+      var x: ASCNode = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
         typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
@@ -464,7 +451,7 @@ function tokens2asc(
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "push") {
       typeassert(i + 2, ["opord"]);
       assert(`<${cmd}> Only opord l allowed`, pos, gettok(i + 2, 1) == "l");
-      var x = {
+      var x: ASCNode = {
         op: "push",
         container: tokens[i + 1],
         values: [tokens[i + 3]],
@@ -483,7 +470,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "subs"
     ) {
       typeassert(i + 1, ["iden", "lit", "ans"]);
-      var x = {
+      var x: ASCNode = {
         op: "subscript",
         container: tokens[i + 1],
         value: tokens[i + 3],
@@ -498,7 +485,7 @@ function tokens2asc(
       gettok(i + 2, 1) == "len"
     ) {
       typeassert(i + 1, ["iden", "lit", "subs"]);
-      var x = { op: "length", container: tokens[i + 1], pos };
+      var x: ASCNode = { op: "length", container: tokens[i + 1], pos };
       asc.push(x);
       i += 3;
     } else if (
@@ -506,8 +493,8 @@ function tokens2asc(
       tokens[i + 3] &&
       gettok(i + 3, 0) == "lop"
     ) {
-      var x = {
-        op: "op" + gettok(i + 3, 1),
+      var x: ASCNode = {
+        op: ("op" + gettok(i + 3, 1)) as "op+",
         lhs: tokens[i + 1],
         rhs: tokens[i + 2],
         pos
@@ -515,10 +502,10 @@ function tokens2asc(
       asc.push(x);
       i += 4;
     } else if (gettok(i, 0) == "expr") {
-      asc.push({ op: "temp", iden: tokens[i + 1] });
+      asc.push({ op: "temp", iden: tokens[i + 1], pos });
       i += 2;
     } else if (gettok(i, 0) == "ctnr" && gettok(i, 1) == "cat") {
-      var x = { op: "cat", containers: [tokens[i + 1]], pos };
+      var x: ASCNode = { op: "cat", containers: [tokens[i + 1]], pos };
       i += 2;
       while (gettok(i, 0) == "opord" && gettok(i, 1) == "l") {
         x.containers.push(tokens[i + 1]);
@@ -531,7 +518,7 @@ function tokens2asc(
       gettok(i + 2, 0) == "ctrl" &&
       gettok(i + 2, 1) == "forin"
     ) {
-      var x = {
+      var x: ASCNode = {
         op: "for",
         container: tokens[i + 1],
         iterator: gettok(i + 3, 1),
@@ -551,7 +538,7 @@ function tokens2asc(
       asc.push({ op: "whilen", value: tokens[i + 1], pos });
       i += 3;
     } else if (gettok(i, 0) == "rassgn" && gettok(i, 1) == "a") {
-      var x = { op: "reassign", lhs: tokens[i + 1], pos };
+      var x: ASCNode = { op: "reassign", lhs: tokens[i + 1], pos };
       if (gettok(i + 2, 0) == "ctnr" && gettok(i + 2, 1) == "subs") {
         x.lhssubs = tokens[i + 3];
         if (gettok(i + 6, 0) == "rassgn" && gettok(i + 6, 1) == "delete") {
@@ -604,7 +591,7 @@ function tokens2asc(
       asc.push({ op: "take", count: cnt, pos });
       i += 2;
     } else if (gettok(i, 0) == "import" && gettok(i, 1) == "file") {
-      var x = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
+      var x: ASCNode = { op: "import", file: gettok(i + 1, 1), iden: [], pos };
       i += 2;
       while (gettok(i, 0) == "import" && gettok(i, 1) == "in") {
         x.file += "/" + gettok(i + 1, 1);
@@ -655,29 +642,7 @@ function tokens2asc(
   return asc;
 }
 
-function jsWrapModule(name, src) {
-  var splitted = name.split("/");
-  var bname = splitted[splitted.length - 1];
-  return `/*___wenyan_module_${name}_start___*/var ${bname} = new function(){ ${src} };/*___wenyan_module_${name}_end___*/`;
-}
-function pyWrapModule(name, src) {
-  // return `#/*___wenyan_module_${name}_start___*/\nclass ${name}:\n${src.split("\n").map(x=>"\t"+x).join("\n")}\n#/*___wenyan_module_${name}_end___*/\n`;
-  return `#/*___wenyan_module_${name}_start___*/\n${src}\n#/*___wenyan_module_${name}_end___*/\n`;
-}
-
-function compile(arg1, arg2, arg3) {
-  let options = {};
-  let txt = "";
-
-  if (typeof arg2 === "string") {
-    // backward compatible
-    txt = arg2;
-    options = { ...arg3, lang: arg1 };
-  } else {
-    txt = arg1;
-    options = arg2;
-  }
-
+function compile(txt: string, options?: Partial<CompileOptions>): string {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
@@ -698,8 +663,6 @@ function compile(arg1, arg2, arg3) {
   } = options;
 
   trustedHosts.push(...defaultTrustedHosts);
-
-  const reader = defaultImportReader;
 
   const importOptions = {
     entryFilepath,
@@ -742,7 +705,6 @@ function compile(arg1, arg2, arg3) {
 
   var macros = extractMacros(txt, {
     lib,
-    reader,
     lang,
     importOptions
   });
@@ -772,54 +734,45 @@ function compile(arg1, arg2, arg3) {
   }
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
-  var imports = [];
-  var mwrapper = { js: jsWrapModule, py: pyWrapModule, rb: x => x }[lang];
-  if (!compilers[lang]) {
-    console.log(compilers);
-    return logCallback("Target language not supported.");
+  if (!transpilers[lang]) {
+    console.log(transpilers);
+    new Error("Target language not supported.");
   }
-  var klass = compilers[lang];
-  var compiler = new klass(asc);
-  var { imports, result } = compiler.compile({ imports });
+  var transpiler = new transpilers[lang](asc);
+  var { imports, result } = transpiler.transpile({ imports });
   var targ = result;
   logCallback(targ);
   imports = imports || [];
   imports = Array.from(new Set(imports));
-  logCallback("Loading imports", imports);
-  for (var i = 0; i < imports.length; i++) {
-    var isrc, entry;
-    if (imports[i] in lib[lang]) {
-      isrc = lib[lang][imports[i]];
-    } else if (imports[i] in lib) {
-      isrc = lib[imports[i]];
-    } else {
-      const file = reader(imports[i], importOptions);
-      isrc = file.src;
-      entry = file.entry;
+  logCallback("Loading imports " + imports.join(", "));
+
+  bundleImports(imports, { lib, lang }, importOptions).forEach(
+    ({ src, moduleName, entry }) => {
+      const compiledModule = compile(src, {
+        ...options,
+        entryFilepath: entry,
+        resetVarCnt: false,
+        strict: false
+      });
+
+      targ = transpiler.wrapModule(moduleName, compiledModule) + targ;
     }
-    targ =
-      mwrapper(
-        imports[i],
-        compile(isrc, {
-          ...options,
-          entryFilepath: entry,
-          resetVarCnt: false,
-          strict: false
-        })
-      ) + targ;
-  }
+  );
 
   return targ;
 }
 
-function execute(source, options = {}) {
+function execute(
+  source: string,
+  options: Partial<ExecuteOptions & CompileOptions> = {}
+) {
   const { lang = "js" } = options;
   isLangSupportedForEval(lang);
   const compiled = compile(source, options);
   evalCompiled(compiled, options);
 }
 
-var parser = {
+export {
   compile,
   evalCompiled,
   execute,
@@ -835,4 +788,3 @@ var parser = {
   NUMBER_KEYWORDS,
   STDLIB
 };
-module.exports = parser;

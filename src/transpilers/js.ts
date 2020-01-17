@@ -1,7 +1,17 @@
-var Base = require("./base");
+import { BaseTranspiler, ModuleWrapperOptions } from "./base";
+import { TranspilerOptions, ASCNodeOperator } from "../types";
 
-class JSCompiler extends Base {
-  compile(options = {}) {
+export default class JSCompiler extends BaseTranspiler {
+  protected moduleWrapper({
+    src,
+    scopeName,
+    markerStart,
+    markerEnd
+  }: ModuleWrapperOptions) {
+    return `${markerStart} var ${scopeName} = new function(){ ${src} };${markerEnd}`;
+  }
+
+  transpile(options: Partial<TranspilerOptions> = {}) {
     var imports = options.imports || [];
     var js = ``; //`"use strict";`;
     var prevfun = "";
@@ -155,8 +165,9 @@ class JSCompiler extends Base {
       } else if (a.op == "return") {
         js += `return ${getval(a.value)};`;
       } else if (a.op.startsWith("op")) {
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
+        let _a = a as ASCNodeOperator;
+        var lhs = getval(_a.lhs);
+        var rhs = getval(_a.rhs);
         var vname = this.nextTmpVar();
         js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);
@@ -230,7 +241,7 @@ class JSCompiler extends Base {
       } else if (a.op == "continue") {
         js += "continue;";
       } else if (a.op == "not") {
-        var v = getval(a.value);
+        let v = getval(a.value);
         var vname = this.nextTmpVar();
         js += `var ${vname}=!${v};`;
 
@@ -317,5 +328,3 @@ class JSCompiler extends Base {
     return { result: js, imports };
   }
 }
-const JS = JSCompiler;
-module.exports = JS;

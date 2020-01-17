@@ -1,6 +1,5 @@
-require("set-tz")("UTC");
-
-const { createTestUtil } = require("./utils");
+import { createTestUtil } from "./utils";
+import TZ from "set-tz";
 
 const { expectOutput } = createTestUtil({
   prefix: "吾嘗觀「「曆法」」之書。",
@@ -9,6 +8,13 @@ const { expectOutput } = createTestUtil({
 
 describe("stdlib", () => {
   describe("calendar", () => {
+    beforeAll(() => {
+      const warn = console.warn;
+      console.warn = jest.fn();
+      TZ("UTC");
+      console.warn = warn;
+    });
+
     describe("2001-02-03T04:05:06.789Z", () => {
       it("言彼之日時", () => {
         expectOutput(

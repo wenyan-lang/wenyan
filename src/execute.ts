@@ -1,6 +1,7 @@
-var { num2hanzi, bool2hanzi } = require("./hanzi2num");
+import { TargetLanguages, LogCallback, ExecuteOptions } from "./types";
+import { num2hanzi, bool2hanzi } from "./parser";
 
-function isLangSupportedForEval(lang) {
+export function isLangSupportedForEval(lang: TargetLanguages) {
   if (lang !== "js")
     throw new Error(
       `Executing for target language "${lang}" is not supported in current environment`
@@ -8,25 +9,28 @@ function isLangSupportedForEval(lang) {
   return true;
 }
 
-function hanzinize(value) {
+function hanzinizeOuput(value: string) {
   if (typeof value == "number") {
     return num2hanzi(value);
   } else if (typeof value == "boolean") {
     return bool2hanzi(value);
   } else if (Array.isArray(value)) {
-    return value.map(i => hanzinize(i)).join("。");
+    return value.map(i => hanzinizeOuput(i)).join("。");
   } else {
     return value;
   }
 }
 
-function outputHanziWrapper(log, outputHanzi) {
+function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
   return function output(...args) {
-    log(...args.map(i => (outputHanzi ? hanzinize(i) : i)));
+    log(...args.map(i => (outputHanzi ? hanzinizeOuput(i) : i)));
   };
 }
 
-function evalCompiled(compiledCode, options = {}) {
+export function evalCompiled(
+  compiledCode: string,
+  options: Partial<ExecuteOptions> = {}
+) {
   const {
     outputHanzi = true,
     scoped = false,
@@ -54,8 +58,3 @@ function evalCompiled(compiledCode, options = {}) {
     }
   })();
 }
-
-module.exports = {
-  isLangSupportedForEval,
-  evalCompiled
-};

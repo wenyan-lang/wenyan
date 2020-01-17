@@ -1,6 +1,6 @@
-var { semantic } = require("./highlight");
-var { num2hanzi } = require("./hanzi2num");
-var parser = require("./parser");
+import { semantic } from "./highlight";
+import { num2hanzi } from "./converts/hanzi2num";
+import { wy2tokens, compile } from "./parser";
 
 const FONT = "'I.Ming', 'Source Han Serif KR', 'Noto Serif CJK KR', serif"; //"Source Han Serif TC"
 const RED = "#E53";
@@ -64,13 +64,13 @@ function render(fname, txt, { plotResult = false } = {}) {
   txt = txt.replace(/』/g, "」」");
   // txt = txt + txt + txt;
 
-  var tokens = parser.wy2tokens(txt);
+  var tokens = wy2tokens(txt);
 
   var side = 0;
   var pageno = 0;
   var commentx = W2;
 
-  var sm = semantic(txt);
+  var sm = semantic(txt) as string[];
 
   var svg = "";
 
@@ -167,7 +167,7 @@ function render(fname, txt, { plotResult = false } = {}) {
 
   function managePage() {
     if ((side == 0 && x < W2 - X0 - 0.1) || (side == 1 && x < X1 - 0.1)) {
-      side = !side;
+      side = side == 0 ? 1 : 0;
       pageno++;
 
       if (side == 0) {
@@ -199,8 +199,7 @@ function render(fname, txt, { plotResult = false } = {}) {
   function resultPlotter() {
     var out = "";
 
-    var js = parser
-      .compile("js", txt)
+    var js = compile(txt, { lang: "js" })
       .replace(/console.log\(\)/g, `out+="\\n";`)
       .replace(/console.log\((.+?)\)/g, function(_, p1) {
         return `out+=` + p1.split(",").join("+") + `+"\\n";`;
@@ -334,8 +333,4 @@ function unrender(svgs) {
   return txt;
 }
 
-module.exports = {
-  render,
-  unrender,
-  BOOK_COLORS
-};
+export { render, unrender, BOOK_COLORS };

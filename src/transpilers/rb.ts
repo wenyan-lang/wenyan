@@ -1,9 +1,19 @@
-var Base = require("./base");
+import { BaseTranspiler, ModuleWrapperOptions } from "./base";
+import { TranspilerOptions, ASCNodeOperator } from "../types";
 
-class RBCompiler extends Base {
+export default class RubyCompiler extends BaseTranspiler {
+  protected moduleWrapper({
+    src,
+    markerStart,
+    markerEnd
+  }: ModuleWrapperOptions) {
+    return `#${markerStart}\n${src}\n#${markerEnd}\n`;
+  }
+
   rename(name) {
     return name && `${name.toLowerCase()}`;
   }
+
   lowerAllPinYinAndMakeItGlobal(asc) {
     for (let i = 0; i < asc.length; i++) {
       const item = asc[i];
@@ -74,14 +84,14 @@ class RBCompiler extends Base {
     return asc;
   }
 
-  compile(options = {}) {
+  transpile(options: Partial<TranspilerOptions> = {}) {
     let imports = options.imports || [];
     let asc = this.asc;
     let lop = {
       "||": " or ",
       "&&": " and "
     };
-    let rb = rblib;
+    let rb = this.lib;
     var prevfun = "";
     var prevobj = "";
     var prevobjpublic = false;
@@ -89,6 +99,7 @@ class RBCompiler extends Base {
     let strayvar = [];
     let lambdaList = [];
     let methodIndex = 0;
+    let took = 0;
     asc = this.lowerAllPinYinAndMakeItGlobal(asc);
     const getval = x => {
       if (!x) return "";
@@ -210,8 +221,9 @@ class RBCompiler extends Base {
         rb += `return ${getval(a.value)}\n`;
       } else if (a.op.startsWith("op")) {
         rb += "\t".repeat(curlvl);
-        var lhs = getval(a.lhs);
-        var rhs = getval(a.rhs);
+        let _a = a as ASCNodeOperator;
+        var lhs = getval(_a.lhs);
+        var rhs = getval(_a.rhs);
         var vname = this.nextTmpVar();
         rb += `${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);
@@ -329,56 +341,54 @@ class RBCompiler extends Base {
     }
     return { result: rb, imports };
   }
-}
-var rblib = `# encoding: UTF-8
-require 'forwardable'
-	class Ctnr
-		extend Forwardable
-		attr_accessor :dict, :length, :it
-		def initialize()
-			@dict = {}
-			@length = 0
-			@it = -1
-		end
-		def push(*args)
-			args.each do |arg|
-				@dict[@length.to_s] = arg
-				@length += 1
-			end
-		end
-		def [](i)
-			@dict[i.to_s]
-		end
-		def []=(i,x)
-			@dict[i.to_s] = x
-		end
-		def slice(i)
-			result = Ctnr.new;
-			i.times {|index| result.push(self[index])}
-			return result
-		end
-		def concat(other)
-			other.length.times {|i| push(other[i]) }
-			self
-		end
-		def values
-			@dict.values
-		end
-		def to_s
-			"[#{@dict.values.join(", ")}]"
-		end
-		def_delegators :values, :each
-	end
-	module Math
-		def self.random(*args)
-			rand(*args)
-		end
-		def self.floor(number)
-			number.floor
-		end
-	end
-#####
-`;
-const RB = RBCompiler;
 
-module.exports = RB;
+  lib = `# encoding: UTF-8
+  require 'forwardable'
+    class Ctnr
+      extend Forwardable
+      attr_accessor :dict, :length, :it
+      def initialize()
+        @dict = {}
+        @length = 0
+        @it = -1
+      end
+      def push(*args)
+        args.each do |arg|
+          @dict[@length.to_s] = arg
+          @length += 1
+        end
+      end
+      def [](i)
+        @dict[i.to_s]
+      end
+      def []=(i,x)
+        @dict[i.to_s] = x
+      end
+      def slice(i)
+        result = Ctnr.new;
+        i.times {|index| result.push(self[index])}
+        return result
+      end
+      def concat(other)
+        other.length.times {|i| push(other[i]) }
+        self
+      end
+      def values
+        @dict.values
+      end
+      def to_s
+        "[#{@dict.values.join(", ")}]"
+      end
+      def_delegators :values, :each
+    end
+    module Math
+      def self.random(*args)
+        rand(*args)
+      end
+      def self.floor(number)
+        number.floor
+      end
+    end
+  #####
+  `;
+}
