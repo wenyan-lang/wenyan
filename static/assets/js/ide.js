@@ -596,30 +596,40 @@ function send(data) {
   } else {
     // FU safari, why can't you just work
     // every fix involving iframe seem to break, so here we go
-    for (var i = 0; i < 100; i++) {
-      clearInterval(i);
+    /*HACK*/ for (var i = 0; i < 100; i++) {
+      /*HACK*/ clearInterval(i);
+      /*HACK*/
     }
-    outIframe.style.width = "0px";
-    outIframe.style.height = "0px";
-    outIframe.style.opacity = 0;
-
-    var outdiv = document.getElementById("out");
-    if (!outdiv) {
-      outdiv = document.createElement("div");
-      outdiv.id = "out";
-      document.getElementById("out-outer").appendChild(outdiv);
+    /*HACK*/ outIframe.style.width = "0px";
+    /*HACK*/ outIframe.style.height = "0px";
+    /*HACK*/ outIframe.style.opacity = 0;
+    /*HACK*/ outIframe.style.pointerEvents = "none";
+    /*HACK*/
+    /*HACK*/ var outdiv = document.getElementById("out");
+    /*HACK*/ if (!outdiv) {
+      /*HACK*/ outdiv = document.createElement("div");
+      /*HACK*/ outdiv.id = "out";
+      /*HACK*/ outdiv.style.height = "calc(100% - 35px)";
+      /*HACK*/ outdiv.style.overflow = "scroll";
+      /*HACK*/ document.getElementById("out-outer").appendChild(outdiv);
+      /*HACK*/
     } else {
-      outdiv.innerText = "";
+      /*HACK*/ outdiv.innerText = "";
+      /*HACK*/
     }
-    const { text, code, options } = data;
-    try {
-      Wenyan.evalCompiled(code, {
-        ...options,
-        output: (...args) => (outdiv.innerText += args.join(" ") + "\n")
+    /*HACK*/ const { text, code, options } = data;
+    /*HACK*/ try {
+      /*HACK*/ Wenyan.evalCompiled(code, {
+        /*HACK*/ ...options,
+        /*HACK*/ output: (...args) =>
+          (outdiv.innerText += args.join(" ") + "\n")
+        /*HACK*/
       });
+      /*HACK*/
     } catch (e) {
-      outdiv.innerText += e.toString();
-      console.error(e);
+      /*HACK*/ outdiv.innerText += e.toString();
+      /*HACK*/ console.error(e);
+      /*HACK*/
     }
   }
 }
