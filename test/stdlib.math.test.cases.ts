@@ -3646,6 +3646,24 @@ const TO_POLAR = [
     r: [Infinity, Infinity],
     theta: [0.78539816339744828, 3.061616997868383e-17]
   },
+  {
+    x: 1,
+    y: Number.MIN_VALUE,
+    r: [1, 0],
+    theta: [Number.MIN_VALUE, -0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 1,
+    r: [Number.MAX_VALUE, 0],
+    theta: [5.5626846462680035e-309, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    r: [Number.MAX_VALUE, 0],
+    theta: [0, 0]
+  },
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // random cases (medium)

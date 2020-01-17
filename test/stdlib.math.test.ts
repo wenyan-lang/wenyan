@@ -259,7 +259,7 @@ describe("stdlib", () => {
             expected,
             {
               bounds: [[0, 0]],
-              relTol: Number.EPSILON * 1.5,
+              relTol: Number.EPSILON * 1,
               absTol: Number.MIN_VALUE
             },
             `Expect 勾股求弦(${x}, ${y}) = ${expected[0]}, actually ${actual}`
