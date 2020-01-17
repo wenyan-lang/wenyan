@@ -338,6 +338,7 @@ button.checkbox:not(.checked) .iconify {
 button.dropdown {
   position: relative;
   user-select: none;
+  padding-left: 10px;
 }
 
 button.dropdown select {
@@ -356,11 +357,15 @@ button.dropdown select {
 button.dropdown label {
   border-right: 1px solid gainsboro;
   height: 100%;
-  margin: -5px 0;
+  margin: -5px 0 -5px -3px;
   padding-right: 6px;
   margin-right: 3px;
   width: 16px;
   margin-bottom: 1px;
+}
+
+button.dropdown .iconify {
+  margin-left: -2px;
 }
 
 button.dropdown:hover label {

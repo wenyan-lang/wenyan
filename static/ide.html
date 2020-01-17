@@ -20,6 +20,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/selection/active-line.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/addon/hint/show-hint.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/javascript/javascript.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/python/python.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.32.0/mode/ruby/ruby.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/wenyan-lang/highlight/codemirror.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
   <script src="https://code.iconify.design/1/1.0.0-rc1/iconify.min.js"></script>
@@ -94,6 +96,11 @@
         <span class="iconify" data-icon="mdi:menu-down" data-inline="false"></span>
         <select></select>
       </button>
+      <button class="dropdown" id="config-lang" data-config="lang" experiment="true">
+        <span class="value">Javascript</span>
+        <span class="iconify" data-icon="mdi:menu-down" data-inline="false"></span>
+        <select></select>
+      </button>
       <button id="cofig-hide-imported" class="checkbox" data-config="hideImported">
         <span class="iconify" data-icon="mdi:check" data-inline="false"></span>
         <label>Hide Imported</label>
@@ -144,6 +151,7 @@
 
     <a href="/old_ide.html"><button>Legacy IDE</button></a>
     <a href="https://github.com/wenyan-lang/wenyan" target="__blank"><button>Docs</button></a>
+    <a href="https://wenyan-snippets.glitch.me/" target="__blank"><button>Snippets</button></a>
     <a href="https://github.com/wenyan-lang/wyg" target="__blank"><button>文淵閣</button></a>
 
     <br><br>
