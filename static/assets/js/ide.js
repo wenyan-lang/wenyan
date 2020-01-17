@@ -588,7 +588,7 @@ function compile() {
 }
 
 function send(data) {
-  var is_safari = false; ///^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   if (!is_safari) {
     outIframe.onload = () => {
       try {

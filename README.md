@@ -251,7 +251,7 @@ Before opening an Issue, please check if it belongs to the below categories:
 |[Test suite](https://github.com/LingDong-/wenyan-lang/issues/38)|  **** | √  | In progress |
 |[Switch statements](https://github.com/LingDong-/wenyan-lang/issues/53)|  *** | |
 |[Functional programming](https://github.com/LingDong-/wenyan-lang/issues/99) |  *** | | Currying; Hi.-Ord. functions supported |
-|Stricter compiler |  **** | |
+|Stricter compiler |  **** | | WIP, Static typechecking supported |
 |Compiler for other languages |  ** | √ |
 |[Plugins for editors](https://github.com/LingDong-/wenyan-lang/issues/77) |  ** | √ | VSCode, Vim, Sublime added |
 |Convert [js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/[anything](https://github.com/LingDong-/wenyan-lang/issues/73) back to wenyan |  * | √ |
@@ -268,7 +268,7 @@ If you could help implement a feature with a `√` under `help needed`, please f
 
 |Name|Priority|Help needed|Status|
 |---|---|---|---|
-|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | |
-|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | |
+|[hanzi2num conversion error](https://github.com/LingDong-/wenyan-lang/issues/114)|  ***** | | Fixed |
+|[hanzi2num multi-character numbers not included](https://github.com/LingDong-/wenyan-lang/issues/130) |  *** | | Fixed |
 
 
