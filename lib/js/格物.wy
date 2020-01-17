@@ -1,0 +1,5 @@
+疏曰「「此法可以變數為鍵。」」
+今有一術。名之曰「取物」。
+昔之「取物」者。今「function(arr){if(typeof(arr)=='object'){return function(key){return arr[key];}}else{throw new TypeError('應與之以物。');}}」是矣。
+今有一術。名之曰「置物」。
+昔之「置物」者。今「function(arr){if(typeof(arr)=='object'){return function(key){return function(value){arr[key]=value;}}}else{throw new TypeError('應與之以物。');}}」是矣。
