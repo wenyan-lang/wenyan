@@ -12,13 +12,12 @@ const eTokenType = {
   END: "END" // <END>
 };
 
-const NUM_TOKENS = {
+var NUM_TOKENS = {
   負: { type: eTokenType.SIGN, sign: -1 },
   "·": { type: eTokenType.DECIMAL, exp: 0 }, // U+00B7 Middle Dot
   又: { type: eTokenType.DELIM },
   有: { type: eTokenType.DELIM },
   零: { type: eTokenType.ZERO, digit: "0" },
-  〇: { type: eTokenType.DIGIT, digit: "0" }, // U+3007 Ideographic Number Zero
   一: { type: eTokenType.DIGIT, digit: "1" },
   二: { type: eTokenType.DIGIT, digit: "2" },
   三: { type: eTokenType.DIGIT, digit: "3" },
@@ -56,6 +55,7 @@ const NUM_TOKENS = {
   渺: { type: eTokenType.FRAC_MULT, exp: -11 },
   漠: { type: eTokenType.FRAC_MULT, exp: -12 }
 };
+NUM_TOKENS["〇"] = { type: eTokenType.DIGIT, digit: "0" }; // U+3007 Ideographic Number Zero
 
 const NEG_WORD = "負";
 const INF_WORD = "無限大數";
