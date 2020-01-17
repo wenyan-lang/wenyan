@@ -358,5 +358,30 @@ describe("stdlib", () => {
         );
       }
     });
+
+    // pow
+    describe("冪", () => {
+      for (const c of cases.POW) {
+        const x = c.x;
+        const y = c.y;
+        const expected = c.expected;
+        const actual = Math.pow(x, y); // 算經.冪(x);
+        it(`(${x}, ${y})`, () =>
+          assertNearlyEqual(
+            actual,
+            expected,
+            {
+              bounds: [
+                [-1, 0],
+                [0, 0],
+                [1, 0]
+              ],
+              relTol: Number.EPSILON * 4,
+              absTol: Number.MIN_VALUE * 2
+            },
+            `Expect 冪(${x}, ${y}) = ${expected[0]}, actually ${actual}`
+          ));
+      }
+    });
   });
 });

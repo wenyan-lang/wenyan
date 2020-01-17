@@ -6137,6 +6137,990 @@ const LOG = [
   }
 ];
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const POW = [
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // special cases
+  {
+    x: -Infinity,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1,
+    y: -Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Infinity,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1,
+    y: -Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.MAX_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [2.7182818284590455, -1.4862956700836748e-16]
+  },
+  {
+    x: 1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0.13533528323661273, -8.1289203498247281e-18]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -1,
+    expected: [-0, -0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -1,
+    expected: [-5.5626846462680035e-309, -0]
+  },
+  {
+    x: -1,
+    y: -1,
+    expected: [-1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: -0,
+    y: -1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: 0,
+    y: -1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -1,
+    expected: [1.0000000000000002, -1.1102230246251564e-16]
+  },
+  {
+    x: 1,
+    y: -1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -1,
+    expected: [0.99999999999999978, 4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -1,
+    expected: [5.5626846462680035e-309, 0]
+  },
+  {
+    x: Infinity,
+    y: -1,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: -Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.EPSILON,
+    expected: [1.0000000000001652, 9.7715595935363696e-17]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.EPSILON,
+    expected: [1, 2.4651903288156619e-32]
+  },
+  {
+    x: 1,
+    y: -Number.EPSILON,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.EPSILON,
+    expected: [1, -4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.EPSILON,
+    expected: [0.99999999999984235, 4.8247429756273019e-17]
+  },
+  {
+    x: Infinity,
+    y: -Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: -Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: -Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -0,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 0,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: NaN,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Infinity,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -0,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 0,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: NaN,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Infinity,
+    y: Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.EPSILON,
+    expected: [0.99999999999983469, 1.3306706554475689e-17]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.EPSILON,
+    expected: [1, -2.4651903288156619e-32]
+  },
+  {
+    x: 1,
+    y: Number.EPSILON,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.EPSILON,
+    expected: [1, 4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.EPSILON,
+    expected: [1.0000000000001577, -4.824742973143418e-17]
+  },
+  {
+    x: Infinity,
+    y: Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: 1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: 1,
+    expected: [-Number.MAX_VALUE, 0]
+  },
+  {
+    x: -1,
+    y: 1,
+    expected: [-1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: 1,
+    expected: [-Number.MIN_VALUE, 0]
+  },
+  {
+    x: -0,
+    y: 1,
+    expected: [-0, -0]
+  },
+  {
+    x: 0,
+    y: 1,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: 1,
+    expected: [Number.MIN_VALUE, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 1,
+    expected: [1 + Number.EPSILON * -0.5, 0]
+  },
+  {
+    x: 1,
+    y: 1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: 1,
+    expected: [1 + Number.EPSILON * 1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 1,
+    expected: [Number.MAX_VALUE, 0]
+  },
+  {
+    x: Infinity,
+    y: 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: 1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0.36787944117144228, 2.266098626473091e-17]
+  },
+  {
+    x: 1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [7.3890560989306486, -4.4054597834089866e-17]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 1,
+    y: Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MAX_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 1,
+    y: Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Infinity,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 0,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 1,
+    y: NaN,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Infinity,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: NaN,
+    y: NaN,
+    expected: [NaN, NaN]
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // random cases
+];
+
 module.exports = {
   ROUND,
   SQRT,
@@ -6145,5 +7129,6 @@ module.exports = {
   ATAN,
   TO_POLAR,
   EXP,
-  LOG
+  LOG,
+  POW
 };
