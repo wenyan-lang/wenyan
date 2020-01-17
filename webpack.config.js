@@ -1,13 +1,14 @@
 const webpack = require('webpack')
-const baseConfig = require('./webpack.base.config')
+const {baseConfig, defaultPlugins, DtsBundlePlugin} = require('./webpack.base.config')
 
 const Cli = {
   ...baseConfig(),
   target: 'node',
   entry: {
-    cli: './src/cli.js',
+    cli: './src/cli.ts',
   },
   plugins: [
+    ...defaultPlugins(),
     new webpack.BannerPlugin({
       banner: '#!/usr/bin/env node',
       raw: true,
@@ -22,8 +23,17 @@ const Cli = {
 const Core = {
   ...baseConfig(),
   entry: {
-    core: './src/parser.js',
-  }
+    core: './src/parser.ts',
+  },
+  plugins: [
+    ...defaultPlugins(),
+    new DtsBundlePlugin({
+      name: 'Wenyan',
+      baseDir: 'typings/src',
+      main: 'typings/src/parser.d.ts',
+      out: '../../dist/core/index.d.ts',
+    })
+  ]
 }
 
 Core.output.library = 'Wenyan'
@@ -31,8 +41,8 @@ Core.output.library = 'Wenyan'
 const Utils = {
   ...baseConfig(),
   entry: {
-    render: './src/render.js',
-    runtime: './src/browser_runtime.js',
+    render: './src/render.ts',
+    runtime: './src/browser_runtime.ts',
   }
 }
 

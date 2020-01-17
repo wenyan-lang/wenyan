@@ -7,3 +7,5 @@ temp
 dist
 /tools/calendar.html
 藏書樓
+.node-xmlhttprequest-*
+typings
