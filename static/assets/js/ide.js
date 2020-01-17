@@ -588,9 +588,40 @@ function compile() {
 }
 
 function send(data) {
-  outIframe.onload = () => {
-    outIframe.contentWindow.postMessage(data);
-  };
+  var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (!is_safari) {
+    outIframe.onload = () => {
+      outIframe.contentWindow.postMessage(data);
+    };
+  } else {
+    // FU safari, why can't you just work
+    // every fix involving iframe seem to break, so here we go
+    for (var i = 0; i < 100; i++) {
+      clearInterval(i);
+    }
+    outIframe.style.width = "0px";
+    outIframe.style.height = "0px";
+    outIframe.style.opacity = 0;
+
+    var outdiv = document.getElementById("out");
+    if (!outdiv) {
+      outdiv = document.createElement("div");
+      outdiv.id = "out";
+      document.getElementById("out-outer").appendChild(outdiv);
+    } else {
+      outdiv.innerText = "";
+    }
+    const { text, code, options } = data;
+    try {
+      Wenyan.evalCompiled(code, {
+        ...options,
+        output: (...args) => (outdiv.innerText += args.join(" ") + "\n")
+      });
+    } catch (e) {
+      outdiv.innerText += e.toString();
+      console.error(e);
+    }
+  }
 }
 
 function executeCode(code) {
