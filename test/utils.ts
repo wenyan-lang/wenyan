@@ -65,7 +65,7 @@ function assertNumberEqual(actual: number, expected: number, message?: string) {
   }
 }
 
-function compareResults(x: number, y: number) {
+function compareResults(x: number | number[], y: number | number[]) {
   const ax = [].concat(x);
   const ay = [].concat(y);
   const len = Math.min(ax.length, ay.length);
@@ -83,7 +83,11 @@ function compareResults(x: number, y: number) {
   return 0;
 }
 
-function isOnCorrectSide(actual: number, expected: number, boundary: number) {
+function isOnCorrectSide(
+  actual: number | number[],
+  expected: number | number[],
+  boundary: number | number[]
+) {
   return (
     compareResults(actual, boundary) * compareResults(expected, boundary) >= 0
   );
@@ -99,7 +103,7 @@ function calcError(actual: number, expected: number | number[]) {
 
 function nearlyEqual(
   actual: number,
-  expected: number,
+  expected: number | number[],
   options: {
     relTol?: number;
     absTol?: number;
@@ -144,7 +148,7 @@ function nearlyEqual(
  */
 function assertNearlyEqual(
   actual: number,
-  expected: number,
+  expected: number | number[],
   options: {
     relTol?: number;
     absTol?: number;
