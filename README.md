@@ -6,7 +6,7 @@
 [![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
-### [https://wy-lang.org](https://wy-lang.org)
+### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki)
 
 English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
 
@@ -60,13 +60,23 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 - [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- An [online IDE](https://wy-lang.org/ide)
+- An [Online IDE](https://wy-lang.org/ide)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
+## Try it out
 
-## Installation
+### [The Online IDE](https://wy-lang.org/ide)
 
-### The Compiler
+![](screenshots/screenshot02.png)
+
+### Text Editor Plugins
+
+- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
+- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
+- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
+
+
+### Command Line Compiler
 
 Install the compiler by
 
@@ -81,14 +91,6 @@ wenyan examples/helloworld.wy
 # will outputs: 問天地好在。
 ```
 
-> From v0.1.0, the `wenyan` command will direct execute the script by default. If you are migrating from previous versions, please use `wenyan -h` to output the help and check [this PR](https://github.com/LingDong-/wenyan-lang/pull/356) for the detailed changes.
-
-
-### [The Online IDE](https://wy-lang.org/ide)
-
-![](screenshots/screenshot02.png)
-
-
 ### [The Decompiler](https://zxch3n.github.io/wenyanizer/)
 
 You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://github.com/zxch3n/wenyanizer) by [zxch3n](https://github.com/zxch3n).
@@ -97,146 +99,18 @@ You can now translate JavaScript to wenyan-lang using the [wenyanizer](https://g
 
 - [JVM compiler](https://github.com/MagicLu550/wenyan-lang_jvm) by [MagicLu550](https://github.com/MagicLu550)
 
-### Text Editor Plugins
-
-- [Plugin for VSCode](https://github.com/antfu/wenyan-lang-vscode) by [antfu](https://github.com/antfu)
-- [Plugin for Vim](https://github.com/voldikss/vim-wenyan) by [voldikss](https://github.com/voldikss)
-- [Plugin for Sublime Text](https://github.com/absop/SublimeWenyan) by [absop](https://github.com/absop)
-
 ### Browser Runtime
 
-You can now run Wenyan scripts right in your html file.
+You can now run Wenyan scripts right in your HTML files.
 
 Please refer to [Browser Runtime](./documentation/Runtime.md)
 
-### Advance Usage
+## Documentation
 
-[Compiler API Specification](./documentation/Compiler-API.md)
+Check out our [Wiki pages](https://github.com/wenyan-lang/wenyan/wiki)
 
-## Syntax Cheatsheet
-
-You can find the Language Specification [here](https://wy-lang.org/spec) (WIP). To get started, you can also check the cheatsheet below, or look into `src/parser.js` to learn more. Be sure to check out the examples from the online IDE too!
-
-### Variables
-
-| wenyan | JavaScript |
-|---|---|
-|`吾有一數。曰三。名之曰「甲」。` | `var a = 3;` |
-|`有數五十。名之曰「大衍」。` | `var dayan = 50;` |
-|`昔之「甲」者。今「大衍」是矣。` | `a = dayan;` |
-|`吾有一言。曰「「噫吁戲」」。名之曰「乙」。` | `var b = "alas!";` |
-|`吾有一爻。曰陰。名之曰「丙」。` | `var c = false;` |
-|`吾有一列。名之曰「丁」。` | `var d = [];` |
-|`吾有三數。曰一。曰三。曰五。名之曰「甲」曰「乙」曰「丙」。` | `var a=1,b=3,c=5;` |
-|`吾有一元` | `(auto type)` | 
-
-### Control
-
-| wenyan | JavaScript |
-|---|---|
-|`若三大於二者。乃得「「想當然耳」」也。` | `if (3>2){ return "of course"; }` |
-|`若三不大於五者。乃得「「想當然耳」」。若非。乃得「「怪哉」」也。` | `if(3<=5){return "of course"}else{return "no way"}` |
-|`為是百遍。⋯⋯ 云云。` | `for (var i = 0; i < 100; i++){ ... }` |
-|`恆為是。⋯⋯ 云云。` | `while (true) { ... }` |
-|`凡「天地」中之「人」。⋯⋯ 云云。` | `for (var human of world){ ... }` |
-|`乃止。`|`break;`|
-|`乃止是遍`|`continue`|
-|`或若`|`else if` | 
-|`若其然者` |`if (ans) {` | 
-|`若其不然者`|`if (!ans) {` | 
-
-### Math
-
-| wenyan | JavaScript |
-|---|---|
-|`加一以二。` | `1+2` |
-|`加一於二。` | `2+1` |
-|`加一以二。乘其以三。` | `(1+2)*3` |
-|`除十以三。所餘幾何。` | `10%3` |
-|`減七百五十六以四百三十三。名之曰「甲」。` | `var a = 756-433;` |
-|`夫「甲」「乙」中有陽乎。` | `a \|\| b` |
-|`夫「甲」「乙」中無陰乎。` | `a && b` |
-
-
-### Containers
-Arrays are 1-indexed.
-
-| wenyan | JavaScript |
-|---|---|
-|`吾有一列。名之曰「甲」。充「甲」以四。以二。` | `var a = []; a.push(4, 2);` |
-|`銜「甲」以「乙」。以「丙」` | `a.concat(b).concat(c);` |
-|`夫「甲」之一。` | `a[0]` |
-|`夫「甲」之其餘。` | `a.slice(1);` |
-|`夫「玫瑰」之「「名」」。` | `rose["name"]` |
-|`夫「寶劍」之長。` | `sword.length;` |
-
-
-### Objects
-
-| wenyan | JavaScript |
-|---|---|
-|`吾有一物。名之曰「甲」。` | `var a = {};` |
-|`吾有一物。名之曰「甲」。其物如是。物之「「乙」」者。數曰三。物之「「丙」」者。言曰「「丁」」。是謂「甲」之物也。` | `var a = {b:3, c:"d"}` |
-
-
-### Functions
-
-| wenyan | JavaScript |
-|---|---|
-|`吾有一術。名之曰「吸星大法」。是術曰。⋯⋯是謂「吸星大法」之術也。`|`function f(){...}`|
-|`吾有一術。名之曰「六脈神劍」。欲行是術。必先得六數。曰「甲」。曰「乙」。曰「丙」。曰「丁」。曰「戊」。曰「己」乃行是術曰。⋯⋯是謂「六脈神劍」之術也。`|`function f(a,b,c,d,e,f){...}`|
-|`吾有一術。名之曰「翻倍」。欲行是術。必先得一數。曰「甲」。乃行是術曰。乘「甲」以二。名之曰「乙」。乃得「乙」。是謂「翻倍」之術也。`|`function double(a){var b = a * 2; return b;}`|
-|`施「翻倍」於「大衍」。`|`double(dayan);`|
-|`吾有一術。名之曰「甲」。欲行是術。必先得一數曰「乙」。二言。曰「丙」。曰「丁」`|`function a(float b, string c, string d)`|
-|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。名之曰「己」。` | `var f = e(a,d(b,c))`|
-|`夫「甲」。夫「乙」。夫「丙」。取二以施「丁」。取二以施「戊」。取一以施「己」。夫「庚」。夫「辛」。取三以施「壬」。名之曰「癸」。` | `var j = i(f(e(a,d(b,c))),g,h)`|
-| `乃得四十九` | `return 49;` |
-| `減五十以一。乃得矣` | `return 50-1;` |
-| `乃歸空無` | `return;` |
-
-
-### Import
-
-| wenyan | JavaScript |
-|---|---|
-|`吾嘗觀「「算經」」之書。方悟「正弦」「餘弦」之義。` | `var {sin,cos} = require("math");` |
-|`吾嘗觀「「某樓」」中「「某閣」」中「「某書」」之書。`|`require('path/to/something')` |
-
-
-### Misc
-
-| wenyan | JavaScript |
-|---|---|
-|`吾有一數。曰五。書之。`|`console.log(5);`|
-
-### Comments
-
-| wenyan | JavaScript |
-|---|---|
-|`批曰。「「文氣淋灕。字句切實」」。` | `/*文氣淋灕。字句切實*/` |
-|`注曰。「「文言備矣」」。` | `/*文言備矣*/` |
-|`疏曰。「「居第一之位故稱初。以其陽爻故稱九」」。` | `/*居第一之位故稱初。以其陽爻故稱九*/` |
-
-### Advance Features
-
-- [Standard Library](./documentation/Standard-Lib.md)
-- [Try...Catch](./documentation/Try-Catch.md)
-- [Nested Function Calls](./documentation/Nested-Function-Calls.md)
-- [Importing](./documentation/Importing.md)
-- [Macros](./documentation/Macros.md)
-
-## Renderer
-
-```bash
-wenyan examples/turing.wy --render --title 圖靈機
-```
-
-Render a wenyan script into an image that resembles pages from historical printed books. 
-It can also parse the resultant SVG file back to the original program. For more details, please refer to the help by `wenyan -h`.
-
-Below is the rendering of the Universal Turing Machine written in wenyan:
-
-![](screenshots/screenshot03.png)
-
-
-Feature Requests & Known Issues are now hosted on the [Wiki page](https://github.com/wenyan-lang/wenyan/wiki/Feature-Requests-&-Known-Issues).
+- [Syntax Cheatsheet](https://github.com/wenyan-lang/wenyan/wiki/Syntax-Cheatsheet)
+- [Standard Library Cheatsheet](https://github.com/wenyan-lang/wenyan/wiki/Standard-Library-Cheatsheet)
+- [API Specifcations](https://github.com/wenyan-lang/wenyan/wiki/Compiler-API)
+- [Feature Requests](https://github.com/wenyan-lang/wenyan/wiki/Feature-Requests)
+- [Known Issues](https://github.com/wenyan-lang/wenyan/wiki/Known-Issues)
