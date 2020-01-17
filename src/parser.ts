@@ -3,7 +3,8 @@ import {
   ASCNode,
   Token,
   TokenType,
-  RomanizeSystem
+  RomanizeSystem,
+  ExecuteOptions
 } from "./types";
 import {
   hanzi2num,
@@ -12,7 +13,7 @@ import {
   bool2hanzi
 } from "./converts/hanzi2num";
 import { hanzi2pinyin } from "./converts/hanzi2pinyin";
-import { importReader, bundleImports } from "./reader";
+import { bundleImports } from "./reader";
 import { expandMacros, extractMacros } from "./macro";
 import { version } from "./version";
 import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
@@ -20,7 +21,7 @@ import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
 import { match } from "./utils";
-import { evalCompiled, execute } from "./exec";
+import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
   "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
@@ -759,6 +760,16 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   );
 
   return targ;
+}
+
+function execute(
+  source: string,
+  options: Partial<ExecuteOptions & CompileOptions> = {}
+) {
+  const { lang = "js" } = options;
+  isLangSupportedForEval(lang);
+  const compiled = compile(source, options);
+  evalCompiled(compiled, options);
 }
 
 export {

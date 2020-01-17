@@ -12,7 +12,8 @@ const ignoreExamples = [
   "divination", // contains randomness
   "import", // prints current time
   "tree2", // DOM manipulate
-  "tree" // DOM manipulate
+  "tree", // DOM manipulate
+  "clock" // DOM manipulate
 ];
 
 async function runExample(lang, name, options = {}) {

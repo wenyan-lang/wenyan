@@ -1,10 +1,5 @@
-import {
-  TargetLanguages,
-  LogCallback,
-  ExecuteOptions,
-  CompileOptions
-} from "./types";
-import { num2hanzi, bool2hanzi, compile } from "./parser";
+import { TargetLanguages, LogCallback, ExecuteOptions } from "./types";
+import { num2hanzi, bool2hanzi } from "./parser";
 
 export function isLangSupportedForEval(lang: TargetLanguages) {
   if (lang !== "js")
@@ -62,14 +57,4 @@ export function evalCompiled(
       console.log = _console_log;
     }
   })();
-}
-
-export function execute(
-  source: string,
-  options: Partial<ExecuteOptions & CompileOptions> = {}
-) {
-  const { lang = "js" } = options;
-  isLangSupportedForEval(lang);
-  const compiled = compile(source, options);
-  evalCompiled(compiled, options);
 }
