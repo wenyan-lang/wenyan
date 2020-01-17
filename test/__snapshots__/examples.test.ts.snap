@@ -635,3 +635,8 @@ exports[`examples javascript turing 1`] = `
 樊 《 、墨、、墨、、墨、〔墨〕、墨、、墨、 》
 "
 `;
+
+exports[`examples javascript zh_sqrt 1`] = `
+"二百六十八
+"
+`;
