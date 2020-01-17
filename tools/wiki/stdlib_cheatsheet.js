@@ -1,6 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const consola = require("consola");
+const toc = require("markdown-toc");
 
 const DocRegex = /注曰「「(.+?)。同Javascript之(.+?)也。」」/g;
 const GithubRoot = "https://github.com/wenyan-lang/wenyan/tree/master";
@@ -33,6 +34,9 @@ const Info = {
   },
   格物: {
     name: "Object"
+  },
+  西曆法: {
+    private: true
   }
 };
 
@@ -141,11 +145,20 @@ function updateStdlibCheatsheet(srcDir, outputFile) {
     ...fs.readdirSync(path.join(srcDir, "js")).map(i => "js/" + i)
   ];
 
+  let libs = "";
   for (const file of files) {
     if (file.endsWith(".wy")) {
-      markdown += readFile(path.join(srcDir, file), file);
+      libs += readFile(path.join(srcDir, file), file);
     }
   }
+
+  markdown += "## Table of Contents\n";
+
+  markdown += toc(libs).content;
+
+  markdown += "\n\n";
+
+  markdown += libs;
 
   markdown += "\n" + TAIL;
 
