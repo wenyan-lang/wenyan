@@ -18,7 +18,7 @@ body {
 
 #in,
 #js,
-#out,
+#out-iframe,
 #explorer {
   width: 100%;
   height: calc(100% - 37px);
@@ -62,7 +62,16 @@ body {
   padding-right: 10px;
 }
 
-#out {
+#out-iframe {
+  border: none;
+  position: fixed;
+  margin: 0px;
+  background: white;
+  overflow: auto;
+  font-family: monospace;
+}
+
+#out-render {
   position: absolute;
   padding: 10px;
   margin: 0px;
@@ -72,12 +81,8 @@ body {
   right: 0;
   background: white;
   overflow: auto;
-  font-family: monospace;
   width: auto;
   height: auto;
-  word-break: normal !important;
-  word-wrap: normal !important;
-  white-space: pre !important;
 }
 
 #hand-v,

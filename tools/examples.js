@@ -1,11 +1,13 @@
 function loadExamples() {
   const examples = {};
 
-  const raw = require.context("../examples", false, /.*\.wy$/);
+  try {
+    const raw = require.context("../examples", false, /.*\.wy$/);
 
-  raw.keys().forEach(key => {
-    examples[key.slice(2, -3)] = raw(key).default;
-  });
+    raw.keys().forEach(key => {
+      examples[key.slice(2, -3)] = raw(key).default;
+    });
+  } catch (e) {}
 
   return examples;
 }
@@ -48,7 +50,10 @@ module.exports = {
     turing: "圖靈機",
     tree: "畫樹",
     tree2: "畫樹二",
-    try: "異常處理示例"
+    try: "異常處理示例",
+    clock: "畫鐘",
+    pascal_triangle: "賈憲三角",
+    zh_sqrt: "增乘開平方"
   },
   examplesLinks: {
     fizzbuzz: "[1]: https://en.wikipedia.org/wiki/Fizz_buzz",

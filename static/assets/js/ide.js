@@ -39,7 +39,8 @@ const exlistExamples = document.getElementById("explorer-list-examples");
 const exlistPackages = document.getElementById("explorer-list-packages");
 const explorerPackages = document.getElementById("explorer-packages");
 
-const outdiv = document.getElementById("out");
+const outIframe = document.getElementById("out-iframe");
+const outRender = document.getElementById("out-render");
 const deleteBtn = document.getElementById("delete-current");
 const fileNameSpan = document.getElementById("current-file-name");
 const downloadRenderBtn = document.getElementById("download-render");
@@ -214,6 +215,7 @@ function setView() {
   var W = window.innerWidth;
   var H = window.innerHeight;
   var hw = 9;
+  var barHeight = 36;
 
   dex.style.left = "0px";
   dex.style.top = "0px";
@@ -234,6 +236,11 @@ function setView() {
   dou.style.top = handh + "px";
   dou.style.width = W - handex + "px";
   dou.style.height = H - handh + "px";
+
+  outIframe.style.left = handex + "px";
+  outIframe.style.top = handh + barHeight + "px";
+  outIframe.style.width = W - handex + "px";
+  outIframe.style.height = H - handh - barHeight + "px";
 
   dhex.style.left = handex - hw / 2 + "px";
   dhex.style.top = "0px";
@@ -516,7 +523,9 @@ function loadPackages() {
 }
 
 function resetOutput() {
-  outdiv.innerText = "";
+  outIframe.contentWindow.location.reload();
+  outIframe.classList.toggle("hidden", false);
+  outRender.classList.toggle("hidden", true);
   downloadRenderBtn.classList.toggle("hidden", true);
   renderedSVGs = [];
 }
@@ -544,11 +553,12 @@ function compile() {
   resetOutput();
   var log = "";
   try {
+    const errorLog = "";
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
-      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      errorCallback: (...args) => (errorLog += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache,
       logCallback: x => {
@@ -556,56 +566,62 @@ function compile() {
       },
       strict: true
     });
+    if (errorLog) {
+      send({ text: errorLog });
+      return;
+    }
     var sig = log
       .split("=== [PASS 2.5] TYPECHECK ===\n")[1]
       .split("=== [PASS 3] COMPILER ===")[0];
-    outdiv.innerText = sig;
+    send({ text: sig });
 
     updateCompiled(code);
   } catch (e) {
-    outdiv.innerText = e.toString();
+    send({ text: e.toString() });
     console.error(e);
   }
 }
 
-function run() {
-  resetOutput();
-  Wenyan.evalCompiled(jsCM.getValue(), {
-    outputHanzi: state.config.outputHanzi,
-    output: (...args) => {
-      outdiv.innerText += args.join(" ") + "\n";
+function send(data) {
+  outIframe.onload = () => {
+    outIframe.contentWindow.postMessage(data);
+  };
+}
+
+function executeCode(code) {
+  send({
+    code,
+    options: {
+      lang: state.config.lang,
+      outputHanzi: state.config.outputHanzi
     }
   });
+}
+
+function run() {
+  resetOutput();
+  executeCode(jsCM.getValue());
 }
 
 function crun() {
   resetOutput();
   try {
+    let errorOutput = "";
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
       resetVarCnt: true,
-      errorCallback: (...args) => (outdiv.innerText += args.join(" ") + "\n"),
+      errorCallback: (...args) =>
+        (errorOutput.innerText += args.join(" ") + "\n"),
       importContext: getImportContext(),
       importCache: cache
     });
 
     updateCompiled(code);
 
-    try {
-      Wenyan.evalCompiled(code, {
-        lang: state.config.lang,
-        outputHanzi: state.config.outputHanzi,
-        output: (...args) => {
-          outdiv.innerText += args.join(" ") + "\n";
-        }
-      });
-    } catch (e) {
-      outdiv.innerText = e.toString();
-      console.error(e);
-    }
+    executeCode(code);
   } catch (e) {
-    outdiv.innerText = e.toString();
+    send({ text: e.toString() });
     jsCM.setValue("");
     console.error(e);
   }
@@ -626,14 +642,16 @@ function updateDark() {
 }
 
 function render() {
-  outdiv.innerText = "";
+  outRender.innerText = "";
   renderedSVGs = Render.render(
     currentFile.alias || currentFile.name,
     currentFile.code
   );
   for (const svg of renderedSVGs) {
-    outdiv.innerHTML += svg + "<br>";
+    outRender.innerHTML += svg + "<br>";
   }
+  outIframe.classList.toggle("hidden", true);
+  outRender.classList.toggle("hidden", false);
   downloadRenderBtn.classList.toggle("hidden", false);
 }
 
