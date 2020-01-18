@@ -83,7 +83,7 @@ export type TokenType =
   | "type"
   | "throw";
 
-export type Token = [TokenType, string | undefined, number];
+export type Token = [TokenType, string | undefined, number] | ["ans"];
 
 export interface ASCNodeCommon {
   pos: number;
@@ -97,12 +97,12 @@ export interface ASCNodeOperator {
 
 export interface ASCNodeReturn {
   op: "return";
-  value?: Token | ["ans"];
+  value?: Token;
 }
 
 export interface ASCNodeIf {
   op: "if";
-  test: (Token | ["ans"])[];
+  test: Token[];
   elseif?: boolean;
   not?: boolean;
 }
@@ -206,6 +206,10 @@ export interface ASCNodePropertry {
   value: Token;
 }
 
+export interface ASCNodeGlobal {
+  op: "global";
+}
+
 export interface ASCNodeSimple {
   op:
     | "break"
@@ -246,4 +250,25 @@ export type ASCNode = ASCNodeCommon &
     | ASCNodeSubscript
     | ASCNodeVariable
     | ASCNodePropertry
+    | ASCNodeGlobal
   );
+
+export function isASCNodeOperator(
+  node: ASCNode
+): node is ASCNodeCommon & ASCNodeOperator {
+  return node.op.startsWith("op");
+}
+
+export interface IdenType {
+  type: "any" | "nil" | "fun" | "obj" | "arr" | "str" | "bol" | "num" | string;
+  name?: string;
+  isarg?: boolean;
+  in?: IdenType;
+  out?: IdenType;
+  element?: IdenType;
+  fields?: {};
+}
+
+export type TypeScope = Record<string, IdenType>;
+
+export type TypeSignature = [[number, number, number], TypeScope][];

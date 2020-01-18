@@ -1,4 +1,14 @@
-function printType(t, n = 0, d = 0) {
+import {
+  ASCNode,
+  isASCNodeOperator,
+  Token,
+  IdenType,
+  TypeSignature,
+  TypeScope
+} from "./types";
+import { defaultAssert } from "./utils";
+
+function printType(t: IdenType, n = 0, d = 0): string {
   if (d > 100) {
     return "...";
   }
@@ -38,7 +48,7 @@ function printType(t, n = 0, d = 0) {
   return t.type;
 }
 
-function printSignature(signature) {
+function printSignature(signature: TypeSignature) {
   let s = "";
   signature = signature.filter(x => Object.keys(x[1]).length);
   signature.sort((x, y) => x[0][0] - y[0][0]);
@@ -69,17 +79,12 @@ function printSignature(signature) {
   return s;
 }
 
-function typecheck(
-  asc,
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
+function typecheck(asc: ASCNode[], assert = defaultAssert()) {
   let imported = [];
   let strayvar = [];
-  let scope = [{}];
-  let scopestarts = [{ pos: 0, op: "global" }];
-  let signature = [];
+  let scope: TypeScope[] = [{}];
+  let scopestarts: ASCNode[] = [{ pos: 0, op: "global" }];
+  let signature: TypeSignature = [];
   let funstack = [];
   let funretcnt = [];
   let prevobj = "";
@@ -135,14 +140,14 @@ function typecheck(
     return checkscopei(scope.length - 1, name);
   }
 
-  function inittype(type) {
+  function inittype(type: IdenType["type"]): IdenType {
     if (type == "any") {
       return { type: "any" };
     }
     if (type == "nil") {
       return { type: "nil" };
     }
-    let x: any = { type: type };
+    let x: IdenType = { type: type };
     if (type == "fun") {
       x.in = { type: "any" };
       x.out = { type: "any" };
@@ -154,7 +159,7 @@ function typecheck(
     return x;
   }
 
-  function gettype(tok) {
+  function gettype(tok: Token): IdenType {
     if (tok[0] == "lit") {
       return inittype("str");
     } else if (tok[0] == "bool") {
@@ -178,9 +183,9 @@ function typecheck(
     return t.fields[x];
   }
 
-  function scopepush(tok) {
+  function scopepush(asc: ASCNode) {
     scope.push({});
-    scopestarts.push(tok);
+    scopestarts.push(asc);
   }
 
   function scopepop(tok, ...acceptScopeStartOps) {
@@ -240,7 +245,7 @@ function typecheck(
     return false;
   }
 
-  function typeassert(who, want, got, pos) {
+  function typeassert(who: string, want: IdenType[], got: Token, pos: number) {
     let t = gettype(got);
     assert(`[Type] Undeclared variable '${got[1]}'`, pos, t);
 
@@ -367,10 +372,8 @@ function typecheck(
           ptr.out = typeeq(ptr.out, gettype(a.value));
         }
       }
-    } else if (a.op.startsWith("op")) {
+    } else if (isASCNodeOperator(a)) {
       let op = a.op.slice(2);
-      let tl = gettype(a.lhs);
-      let tr = gettype(a.rhs);
 
       let otype;
       if (op == "+") {
