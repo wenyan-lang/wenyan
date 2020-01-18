@@ -6,7 +6,7 @@ import {
   TypeSignature,
   TypeScope
 } from "./types";
-import { defaultAssert } from "./utils";
+import { defaultAssert, isRoman } from "./utils";
 
 function printType(t: IdenType, n = 0, d = 0): string {
   if (d > 100) {
@@ -80,17 +80,17 @@ function printSignature(signature: TypeSignature) {
 }
 
 function typecheck(asc: ASCNode[], assert = defaultAssert()) {
-  let imported = [];
-  let strayvar = [];
+  let imported: string[] = [];
+  let strayvar: IdenType[] = [];
   let scope: TypeScope[] = [{}];
   let scopestarts: ASCNode[] = [{ pos: 0, op: "global" }];
   let signature: TypeSignature = [];
-  let funstack = [];
-  let funretcnt = [];
+  let funstack: string[] = [];
+  let funretcnt: number[] = [];
   let prevobj = "";
   let took = 0;
 
-  function checkscopei(i, name) {
+  function checkscopei(i: number, name: string) {
     if (scope[i][name]) {
       return scope[i][name];
     }
@@ -110,11 +110,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
     }
   }
 
-  function isRoman(x) {
-    return x.replace(/[ -~]/g, "").length == 0;
-  }
-
-  function checkscopeall(name) {
+  function checkscopeall(name: string) {
     for (let i = scope.length - 1; i >= 0; i--) {
       let b = checkscopei(i, name);
       if (b) {
@@ -131,7 +127,8 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
 
     return undefined;
   }
-  function checkscopethis(name, pos) {
+
+  function checkscopethis(name: string, pos: number) {
     assert(
       "Scope stack depleted, possibly due to extraneous end-block statement.",
       pos,
@@ -176,38 +173,38 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
     assert(`[Type] Expecting value, found '${tok[0]}'`, tok[2], false);
   }
 
-  function objfield(t, x) {
+  function objfield(t: IdenType, x: string) {
     if (t.isarg) {
       t.fields[x] = inittype("any");
     }
     return t.fields[x];
   }
 
-  function scopepush(asc: ASCNode) {
+  function scopepush(node: ASCNode) {
     scope.push({});
-    scopestarts.push(asc);
+    scopestarts.push(node);
   }
 
-  function scopepop(tok, ...acceptScopeStartOps) {
+  function scopepop(node: ASCNode, ...acceptScopeStartOps) {
     let ss = scopestarts.pop();
     let s = scope.pop();
     assert(
-      `[Type] Unexpected '${tok.op}' in '${ss.op}' block`,
-      tok.pos,
+      `[Type] Unexpected '${node.op}' in '${ss.op}' block`,
+      node.pos,
       acceptScopeStartOps.indexOf(ss.op) >= 0
     );
-    signature.push([[ss.pos, tok.pos, scope.length], s]);
+    signature.push([[ss.pos, node.pos, scope.length], s]);
   }
 
   function logscope() {
     console.dir(scope, { depth: null, maxArrayLength: null });
   }
 
-  function typeeq(a, b) {
-    if (a == "any" || a.type == "any") {
+  function typeEqual(a: IdenType, b: IdenType) {
+    if (a.type == "any") {
       return b;
     }
-    if (b == "any" || b.type == "any") {
+    if (b.type == "any") {
       return a;
     }
     if (a.type != b.type) {
@@ -215,13 +212,13 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
     }
     if (a.type == b.type) {
       if (a.type == "arr") {
-        if (typeeq(a.element, b.element)) {
+        if (typeEqual(a.element, b.element)) {
           return a;
         }
-        if (a.element == "any" && b.element) {
+        if (b.element) {
           return b;
         }
-        if (a.element && b.element == "any") {
+        if (a.element) {
           return a;
         }
       }
@@ -234,7 +231,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
           [x, y] = [a, b];
         }
         for (var k in x.fields) {
-          if (!typeeq(x.fields[k], y.fields[k])) {
+          if (!typeEqual(x.fields[k], y.fields[k])) {
             return false;
           }
         }
@@ -253,7 +250,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
     let ut = [];
     for (let i = 0; i < want.length; i++) {
       ut.push("(" + printType(want[i]) + ")");
-      if (typeeq(want[i], t)) {
+      if (typeEqual(want[i], t)) {
         ok = true;
         break;
       }
@@ -369,7 +366,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
           // console.log(ptr.out.type,ty.type)
           typeassert(`Function return`, [ptr.out], a.value, a.pos);
 
-          ptr.out = typeeq(ptr.out, gettype(a.value));
+          ptr.out = typeEqual(ptr.out, gettype(a.value));
         }
       }
     } else if (isASCNodeOperator(a)) {
@@ -389,7 +386,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
           a.rhs,
           a.pos
         );
-        otype = Object.assign({}, typeeq(gettype(a.lhs), gettype(a.rhs)));
+        otype = Object.assign({}, typeEqual(gettype(a.lhs), gettype(a.rhs)));
       } else if (["-", "*", "/", "%"].includes(op)) {
         typeassert(`${op} operator`, [inittype("num")], a.lhs, a.pos);
         typeassert(`${op} operator`, [inittype("num")], a.rhs, a.pos);
@@ -437,7 +434,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
                 args[j]
               )}`,
               a.pos,
-              typeeq(args[j], ta)
+              typeEqual(args[j], ta)
             );
           } else {
             typeassert(`Function argument`, [ta], args[j], a.pos);
@@ -525,7 +522,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
       let typ = gettype(a.containers[0]);
       let olt = typ;
       for (let j = 1; j < a.containers.length; j++) {
-        typ = typeeq(typ, gettype(a.containers[j]));
+        typ = typeEqual(typ, gettype(a.containers[j]));
         if (!typ) {
           typeassert(`Concat`, [olt], a.containers[j], a.pos);
         }
@@ -538,7 +535,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
       let olt = typ;
       for (let j = 0; j < a.values.length; j++) {
         // console.log(a.values[j],gettype(a.values[j]))
-        typ = typeeq(typ, gettype(a.values[j]));
+        typ = typeEqual(typ, gettype(a.values[j]));
         if (!typ) {
           typeassert(`Push RHS`, [olt], a.values[j], a.pos);
         }
@@ -643,7 +640,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
         assert(`[Type] Reassignment LHS is not declared`, a.pos, tlv);
         assert(`[Type] Reassignment RHS is not declared`, a.pos, trv);
         // console.log(a,tlv,trv,tl,tr)
-        let typ = typeeq(tlv, trv);
+        let typ = typeEqual(tlv, trv);
         // console.log(a.lhs,a.rhs,gettype(a.rhs),tl,tr,tlv,trv)
         assert(
           `[Type] Reassignment type mismatch: LHS:${printType(

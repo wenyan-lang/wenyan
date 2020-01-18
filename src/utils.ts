@@ -18,3 +18,7 @@ export const defaultAssert = (logger = defaultAssertLogger) => (
 ) => {
   if (!b) logger(`ERROR@${pos}: ${msg}`);
 };
+
+export function isRoman(x: string) {
+  return x.replace(/[ -~]/g, "").length == 0;
+}

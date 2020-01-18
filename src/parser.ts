@@ -20,7 +20,7 @@ import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
-import { match, defaultAssert } from "./utils";
+import { match, defaultAssert, isRoman } from "./utils";
 import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
@@ -171,9 +171,6 @@ function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
       }
     }
     return true;
-  }
-  function isRoman(x: string) {
-    return x.replace(/[ -~]/g, "").length == 0;
   }
 
   for (const token of tokens) {

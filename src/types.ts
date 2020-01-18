@@ -210,6 +210,10 @@ export interface ASCNodeGlobal {
   op: "global";
 }
 
+export interface ASCNodeEOF {
+  op: "EOF";
+}
+
 export interface ASCNodeSimple {
   op:
     | "break"
@@ -251,6 +255,7 @@ export type ASCNode = ASCNodeCommon &
     | ASCNodeVariable
     | ASCNodePropertry
     | ASCNodeGlobal
+    | ASCNodeEOF
   );
 
 export function isASCNodeOperator(
