@@ -20,7 +20,7 @@ import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
-import { match } from "./utils";
+import { match, defaultAssert, isRoman } from "./utils";
 import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
@@ -29,12 +29,7 @@ const defaultTrustedHosts = [
 
 const IGNORE_SYMBOLS = "。、\n\r\t ";
 
-function wy2tokens(
-  txt: string,
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
+function wy2tokens(txt: string, assert = defaultAssert()) {
   var tokens: Token[] = [];
   var tok = "";
   var idt = false;
@@ -177,9 +172,6 @@ function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
     }
     return true;
   }
-  function isRoman(x: string) {
-    return x.replace(/[ -~]/g, "").length == 0;
-  }
 
   for (const token of tokens) {
     if (token[0] == "iden" && !isRoman(token[1])) {
@@ -210,12 +202,7 @@ function defaultErrorCallback(e: any) {
   process.exit();
 }
 
-function tokens2asc(
-  tokens: Token[],
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
+function tokens2asc(tokens: Token[], assert = defaultAssert()) {
   var asc: ASCNode[] = [];
   var i = 0;
   while (i < tokens.length) {

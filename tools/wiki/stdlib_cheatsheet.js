@@ -1,16 +1,24 @@
 const fs = require("fs-extra");
 const path = require("path");
+const consola = require("consola");
+const toc = require("markdown-toc");
 
 const DocRegex = /注曰「「(.+?)。同Javascript之(.+?)也。」」/g;
 const GithubRoot = "https://github.com/wenyan-lang/wenyan/tree/master";
 
 const Info = {
+  列經: {
+    name: "Array"
+  },
   易經: {
     name: "Random"
   },
   曆法: {
     name: "Calendar",
     description: "> 💬 This library uses your system timezone setting"
+  },
+  曆表: {
+    private: true
   },
   算經: {
     name: "Math"
@@ -23,12 +31,16 @@ const Info = {
   },
   畫譜: {
     name: "Canvas"
+  },
+  格物: {
+    name: "Object"
+  },
+  西曆法: {
+    private: true
   }
 };
 
 const HEAD = `<!-- GENERATED FILE, DO NOT MODIFY-->
-
-# Standard Library Cheatsheet
 `;
 
 const BODY = `
@@ -81,6 +93,9 @@ function readFile(filepath, relativePath) {
   const lines = getLineIndexes(text);
   const results = [];
   const { name } = path.parse(filepath);
+
+  if (Info[name] && Info[name].private) return "";
+
   let match;
 
   while ((match = DocRegex.exec(text))) {
@@ -119,7 +134,7 @@ function readFile(filepath, relativePath) {
   return markdown + "\n";
 }
 
-function update(srcDir, outputFile) {
+function updateStdlibCheatsheet(srcDir, outputFile) {
   let markdown = HEAD + "\n";
   markdown += `Last updated: ${new Date().toGMTString()}\n\n`;
 
@@ -130,26 +145,26 @@ function update(srcDir, outputFile) {
     ...fs.readdirSync(path.join(srcDir, "js")).map(i => "js/" + i)
   ];
 
+  let libs = "";
   for (const file of files) {
     if (file.endsWith(".wy")) {
-      markdown += readFile(path.join(srcDir, file), file);
+      libs += readFile(path.join(srcDir, file), file);
     }
   }
+
+  markdown += "## Table of Contents\n";
+
+  markdown += toc(libs).content;
+
+  markdown += "\n\n";
+
+  markdown += libs;
 
   markdown += "\n" + TAIL;
 
   fs.writeFileSync(outputFile, markdown, "utf-8");
 
-  console.log("Standard Library Cheatsheet updated.");
+  consola.success("Standard Library Cheatsheet updated");
 }
 
-module.exports = {
-  update
-};
-
-if (require.main === module) {
-  update(
-    path.resolve(__dirname, "../lib"),
-    path.resolve(__dirname, "../documentation/Standard-Lib.md")
-  );
-}
+module.exports = updateStdlibCheatsheet;

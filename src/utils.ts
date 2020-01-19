@@ -8,3 +8,17 @@ export function match(src: string, startAt: number, target: string) {
   }
   return true;
 }
+
+export const defaultAssertLogger: (...messages: any[]) => void = console.log;
+
+export const defaultAssert = (logger = defaultAssertLogger) => (
+  msg: string,
+  pos: number,
+  b: any
+) => {
+  if (!b) logger(`ERROR@${pos}: ${msg}`);
+};
+
+export function isRoman(x: string) {
+  return x.replace(/[ -~]/g, "").length == 0;
+}

@@ -1,13 +1,13 @@
 - ~~multiple push to array~~
 - ~~syntax highlighting~~
 - auto indent / format
-- compile to python
+- ~~compile to python~~
 - compile to c
 - ~~logical and / or~~
-- for loop with iterator
+- ~~for loop with iterator~~
 - ~~while loop~~
 - ASC edge case near end of program
-- strict parse error checking
+- ~~strict parse error checking~~
 - ~~traditional chinese~~
-- negative numbers
+- ~~negative numbers~~
 - source mapping
