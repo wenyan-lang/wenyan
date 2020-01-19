@@ -199,7 +199,7 @@ function defaultLogCallback(x: any) {
 
 function defaultErrorCallback(e: any) {
   console.error(e);
-  process.exit();
+  process.exit(e);
 }
 
 function tokens2asc(tokens: Token[], assert = defaultAssert()) {
@@ -722,7 +722,6 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   if (!transpilers[lang]) {
-    console.log(transpilers);
     new Error("Target language not supported.");
   }
   var transpiler = new transpilers[lang](asc);

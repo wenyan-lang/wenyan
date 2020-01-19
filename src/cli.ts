@@ -40,8 +40,8 @@ program
     "--roman [method]",
     'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
   )
-  .option("--strict", "Enable static typechecking")
-  .option("--allowHttp", "Allow to import from http")
+  .option("--strict", "Enable static typechecking", false)
+  .option("--allowHttp", "Allow to import from http", false)
   .option("--dir <path>", "Directory to importing from, seprates with comma(,)")
   .option("--outputHanzi", "Convert output to hanzi", true)
   .option("--log <file>", "Save log to file")

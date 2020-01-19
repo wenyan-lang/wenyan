@@ -556,7 +556,7 @@ function compile() {
   resetOutput();
   var log = "";
   try {
-    const errorLog = "";
+    let errorLog = "";
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
