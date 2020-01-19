@@ -531,7 +531,11 @@ function typecheck(
       strayvar.push(Object.assign({}, typ));
     } else if (a.op == "push") {
       typeassert(`Push LHS`, [inittype("arr")], a.container, a.pos);
-      let typ = gettype(a.container).element;
+      let typy = gettype(a.container);
+      let typ = typy.element;
+      if ((typy.type = "any")) {
+        typ = inittype("any");
+      }
       let olt = typ;
       for (let j = 0; j < a.values.length; j++) {
         // console.log(a.values[j],gettype(a.values[j]))
