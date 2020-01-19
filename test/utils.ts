@@ -13,8 +13,9 @@ export interface Options {
 function createTestUtil(options: Partial<Options> = {}) {
   const { prefix = "", suffix = "書之", compileOptions = {} } = options;
 
-  function expectOutput(source: string, expected: string) {
+  function expectOutput(source: string, expected: any) {
     let output = "";
+
     execute(prefix + source + suffix, {
       lang: "js",
       scoped: true,
@@ -24,7 +25,13 @@ function createTestUtil(options: Partial<Options> = {}) {
       output: (...args) => (output += args.join(" ") + "\n")
     });
 
-    expect(output.trim()).toEqual(expected.trim());
+    if (typeof expected === "string") {
+      expect(output.trim()).toEqual(expected.trim());
+    } else if (!Number.isNaN(expected)) {
+      expect(+output).toEqual(+expected);
+    } else {
+      expect(JSON.stringify(output)).toEqual(expected);
+    }
   }
 
   return { expectOutput };

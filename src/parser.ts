@@ -427,7 +427,7 @@ function tokens2asc(tokens: Token[], assert = defaultAssert()) {
       var x: ASCNode = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
-        typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
+        typeassert(i + 1, ["data", "num", "lit", "iden", "bool", "ans"]);
         x.args.push(tokens[i + 1]);
         i += 2;
       }
@@ -665,7 +665,8 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   txt = (txt || "").replace(/\r\n/g, "\n");
 
   var txtlines = txt.split("\n");
-  function assert(msg, pos, b) {
+
+  function assert(msg: string, pos: number, b: any) {
     var errmsg = "";
     if (!b) {
       errmsg += `[Syntax Error] ${msg}\n`;
