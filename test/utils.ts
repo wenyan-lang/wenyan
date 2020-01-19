@@ -27,10 +27,10 @@ function createTestUtil(options: Partial<Options> = {}) {
 
     if (typeof expected === "string") {
       expect(output.trim()).toEqual(expected.trim());
-    } else if (!Number.isNaN(expected)) {
+    } else if (typeof expected === "number") {
       expect(+output).toEqual(+expected);
     } else {
-      expect(JSON.stringify(output)).toEqual(expected);
+      expect(JSON.parse(output)).toEqual(expected);
     }
   }
 
