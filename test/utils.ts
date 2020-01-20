@@ -16,7 +16,9 @@ function createTestUtil(options: Partial<Options> = {}) {
   function expectOutput(source: string, expected: any) {
     let output = "";
 
-    execute(prefix + source + suffix, {
+    const code = prefix + source + suffix;
+
+    execute(code, {
       lang: "js",
       scoped: true,
       lib,
