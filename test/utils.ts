@@ -8,10 +8,16 @@ export interface Options {
   prefix: string;
   suffix: string;
   compileOptions: Partial<CompileOptions>;
+  stringProcess: (x: string) => string;
 }
 
 function createTestUtil(options: Partial<Options> = {}) {
-  const { prefix = "", suffix = "書之", compileOptions = {} } = options;
+  const {
+    prefix = "",
+    suffix = "書之",
+    compileOptions = {},
+    stringProcess = (x: string) => x.trim()
+  } = options;
 
   function expectOutput(source: string, expected: any) {
     let output = "";
@@ -28,7 +34,7 @@ function createTestUtil(options: Partial<Options> = {}) {
     });
 
     if (typeof expected === "string") {
-      expect(output.trim()).toEqual(expected.trim());
+      expect(stringProcess(output)).toEqual(stringProcess(expected));
     } else if (typeof expected === "number") {
       expect(+output).toEqual(+expected);
     } else {

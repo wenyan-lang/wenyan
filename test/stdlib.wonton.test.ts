@@ -8,7 +8,8 @@ const { expectOutput: 食渾沌 } = createTestUtil({
 const { expectOutput: 包渾沌 } = createTestUtil({
   prefix:
     "吾嘗觀「「渾沌經」」之書。方悟「包渾沌」之義。施「JSON.parse」於「「",
-  suffix: "」」。名之曰「餛飩」。施「包渾沌」於「餛飩」。書之。"
+  suffix: "」」。名之曰「餛飩」。施「包渾沌」於「餛飩」。書之。",
+  stringProcess: (x: string) => x.replace(/[\s\n]+/gm, "")
 });
 
 function escape(str: TemplateStringsArray) {
@@ -140,7 +141,7 @@ describe("wonton", () => {
 
     describe("dump", () => {
       it("empty", () => {
-        包渾沌(JSON.stringify({}), "物\n也");
+        包渾沌(JSON.stringify({}), "物也");
       });
 
       it("basic", () => {
@@ -152,9 +153,23 @@ describe("wonton", () => {
             官: {
               銜: "翰林",
               年: "天寶元年"
-            }
+            },
+            子女: ["伯禽", "平陽", "頗黎"]
           }),
-          "物\n也"
+          `物
+            之「名」 言「李白」
+            之「壽考」數「六一」
+            之「擅詩」爻「陽」
+            之「官」物
+              之「銜」言「翰林」
+              之「年」言「天寶元年」
+            也
+            之「子女」列
+              言「伯禽」
+              言「平陽」
+              言「頗黎」
+            也
+          也`
         );
       });
     });
