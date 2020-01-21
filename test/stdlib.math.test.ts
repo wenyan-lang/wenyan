@@ -361,11 +361,33 @@ describe("stdlib", () => {
 
     // pow
     describe("冪", () => {
+      // test for exact pow(2, y)
+      for (let y = -1074, expected = Number.MIN_VALUE; y <= 1023; ++y, expected *= 2) {
+        const actual = 算經.冪(2)(y);
+        it(`(2, ${y})`, () =>
+          assertNumberEqual(
+            actual,
+            expected,
+            `Expect 冪(2, ${y}) = ${expected}, actually ${actual}`
+          ));
+      }
+
+      // test for exact pow(10, {0..22})
+      for (let y = 0, expected = 1; y <= 22; ++y, expected *= 10) {
+        const actual = 算經.冪(10)(y);
+        it(`(10, ${y})`, () =>
+          assertNumberEqual(
+            actual,
+            expected,
+            `Expect 冪(10, ${y}) = ${expected}, actually ${actual}`
+          ));
+      }
+
       for (const c of cases.POW) {
         const x = c.x;
         const y = c.y;
         const expected = c.expected;
-        const actual = Math.pow(x, y); // 算經.冪(x);
+        const actual = Math.pow(x, y); // 算經.冪(x)(y);
         it(`(${x}, ${y})`, () =>
           assertNearlyEqual(
             actual,
@@ -376,7 +398,7 @@ describe("stdlib", () => {
                 [0, 0],
                 [1, 0]
               ],
-              relTol: Number.EPSILON * 4,
+              relTol: Number.EPSILON * 2,
               absTol: Number.MIN_VALUE * 2
             },
             `Expect 冪(${x}, ${y}) = ${expected[0]}, actually ${actual}`
