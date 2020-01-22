@@ -43,7 +43,7 @@ program
   .option("--strict", "Enable static typechecking", false)
   .option("--allowHttp", "Allow to import from http", false)
   .option("--dir <path>", "Directory to importing from, seprates with comma(,)")
-  .option("--outputHanzi", "Convert output to hanzi", true)
+  .option("--no-outputHanzi", "Don't convert output to hanzi", false)
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
   .helpOption("-h, --help", "Display help");
@@ -74,7 +74,7 @@ program.parse(process.argv);
   } else if (program.render) {
     doRender();
   } else if (program.interactive) {
-    await intreactive();
+    await interactive();
   } else {
     await exec();
   }
@@ -215,10 +215,10 @@ function doRender() {
   }
 }
 
-function intreactive() {
+function interactive() {
   if (program.lang !== "js") {
     console.error(
-      `Target language "${program.lang}" is not supported for intreactive mode.`
+      `Target language "${program.lang}" is not supported for interactive mode.`
     );
     process.exit(1);
   }
@@ -233,9 +233,8 @@ function exec() {
     );
     process.exit(1);
   }
-
   evalCompiled(getCompiled(), {
-    outputHanzi: program.outputHanzi,
+    outputHanzi: program["outputHanzi"],
     lang: program.lang
   });
 }
@@ -273,7 +272,7 @@ function repl(prescript?: string) {
   if (prescript) {
     try {
       // @ts-ignore
-      global.__scope.evil(out);
+      global.__scope.evil(prescript);
     } catch (e) {
       console.log(e);
     }
