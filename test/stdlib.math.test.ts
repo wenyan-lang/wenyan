@@ -387,7 +387,7 @@ describe("stdlib", () => {
         const x = c.x;
         const y = c.y;
         const expected = c.expected;
-        const actual = Math.pow(x, y); // 算經.冪(x)(y);
+        const actual = 算經.冪(x)(y);
         it(`(${x}, ${y})`, () =>
           assertNearlyEqual(
             actual,

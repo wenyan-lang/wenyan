@@ -7117,6 +7117,16 @@ const POW = [
     expected: [NaN, NaN]
   },
   {
+    x: 2,
+    y: -0.5,
+    expected: [0.70710678118654757, -4.8336466567264567e-17]
+  },
+  {
+    x: 2,
+    y: 0.5,
+    expected: [1.4142135623730951, -9.6672933134529135e-17]
+  },
+  {
     x: -2,
     y: 8 + Number.EPSILON * -4,
     expected: [NaN, NaN]
