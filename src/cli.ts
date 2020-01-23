@@ -5,6 +5,12 @@ import findUp from "find-up";
 import { version } from "./version";
 import { compile, evalCompiled } from "./parser";
 import { render, unrender } from "./render";
+import { outputHanziWrapper } from "./execute";
+
+var readline;
+var rl;
+var inpHistory = [];
+var inpHistoryPtr = -1;
 
 var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
 const MODULE_LIBRARY_NAME = "藏書樓";
@@ -264,22 +270,55 @@ function replscope() {
 }
 
 function repl(prescript?: string) {
-  const readline = require("readline");
-  const rl = readline.createInterface({
+  if (!readline) {
+    readline = require("readline");
+    process.stdin.setMaxListeners(100000000000000);
+    process.stdin.on("data", function(e) {
+      var esc = JSON.stringify(e.toString());
+      if (esc == `"\\u001b[A"`) {
+        if (inpHistoryPtr == -1) {
+          inpHistoryPtr = inpHistory.length;
+        }
+        if (inpHistory.length) {
+          inpHistoryPtr =
+            (inpHistoryPtr - 1 + inpHistory.length) % inpHistory.length;
+        }
+        rl.write(null, { ctrl: true, name: "u" });
+        rl.write(inpHistory[inpHistoryPtr]);
+      } else if (esc == `"\\u001b[B"`) {
+        if (inpHistoryPtr == -1) {
+          inpHistoryPtr = inpHistory.length;
+        }
+        if (inpHistory.length) {
+          inpHistoryPtr = (inpHistoryPtr + 1) % inpHistory.length;
+        }
+        rl.write(null, { ctrl: true, name: "u" });
+        rl.write(inpHistory[inpHistoryPtr]);
+      }
+    });
+  }
+  // console.log(JSON.stringify(inpHistory))
+  rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
   if (prescript) {
+    var old_log = console.log;
     try {
+      console.log = outputHanziWrapper(console.log, program.outputHanzi);
       // @ts-ignore
       global.__scope.evil(prescript);
+      console.log = old_log;
     } catch (e) {
+      console.log = old_log;
       console.log(e);
     }
   }
+
   // @ts-ignore
   global.haserr = false;
   rl.question("> ", inp => {
+    // console.log(JSON.stringify(inp))
     var out = compile(inp, {
       lang: "js",
       romanizeIdentifiers: program.roman,
@@ -293,8 +332,12 @@ function repl(prescript?: string) {
     // @ts-ignore
     if (global.haserr) {
     }
+    if (inp.length) {
+      inpHistory.push(inp);
+    }
     rl.close();
     repl(out);
+    inpHistoryPtr = -1;
   });
 }
 

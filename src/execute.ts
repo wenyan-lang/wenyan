@@ -21,7 +21,7 @@ function hanzinizeOuput(value: string) {
   }
 }
 
-function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
+export function outputHanziWrapper(log: LogCallback, outputHanzi: boolean) {
   return function output(...args) {
     log(...args.map(i => (outputHanzi ? hanzinizeOuput(i) : i)));
   };
