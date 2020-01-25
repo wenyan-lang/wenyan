@@ -34,7 +34,7 @@ pre{
   text-align: center;
   top: 100px;
   font-weight: 100;
-  width: 700px;
+  width: 80%;
   margin: 100px auto;
   padding: 20px;
   border-left: 8px solid black;
@@ -48,6 +48,11 @@ pre{
 #title2{
   font-size: 20px;
 }
+@media (max-width: 720px) {
+  #title1{
+    font-size: 40px;
+  }
+}
 #content-box{
   width: 100%;
   background: white;
@@ -57,11 +62,12 @@ pre{
 #content{
   min-height: 1000px;
   max-width: 980px;
-  min-width: 800px !important;
+  width: 100%;
   margin: 0 auto;
   padding: 10px;
   padding-top: 50px;
   line-height: 160%;
+  overflow-wrap: normal;
 }
 h1{
   margin-top: 40px;
