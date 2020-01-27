@@ -7,6 +7,7 @@
 | [clock.wy](clock.wy)                   | 畫鐘                      |
 | [collatz.wy](collatz.wy)               | 考拉兹猜想                |
 | [collatz2.wy](collatz2.wy)             | 考拉兹猜想二              |
+| [crt.wy](crt.wy)                       | 大衍總數術（中國剩餘定理）|
 | [divination.wy](divination.wy)         | 春秋古筮法                |
 | [draw_heart.wy](draw_heart.wy)         | 畫心                      |
 | [eightqueens.wy](eightqueens.wy)       | 八皇后問題                |
