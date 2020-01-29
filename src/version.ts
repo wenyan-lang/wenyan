@@ -1,1 +1,3 @@
-export { version } from "../package.json";
+const { version }: { version: string } = require("../package.json");
+
+export { version };
