@@ -3646,6 +3646,24 @@ const TO_POLAR = [
     r: [Infinity, Infinity],
     theta: [0.78539816339744828, 3.061616997868383e-17]
   },
+  {
+    x: 1,
+    y: Number.MIN_VALUE,
+    r: [1, 0],
+    theta: [Number.MIN_VALUE, -0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 1,
+    r: [Number.MAX_VALUE, 0],
+    theta: [5.5626846462680035e-309, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    r: [Number.MAX_VALUE, 0],
+    theta: [0, 0]
+  },
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // random cases (medium)
@@ -6119,6 +6137,1568 @@ const LOG = [
   }
 ];
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const POW = [
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // special cases
+  {
+    x: -Infinity,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1,
+    y: -Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Infinity,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1,
+    y: -Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.MAX_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: -1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -0,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [2.7182818284590455, -1.4862956700836748e-16]
+  },
+  {
+    x: 1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0.13533528323661273, -8.1289203498247281e-18]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: Infinity,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -(Number.MAX_SAFE_INTEGER + 1),
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -1,
+    expected: [-0, -0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -1,
+    expected: [-5.5626846462680035e-309, -0]
+  },
+  {
+    x: -1,
+    y: -1,
+    expected: [-1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: -0,
+    y: -1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: 0,
+    y: -1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -1,
+    expected: [1.0000000000000002, -1.1102230246251564e-16]
+  },
+  {
+    x: 1,
+    y: -1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -1,
+    expected: [0.99999999999999978, 4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -1,
+    expected: [5.5626846462680035e-309, 0]
+  },
+  {
+    x: Infinity,
+    y: -1,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: -Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.EPSILON,
+    expected: [1.0000000000001652, 9.7715595935363696e-17]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.EPSILON,
+    expected: [1, 2.4651903288156619e-32]
+  },
+  {
+    x: 1,
+    y: -Number.EPSILON,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.EPSILON,
+    expected: [1, -4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.EPSILON,
+    expected: [0.99999999999984235, 4.8247429756273019e-17]
+  },
+  {
+    x: Infinity,
+    y: -Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: -Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0,
+    y: -Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: -Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: NaN,
+    y: -Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -0,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 0,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: NaN,
+    y: -0,
+    expected: [1, 0]
+  },
+  {
+    x: -Infinity,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -0,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 0,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: NaN,
+    y: 0,
+    expected: [1, 0]
+  },
+  {
+    x: -Infinity,
+    y: Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MIN_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MIN_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: Infinity,
+    y: Number.MIN_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MIN_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.EPSILON,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.EPSILON,
+    expected: [0.99999999999983469, 1.3306706554475689e-17]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.EPSILON,
+    expected: [1, -2.4651903288156619e-32]
+  },
+  {
+    x: 1,
+    y: Number.EPSILON,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.EPSILON,
+    expected: [1, 4.9303806576313238e-32]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.EPSILON,
+    expected: [1.0000000000001577, -4.824742973143418e-17]
+  },
+  {
+    x: Infinity,
+    y: Number.EPSILON,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.EPSILON,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: 1,
+    expected: [-Infinity, -Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: 1,
+    expected: [-Number.MAX_VALUE, 0]
+  },
+  {
+    x: -1,
+    y: 1,
+    expected: [-1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: 1,
+    expected: [-Number.MIN_VALUE, 0]
+  },
+  {
+    x: -0,
+    y: 1,
+    expected: [-0, -0]
+  },
+  {
+    x: 0,
+    y: 1,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: 1,
+    expected: [Number.MIN_VALUE, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 1,
+    expected: [1 + Number.EPSILON * -0.5, 0]
+  },
+  {
+    x: 1,
+    y: 1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: 1,
+    expected: [1 + Number.EPSILON * 1, 0]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: 1,
+    expected: [Number.MAX_VALUE, 0]
+  },
+  {
+    x: Infinity,
+    y: 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: 1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [0.36787944117144228, 2.266098626473091e-17]
+  },
+  {
+    x: 1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [7.3890560989306486, -4.4054597834089866e-17]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MAX_SAFE_INTEGER + 1,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Number.MAX_VALUE,
+    expected: [0, 0]
+  },
+  {
+    x: 1,
+    y: Number.MAX_VALUE,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Number.MAX_VALUE,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Number.MAX_VALUE,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: -1,
+    y: Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: -0,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 0,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: Infinity,
+    expected: [0, 0]
+  },
+  {
+    x: 1,
+    y: Infinity,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: Infinity,
+    y: Infinity,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: NaN,
+    y: Infinity,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Infinity,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MAX_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -1,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -Number.MIN_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -0,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 0,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Number.MIN_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 1,
+    y: NaN,
+    expected: [1, 0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Number.MAX_VALUE,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: Infinity,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: NaN,
+    y: NaN,
+    expected: [NaN, NaN]
+  },
+  {
+    x: 2,
+    y: -0.5,
+    expected: [0.70710678118654757, -4.8336466567264567e-17]
+  },
+  {
+    x: 2,
+    y: 0.5,
+    expected: [1.4142135623730951, -9.6672933134529135e-17]
+  },
+  {
+    x: -2,
+    y: 8 + Number.EPSILON * -4,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -2,
+    y: 8,
+    expected: [256, 0]
+  },
+  {
+    x: -2,
+    y: 8 + Number.EPSILON * 8,
+    expected: [NaN, NaN]
+  },
+  {
+    x: -2,
+    y: 8.5,
+    expected: [NaN, NaN]
+  },
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // random cases
+  {
+    x: 1.3047111943711744,
+    y: 27.641778004727584,
+    expected: [1559.6354100771455, -1.1522941983822058e-14]
+  },
+  {
+    x: 1.9140980097067963,
+    y: 4.1729560063300823,
+    expected: [15.018414407494026, -2.3308439506231906e-16]
+  },
+  {
+    x: 0.050578720661562215,
+    y: -5.456068894417669,
+    expected: [11782589.675502695, 5.9479599847399076e-10]
+  },
+  {
+    x: 0.0009484431061750967,
+    y: 15.680307012195826,
+    expected: [3.9683396978048675e-48, 6.3812915353566531e-65]
+  },
+  {
+    x: 7562075.8711896129,
+    y: 10.679337966357878,
+    expected: [2.8796009796275855e+73, -2.6483414217969223e+56]
+  },
+  {
+    x: 584.18573997480325,
+    y: -39.113289293389968,
+    expected: [6.181477391185297e-109, 3.15770359893632e-126]
+  },
+  {
+    x: 2.3682159366045826e-05,
+    y: 27.000285644099094,
+    expected: [1.2824894828115652e-125, 2.2101117036778635e-142]
+  },
+  {
+    x: 0.00023507347559296006,
+    y: -42.379047093873751,
+    expected: [6.0944191933836684e+153, 1.7483144403072857e+137]
+  },
+  {
+    x: 453.71419458174432,
+    y: -22.815411444668683,
+    expected: [2.4233558374103693e-61, 8.4049765612738264e-78]
+  },
+  {
+    x: 14668.605370742207,
+    y: -2.2720756026020439,
+    expected: [3.4170363591626608e-10, -1.0833945874505004e-26]
+  },
+  {
+    x: 1.0526151364773553e-07,
+    y: -16.611031334243435,
+    expected: [8.077893748573521e+115, -5.9213057508586822e+99]
+  },
+  {
+    x: 455.73488503457759,
+    y: 28.694878796278601,
+    expected: [1.9562594277464027e+76, -2.6294339316164692e+59]
+  },
+  {
+    x: 4.6245443935058643e-08,
+    y: -28.275243049498499,
+    expected: [2.4943541219274433e+207, -1.1488123589109085e+191]
+  },
+  {
+    x: 7.1337796019246298,
+    y: 27.077911311323504,
+    expected: [1.276776331687205e+23, -2145092.3732876228]
+  },
+  {
+    x: 0.31866082153318365,
+    y: 9.6138562209087866,
+    expected: [1.6790872283986175e-05, -6.3882020513470331e-22]
+  },
+  {
+    x: 3998764.7123565562,
+    y: 23.739393994528825,
+    expected: [5.3176395844429722e+156, -1.9627308378458685e+140]
+  },
+  {
+    x: 27372387.012826197,
+    y: -8.7539774103556027,
+    expected: [7.8330856903961508e-66, 3.8117247908028702e-82]
+  },
+  {
+    x: 0.00061992258282632731,
+    y: -37.343985889887975,
+    expected: [6.1221608156798034e+119, 1.3273881948313293e+103]
+  },
+  {
+    x: 278881.92492566409,
+    y: 26.053876659603873,
+    expected: [7.4870479077011772e+141, 4.4985755223422746e+125]
+  },
+  {
+    x: 1.8770617389575467e-07,
+    y: -0.055869700070971362,
+    expected: [2.3757937501226571, -2.2181952479249883e-20]
+  },
+  {
+    x: 0.021925965763303912,
+    y: -15.160478041956722,
+    expected: [1.4185959633908623e+25, -936095511.26023436]
+  },
+  {
+    x: 1.727573649804139,
+    y: 5.2071663508451138,
+    expected: [17.233429993892965, -7.1303957261223541e-16]
+  },
+  {
+    x: 0.00032323321356872718,
+    y: -18.904813345203479,
+    expected: [9.7039574369501992e+65, 7.8361548198986556e+49]
+  },
+  {
+    x: 181.88319599631438,
+    y: 31.567709690907591,
+    expected: [2.1700814218440273e+71, 4.7703278651799293e+54]
+  },
+  {
+    x: 7.6184046197911092e-09,
+    y: -45.606803926850333,
+    expected: [Infinity, Infinity]
+  },
+  {
+    x: 0.010861353561580071,
+    y: 47.520763031284929,
+    expected: [4.6100610705741646e-94, 2.5126119972997166e-110]
+  },
+  {
+    x: 29.859778967172701,
+    y: -4.9012724362339384,
+    expected: [5.891132113422461e-08, -2.9668913793020613e-24]
+  },
+  {
+    x: 0.015703677026714186,
+    y: -40.141803551768334,
+    expected: [2.604709107886603e+72, -5.9725092193831667e+55]
+  },
+  {
+    x: 8.4851320451639793,
+    y: 11.132772108677301,
+    expected: [21804423980.188454, -5.02835390631656e-07]
+  },
+  {
+    x: 0.00022293610076540066,
+    y: 22.000338356272039,
+    expected: [4.5575684860920419e-81, -4.409277416281622e-97]
+  },
+  {
+    x: 565.00548755488489,
+    y: -22.658847451605894,
+    expected: [4.3818596700627346e-63, 3.1733102353565959e-80]
+  },
+  {
+    x: 40.492763573645902,
+    y: 6.6603633919293088,
+    expected: [50782924822.294312, 1.0668039613239157e-06]
+  },
+  {
+    x: 10.419061991942172,
+    y: -7.7409910730318501,
+    expected: [1.3212887066677938e-08, -1.2951524918117183e-25]
+  },
+  {
+    x: 10.800233338300018,
+    y: 18.465755243101796,
+    expected: [1.2109421479681929e+19, 532.0603227039195]
+  },
+  {
+    x: 15450200.976562385,
+    y: 12.258652310320159,
+    expected: [1.3385790376033015e+88, -8.1118222344767829e+71]
+  },
+  {
+    x: 3303814.7508548005,
+    y: 16.72265251418942,
+    expected: [1.0357002545236291e+109, -3.3979788455263718e+92]
+  },
+  {
+    x: 0.00066984523333203281,
+    y: -50.459667889238659,
+    expected: [1.4463521744579074e+160, 1.3588218522256876e+144]
+  },
+  {
+    x: 0.015722070198027113,
+    y: -32.366210025026817,
+    expected: [2.3558347479543708e+58, -1.2546339365898084e+42]
+  },
+  {
+    x: 8.2759442197588562e-09,
+    y: 36.001669094469989,
+    expected: [1.0664538052045027e-291, -1.5660630079771183e-308]
+  },
+  {
+    x: 0.96322955991400039,
+    y: -3.1033442706246177,
+    expected: [1.1232903451525165, -5.4063017549472422e-17]
+  },
+  {
+    x: 6.1678834942185539,
+    y: 6.163791804708211,
+    expected: [74171.113341264863, -6.200137490298327e-12]
+  },
+  {
+    x: 0.34429727845079405,
+    y: -17.57358521495307,
+    expected: [137321019.89612386, 1.8560994900461075e-09]
+  },
+  {
+    x: 462.09270225821422,
+    y: -23.93618739282968,
+    expected: [1.6464353256415141e-64, 1.361381339148132e-80]
+  },
+  {
+    x: 5276.0860436521907,
+    y: -13.587546090380428,
+    expected: [2.6479873757661218e-51, 5.5934539918931888e-68]
+  },
+  {
+    x: 0.025830552532319112,
+    y: 34.153174068366496,
+    expected: [5.8793014189725993e-55, 5.3318851414620385e-73]
+  },
+  {
+    x: 2.7070187336526939,
+    y: -33.630158267969819,
+    expected: [2.8526627680261828e-15, -5.0863156728642882e-32]
+  },
+  {
+    x: 6.3281971932880072,
+    y: -10.152704503676418,
+    expected: [7.3255611332916444e-09, -3.2111593745717219e-25]
+  },
+  {
+    x: 1214.4946954213128,
+    y: 25.429991256924197,
+    expected: [2.7299438037990388e+78, 7.1536720901538369e+60]
+  },
+  {
+    x: 2318.8725737798404,
+    y: 11.536062965309313,
+    expected: [6.638134227353177e+38, -3.667736840148839e+21]
+  },
+  {
+    x: 4.1666228718858225e-06,
+    y: 18.017164003473681,
+    expected: [1.1581623438257288e-97, -5.6684176580509315e-114]
+  },
+  {
+    x: 0.22609538862556178,
+    y: -6.9960007418512049,
+    expected: [32913.62471674024, 7.7501761890551723e-13]
+  },
+  {
+    x: 0.00010103999002062302,
+    y: 14.59837640399715,
+    expected: [4.6999062023464323e-59, 4.2068310071235372e-75]
+  },
+  {
+    x: 661499.54615072999,
+    y: 14.166236666870986,
+    expected: [2.851012620009012e+82, -1.2476688645122018e+66]
+  },
+  {
+    x: 0.055951748076145891,
+    y: -37.865079650218632,
+    expected: [2.5949889809514332e+47, 1.9060222992325182e+31]
+  },
+  {
+    x: 1.9344235502683166e-07,
+    y: 14.984019529486019,
+    expected: [2.5442373649513143e-101, -8.2505739586100308e-118]
+  },
+  {
+    x: 2.7295506827479015,
+    y: -30.925758673046261,
+    expected: [3.2624956461389485e-14, -3.0079134100941593e-30]
+  },
+  {
+    x: 53690.867581846484,
+    y: 28.574881318401694,
+    expected: [1.4333201234451696e+135, -2.8462969282388885e+118]
+  },
+  {
+    x: 1.8438448493951872e-05,
+    y: 48.441818772263758,
+    expected: [4.6033938228125371e-230, -3.6017062329352695e-246]
+  },
+  {
+    x: 0.003464309941349962,
+    y: -40.853568622247195,
+    expected: [3.2766974666761407e+100, 1.0008559099042533e+84]
+  },
+  {
+    x: 0.00038500257498341739,
+    y: 31.181000369340239,
+    expected: [3.3989150959079073e-107, 2.7212169347361326e-123]
+  },
+  {
+    x: 24.819560870070518,
+    y: 3.3635663599609558,
+    expected: [49145.356672375376, -2.2681358585293276e-12]
+  },
+  {
+    x: 0.14369787705475134,
+    y: -14.826377460217572,
+    expected: [3104267294690.3691, -0.00014641883222921899]
+  },
+  {
+    x: 0.00032491104708004125,
+    y: 11.345603936606636,
+    expected: [2.6537580643407381e-40, -1.4637928992948464e-56]
+  },
+  {
+    x: 803534424.02355123,
+    y: 4.7910316171531662,
+    expected: [4.6148548745552934e+42, 1.7753322204179032e+25]
+  },
+  {
+    x: 0.04815012679245495,
+    y: -22.038203254051425,
+    expected: [1.0794076536631327e+29, 2406557075593.5117]
+  },
+  {
+    x: 0.00064654228688653358,
+    y: -32.614068412785869,
+    expected: [1.0457063776915169e+104, -4.449950413815812e+87]
+  },
+  {
+    x: 1730.4356808934863,
+    y: 13.086863828738274,
+    expected: [2.3839633856714338e+42, -9.8918554738168864e+25]
+  },
+  {
+    x: 57527.319141169311,
+    y: -14.232608011973994,
+    expected: [1.7971206721205524e-68, 9.7769208757132748e-85]
+  },
+  {
+    x: 0.61319694585202655,
+    y: 21.124410781632946,
+    expected: [3.2596786873138761e-05, -2.3794644507084588e-21]
+  },
+  {
+    x: 0.012697253624436012,
+    y: -16.589710644302855,
+    expected: [2.876774399238458e+31, 2092184775458233.5]
+  },
+  {
+    x: 0.052320494210272545,
+    y: 10.60016017882711,
+    expected: [2.6164728762847478e-14, 2.649497849153652e-31]
+  },
+  {
+    x: 38351.044960673971,
+    y: 40.541570273122957,
+    expected: [6.8159366023578109e+185, -2.4689207109137688e+169]
+  },
+  {
+    x: 0.066237925044842827,
+    y: -13.360034243000356,
+    expected: [5624120252609046, -0.37217670082829579]
+  },
+  {
+    x: 0.00040765826012726086,
+    y: 4.8452296275021638,
+    expected: [3.7679657415516957e-17, -1.9464525270196938e-33]
+  },
+  {
+    x: 3.6692432883548385,
+    y: 19.407352854361235,
+    expected: [90559812345.738693, 3.354749627388498e-06]
+  },
+  {
+    x: 0.0074152558878063397,
+    y: -52.154158734180825,
+    expected: [1.2072000754914344e+111, -7.367976705754988e+94]
+  },
+  {
+    x: 0.0011608045111454282,
+    y: -15.343233554158942,
+    expected: [1.086642940338767e+45, 9.8618537393712124e+27]
+  },
+  {
+    x: 0.00046788253204639368,
+    y: 3.5758491063900379,
+    expected: [1.2385449263572345e-12, -3.9234472965951432e-30]
+  },
+  {
+    x: 3.9168854118347246e-10,
+    y: 20.965333793198496,
+    expected: [5.9960501074256562e-198, 1.3489651390054715e-215]
+  },
+  {
+    x: 0.74941085197265123,
+    y: -0.87219984559369834,
+    expected: [1.2860836471891093, 2.0781316478094298e-17]
+  },
+  {
+    x: 7.5408945365975518e-06,
+    y: -25.998468928158445,
+    expected: [1.5106450243959861e+133, -9.2838847502916508e+116]
+  },
+  {
+    x: 0.17430083187457523,
+    y: 2.206627643615704,
+    expected: [0.02117534110179245, 7.171534872004383e-19]
+  },
+  {
+    x: 839.93172633257109,
+    y: 35.699085163425949,
+    expected: [2.4707857821248521e+104, 1.098100386875659e+87]
+  },
+  {
+    x: 0.0041237377343992312,
+    y: 22.067449946365329,
+    expected: [2.3744023739695649e-53, -1.301516237059881e-69]
+  },
+  {
+    x: 3.3485483812477464e-06,
+    y: 4.1256209795168246,
+    expected: [2.5800815497362989e-23, -7.4731971900184743e-40]
+  },
+  {
+    x: 5.7182614031186538e-09,
+    y: -2.7268004534046071,
+    expected: [2.99430647384065e+22, 2024104.6974098007]
+  },
+  {
+    x: 0.18259183176411509,
+    y: -18.827091284096866,
+    expected: [80197000161504.062, 0.0038376739479301565]
+  },
+  {
+    x: 29015.848009292153,
+    y: 23.114419521617819,
+    expected: [1.4165233852036358e+103, 6.7752702565147815e+86]
+  },
+  {
+    x: 3.2155899460220092e-06,
+    y: -7.8830564749213892,
+    expected: [1.9933079670585148e+43, 6.9622126417681954e+25]
+  },
+  {
+    x: 156529.3918012043,
+    y: 34.920241733838225,
+    expected: [2.4919794706985801e+181, 6.4415266664243928e+164]
+  },
+  {
+    x: 3.7551651989504125,
+    y: 52.726987553834107,
+    expected: [1.9881934219488347e+30, 97874850890830.453]
+  },
+  {
+    x: 6.7650311804075741e-08,
+    y: 31.289469214236348,
+    expected: [4.602011661968085e-225, 2.829698388815513e-241]
+  },
+  {
+    x: 1.4235613596456913,
+    y: -13.603049145417984,
+    expected: [0.008196267666302463, 5.6778563860820148e-19]
+  },
+  {
+    x: 648.56985758290875,
+    y: -11.895946583916526,
+    expected: [3.5408911491504106e-34, 9.7889438849353915e-51]
+  },
+  {
+    x: 1428.9493017832006,
+    y: -14.358507147390796,
+    expected: [4.9965292218333403e-46, -3.5305715734791047e-62]
+  },
+  {
+    x: 14437.457987611087,
+    y: 2.7320853375614575,
+    expected: [231251013402.64984, 1.2432530750302352e-06]
+  },
+  {
+    x: 224.41318060083086,
+    y: 27.71969213724887,
+    expected: [1.480255786245951e+65, 4.063359175126075e+48]
+  },
+  {
+    x: 0.0077390031432258352,
+    y: -31.206988998584265,
+    expected: [7.7229506239564958e+65, 2.9360495134494821e+49]
+  },
+  {
+    x: 0.037959682610820888,
+    y: 10.173777481865216,
+    expected: [3.5183900149606165e-15, 1.701816925589285e-31]
+  },
+  {
+    x: 138052568.77911097,
+    y: -30.742422304110278,
+    expected: [5.6926521929194294e-251, 2.8359443455095342e-267]
+  },
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // difficult cases
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: 3.1965771613006638e+18,
+    expected: [1.7976931348621315e+308, 6.4460005104725047e+291]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -3.1903338465324984e+18,
+    expected: [2.2250738585074375e-308, -0]
+  },
+  {
+    x: 1 + Number.EPSILON * 1,
+    y: -3.3557816878888806e+18,
+    expected: [4.9406564584124654e-324, -0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: -6.3931543226013266e+18,
+    expected: [1.7976931348621397e+308, -5.9054981508139448e+289]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 6.3806676930649958e+18,
+    expected: [2.2250738585074282e-308, -0]
+  },
+  {
+    x: 1 + Number.EPSILON * -0.5,
+    y: 6.7115633757777603e+18,
+    expected: [4.9406564584124654e-324, -0]
+  },
+  {
+    x: 1.4142135623730951,
+    y: 2047.9999999999995,
+    expected: [1.7976931348622842e+308, 8.3566364775149123e+291]
+  },
+  {
+    x: 1.4142135623730951,
+    y: -2043.9999999999995,
+    expected: [2.2250738585072414e-308, -0]
+  },
+  {
+    x: 1.4142135623730951,
+    y: -2149.9999999999995,
+    expected: [4.9406564584124654e-324, -0]
+  },
+];
+
 module.exports = {
   ROUND,
   SQRT,
@@ -6127,5 +7707,6 @@ module.exports = {
   ATAN,
   TO_POLAR,
   EXP,
-  LOG
+  LOG,
+  POW
 };

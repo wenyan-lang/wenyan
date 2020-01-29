@@ -20,7 +20,7 @@ import { NUMBER_KEYWORDS, KEYWORDS } from "./keywords";
 import { STDLIB } from "./stdlib";
 import { typecheck, printSignature } from "./typecheck";
 import transpilers from "./transpilers";
-import { match } from "./utils";
+import { match, defaultAssert, isRoman } from "./utils";
 import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
@@ -29,12 +29,7 @@ const defaultTrustedHosts = [
 
 const IGNORE_SYMBOLS = "。、\n\r\t ";
 
-function wy2tokens(
-  txt: string,
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
+function wy2tokens(txt: string, assert = defaultAssert()) {
   var tokens: Token[] = [];
   var tok = "";
   var idt = false;
@@ -92,6 +87,8 @@ function wy2tokens(
       var is_sin = txt[i] == "」";
       litlvl--;
       if (litlvl == 0) {
+        // escape double quote
+        tok = tok.replace(/"/g, '\\"');
         tokens.push(["lit", `"${tok}"`, i + 1]);
         idt = false;
         tok = "";
@@ -177,9 +174,6 @@ function tokenRomanize(tokens: Token[], system: RomanizeSystem) {
     }
     return true;
   }
-  function isRoman(x: string) {
-    return x.replace(/[ -~]/g, "").length == 0;
-  }
 
   for (const token of tokens) {
     if (token[0] == "iden" && !isRoman(token[1])) {
@@ -207,15 +201,10 @@ function defaultLogCallback(x: any) {
 
 function defaultErrorCallback(e: any) {
   console.error(e);
-  process.exit();
+  process.exit(e);
 }
 
-function tokens2asc(
-  tokens: Token[],
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
+function tokens2asc(tokens: Token[], assert = defaultAssert()) {
   var asc: ASCNode[] = [];
   var i = 0;
   while (i < tokens.length) {
@@ -440,7 +429,7 @@ function tokens2asc(
       var x: ASCNode = { op: "call", fun: tokens[i + 1], args: [], pos };
       i += 2;
       while (tokens[i] && gettok(i, 0) == "opord" && gettok(i, 1) == "r") {
-        typeassert(i + 1, ["data", "num", "lit", "iden", "bool"]);
+        typeassert(i + 1, ["data", "num", "lit", "iden", "bool", "ans"]);
         x.args.push(tokens[i + 1]);
         i += 2;
       }
@@ -678,7 +667,8 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
   txt = (txt || "").replace(/\r\n/g, "\n");
 
   var txtlines = txt.split("\n");
-  function assert(msg, pos, b) {
+
+  function assert(msg: string, pos: number, b: any) {
     var errmsg = "";
     if (!b) {
       errmsg += `[Syntax Error] ${msg}\n`;
@@ -735,7 +725,6 @@ function compile(txt: string, options?: Partial<CompileOptions>): string {
 
   logCallback("\n\n=== [PASS 3] COMPILER ===");
   if (!transpilers[lang]) {
-    console.log(transpilers);
     new Error("Target language not supported.");
   }
   var transpiler = new transpilers[lang](asc);

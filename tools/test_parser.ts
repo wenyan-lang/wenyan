@@ -13,11 +13,12 @@ function readOtherExample(x) {
 
 function runExample(lang, name) {
   var txt = fs.readFileSync("../examples/" + name + ".wy").toString();
-  var sourceCode = parser.compile(lang, txt, {
+  var sourceCode = parser.compile(txt, {
+    lang: "js",
     romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
     reader: readOtherExample,
-    strict: true,
+    // strict: true,
     errorCallback: () => 0
     // logCallback: ()=>0,
   });
@@ -52,11 +53,11 @@ function runAll(lang, skips = []) {
   }
 }
 
-// runExample("js", "import");
+runExample("js", "serialization");
 // runExample("js", "../lib/js/畫譜");
 // runExample("js", "../lib/曆法");
 // runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
 // runAll("js", ["quine"]);
 
-runExample("js", "../../../Downloads/local_test");
+// runExample("js", "../../../Downloads/渾沌經");
 // runExample("py", "draw_heart");

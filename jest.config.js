@@ -9,4 +9,5 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
+  globalSetup: './test/setup.js',
 }

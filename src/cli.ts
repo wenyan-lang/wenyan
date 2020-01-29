@@ -5,6 +5,12 @@ import findUp from "find-up";
 import { version } from "./version";
 import { compile, evalCompiled } from "./parser";
 import { render, unrender } from "./render";
+import { outputHanziWrapper } from "./execute";
+
+var readline;
+var rl;
+var inpHistory = [];
+var inpHistoryPtr = -1;
 
 var Logo = ` ,_ ,_\n \\/ ==\n /\\ []\n`;
 const MODULE_LIBRARY_NAME = "藏書樓";
@@ -40,10 +46,10 @@ program
     "--roman [method]",
     'Romanize identifiers. The method can be "pinyin", "baxter" or "unicode"'
   )
-  .option("--strict", "Enable static typechecking")
-  .option("--allowHttp", "Allow to import from http")
+  .option("--strict", "Enable static typechecking", false)
+  .option("--allowHttp", "Allow to import from http", false)
   .option("--dir <path>", "Directory to importing from, seprates with comma(,)")
-  .option("--outputHanzi", "Convert output to hanzi", true)
+  .option("--no-outputHanzi", "Don't convert output to hanzi", false)
   .option("--log <file>", "Save log to file")
   .option("--title <title>", "Override title in rendering")
   .helpOption("-h, --help", "Display help");
@@ -74,7 +80,7 @@ program.parse(process.argv);
   } else if (program.render) {
     doRender();
   } else if (program.interactive) {
-    await intreactive();
+    await interactive();
   } else {
     await exec();
   }
@@ -215,10 +221,10 @@ function doRender() {
   }
 }
 
-function intreactive() {
+function interactive() {
   if (program.lang !== "js") {
     console.error(
-      `Target language "${program.lang}" is not supported for intreactive mode.`
+      `Target language "${program.lang}" is not supported for interactive mode.`
     );
     process.exit(1);
   }
@@ -233,9 +239,8 @@ function exec() {
     );
     process.exit(1);
   }
-
   evalCompiled(getCompiled(), {
-    outputHanzi: program.outputHanzi,
+    outputHanzi: program["outputHanzi"],
     lang: program.lang
   });
 }
@@ -265,22 +270,55 @@ function replscope() {
 }
 
 function repl(prescript?: string) {
-  const readline = require("readline");
-  const rl = readline.createInterface({
+  if (!readline) {
+    readline = require("readline");
+    process.stdin.setMaxListeners(100000000000000);
+    process.stdin.on("data", function(e) {
+      var esc = JSON.stringify(e.toString());
+      if (esc == `"\\u001b[A"`) {
+        if (inpHistoryPtr == -1) {
+          inpHistoryPtr = inpHistory.length;
+        }
+        if (inpHistory.length) {
+          inpHistoryPtr =
+            (inpHistoryPtr - 1 + inpHistory.length) % inpHistory.length;
+        }
+        rl.write(null, { ctrl: true, name: "u" });
+        rl.write(inpHistory[inpHistoryPtr]);
+      } else if (esc == `"\\u001b[B"`) {
+        if (inpHistoryPtr == -1) {
+          inpHistoryPtr = inpHistory.length;
+        }
+        if (inpHistory.length) {
+          inpHistoryPtr = (inpHistoryPtr + 1) % inpHistory.length;
+        }
+        rl.write(null, { ctrl: true, name: "u" });
+        rl.write(inpHistory[inpHistoryPtr]);
+      }
+    });
+  }
+  // console.log(JSON.stringify(inpHistory))
+  rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
   if (prescript) {
+    var old_log = console.log;
     try {
+      console.log = outputHanziWrapper(console.log, program.outputHanzi);
       // @ts-ignore
-      global.__scope.evil(out);
+      global.__scope.evil(prescript);
+      console.log = old_log;
     } catch (e) {
+      console.log = old_log;
       console.log(e);
     }
   }
+
   // @ts-ignore
   global.haserr = false;
   rl.question("> ", inp => {
+    // console.log(JSON.stringify(inp))
     var out = compile(inp, {
       lang: "js",
       romanizeIdentifiers: program.roman,
@@ -294,8 +332,12 @@ function repl(prescript?: string) {
     // @ts-ignore
     if (global.haserr) {
     }
+    if (inp.length) {
+      inpHistory.push(inp);
+    }
     rl.close();
     repl(out);
+    inpHistoryPtr = -1;
   });
 }
 

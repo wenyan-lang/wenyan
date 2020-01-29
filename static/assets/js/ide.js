@@ -556,7 +556,7 @@ function compile() {
   resetOutput();
   var log = "";
   try {
-    const errorLog = "";
+    let errorLog = "";
     var code = Wenyan.compile(editorCM.getValue(), {
       lang: state.config.lang,
       romanizeIdentifiers: state.config.romanizeIdentifiers,
@@ -588,9 +588,55 @@ function compile() {
 }
 
 function send(data) {
-  outIframe.onload = () => {
-    outIframe.contentWindow.postMessage(data);
-  };
+  var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (!is_safari) {
+    outIframe.onload = () => {
+      try {
+        var win = outIframe.contentWindow;
+      } catch (e) {
+        var win = outIframe.contentWindow;
+      }
+      outIframe.contentWindow.postMessage(data, "*");
+    };
+  } else {
+    // FU safari, why can't you just work
+    // every fix involving iframe seem to break, so here we go
+    /*HACK*/ for (var i = 0; i < 100; i++) {
+      /*HACK*/ clearInterval(i);
+      /*HACK*/
+    }
+    /*HACK*/ outIframe.style.width = "0px";
+    /*HACK*/ outIframe.style.height = "0px";
+    /*HACK*/ outIframe.style.opacity = 0;
+    /*HACK*/ outIframe.style.pointerEvents = "none";
+    /*HACK*/
+    /*HACK*/ var outdiv = document.getElementById("out");
+    /*HACK*/ if (!outdiv) {
+      /*HACK*/ outdiv = document.createElement("div");
+      /*HACK*/ outdiv.id = "out";
+      /*HACK*/ outdiv.style.height = "calc(100% - 35px)";
+      /*HACK*/ outdiv.style.overflow = "scroll";
+      /*HACK*/ document.getElementById("out-outer").appendChild(outdiv);
+      /*HACK*/
+    } else {
+      /*HACK*/ outdiv.innerText = "";
+      /*HACK*/
+    }
+    /*HACK*/ const { text, code, options } = data;
+    /*HACK*/ try {
+      /*HACK*/ Wenyan.evalCompiled(code, {
+        /*HACK*/ ...options,
+        /*HACK*/ output: (...args) =>
+          (outdiv.innerText += args.join(" ") + "\n")
+        /*HACK*/
+      });
+      /*HACK*/
+    } catch (e) {
+      /*HACK*/ outdiv.innerText += e.toString();
+      /*HACK*/ console.error(e);
+      /*HACK*/
+    }
+  }
 }
 
 function executeCode(code) {

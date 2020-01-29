@@ -8,14 +8,23 @@ export interface Options {
   prefix: string;
   suffix: string;
   compileOptions: Partial<CompileOptions>;
+  stringProcess: (x: string) => string;
 }
 
 function createTestUtil(options: Partial<Options> = {}) {
-  const { prefix = "", suffix = "書之", compileOptions = {} } = options;
+  const {
+    prefix = "",
+    suffix = "書之",
+    compileOptions = {},
+    stringProcess = (x: string) => x.trim()
+  } = options;
 
-  function expectOutput(source: string, expected: string) {
+  function expectOutput(source: string, expected: any) {
     let output = "";
-    execute(prefix + source + suffix, {
+
+    const code = prefix + source + suffix;
+
+    execute(code, {
       lang: "js",
       scoped: true,
       lib,
@@ -24,7 +33,13 @@ function createTestUtil(options: Partial<Options> = {}) {
       output: (...args) => (output += args.join(" ") + "\n")
     });
 
-    expect(output.trim()).toEqual(expected.trim());
+    if (typeof expected === "string") {
+      expect(stringProcess(output)).toEqual(stringProcess(expected));
+    } else if (typeof expected === "number") {
+      expect(+output).toEqual(+expected);
+    } else {
+      expect(JSON.parse(output)).toEqual(expected);
+    }
   }
 
   return { expectOutput };

@@ -1,5 +1,5 @@
 const webpack = require('webpack')
-const {baseConfig, defaultPlugins, DtsBundlePlugin} = require('./webpack.base.config')
+const { baseConfig, defaultPlugins, DtsBundlePlugin } = require('./webpack.base.config')
 
 const Cli = {
   ...baseConfig(),
@@ -16,8 +16,8 @@ const Cli = {
   ],
   mode: "development",
   optimization: {
-		minimize: false,
-	},
+    minimize: false,
+  },
 }
 
 const Core = {
@@ -28,7 +28,7 @@ const Core = {
   plugins: [
     ...defaultPlugins(),
     new DtsBundlePlugin({
-      name: 'Wenyan',
+      name: '@wenyanlang/core',
       baseDir: 'typings/src',
       main: 'typings/src/parser.d.ts',
       out: '../../dist/core/index.d.ts',

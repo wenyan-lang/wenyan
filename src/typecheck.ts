@@ -1,4 +1,14 @@
-function printType(t, n = 0, d = 0) {
+import {
+  ASCNode,
+  isASCNodeOperator,
+  Token,
+  IdenType,
+  TypeSignature,
+  TypeScope
+} from "./types";
+import { defaultAssert, isRoman } from "./utils";
+
+function printType(t: IdenType, n = 0, d = 0): string {
   if (d > 100) {
     return "...";
   }
@@ -38,7 +48,7 @@ function printType(t, n = 0, d = 0) {
   return t.type;
 }
 
-function printSignature(signature) {
+function printSignature(signature: TypeSignature) {
   let s = "";
   signature = signature.filter(x => Object.keys(x[1]).length);
   signature.sort((x, y) => x[0][0] - y[0][0]);
@@ -69,23 +79,18 @@ function printSignature(signature) {
   return s;
 }
 
-function typecheck(
-  asc,
-  assert = (msg, pos, b) => {
-    if (!b) console.log(`ERROR@${pos}: ${msg}`);
-  }
-) {
-  let imported = [];
-  let strayvar = [];
-  let scope = [{}];
-  let scopestarts = [{ pos: 0, op: "global" }];
-  let signature = [];
-  let funstack = [];
-  let funretcnt = [];
+function typecheck(asc: ASCNode[], assert = defaultAssert()) {
+  let imported: string[] = [];
+  let strayvar: IdenType[] = [];
+  let scope: TypeScope[] = [{}];
+  let scopestarts: ASCNode[] = [{ pos: 0, op: "global" }];
+  let signature: TypeSignature = [];
+  let funstack: string[] = [];
+  let funretcnt: number[] = [];
   let prevobj = "";
   let took = 0;
 
-  function checkscopei(i, name) {
+  function checkscopei(i: number, name: string) {
     if (scope[i][name]) {
       return scope[i][name];
     }
@@ -105,11 +110,7 @@ function typecheck(
     }
   }
 
-  function isRoman(x) {
-    return x.replace(/[ -~]/g, "").length == 0;
-  }
-
-  function checkscopeall(name) {
+  function checkscopeall(name: string) {
     for (let i = scope.length - 1; i >= 0; i--) {
       let b = checkscopei(i, name);
       if (b) {
@@ -126,7 +127,8 @@ function typecheck(
 
     return undefined;
   }
-  function checkscopethis(name, pos) {
+
+  function checkscopethis(name: string, pos: number) {
     assert(
       "Scope stack depleted, possibly due to extraneous end-block statement.",
       pos,
@@ -135,14 +137,14 @@ function typecheck(
     return checkscopei(scope.length - 1, name);
   }
 
-  function inittype(type) {
+  function inittype(type: IdenType["type"]): IdenType {
     if (type == "any") {
       return { type: "any" };
     }
     if (type == "nil") {
       return { type: "nil" };
     }
-    let x: any = { type: type };
+    let x: IdenType = { type: type };
     if (type == "fun") {
       x.in = { type: "any" };
       x.out = { type: "any" };
@@ -154,7 +156,7 @@ function typecheck(
     return x;
   }
 
-  function gettype(tok) {
+  function gettype(tok: Token): IdenType {
     if (tok[0] == "lit") {
       return inittype("str");
     } else if (tok[0] == "bool") {
@@ -171,38 +173,38 @@ function typecheck(
     assert(`[Type] Expecting value, found '${tok[0]}'`, tok[2], false);
   }
 
-  function objfield(t, x) {
+  function objfield(t: IdenType, x: string) {
     if (t.isarg) {
       t.fields[x] = inittype("any");
     }
     return t.fields[x];
   }
 
-  function scopepush(tok) {
+  function scopepush(node: ASCNode) {
     scope.push({});
-    scopestarts.push(tok);
+    scopestarts.push(node);
   }
 
-  function scopepop(tok, ...acceptScopeStartOps) {
+  function scopepop(node: ASCNode, ...acceptScopeStartOps) {
     let ss = scopestarts.pop();
     let s = scope.pop();
     assert(
-      `[Type] Unexpected '${tok.op}' in '${ss.op}' block`,
-      tok.pos,
+      `[Type] Unexpected '${node.op}' in '${ss.op}' block`,
+      node.pos,
       acceptScopeStartOps.indexOf(ss.op) >= 0
     );
-    signature.push([[ss.pos, tok.pos, scope.length], s]);
+    signature.push([[ss.pos, node.pos, scope.length], s]);
   }
 
   function logscope() {
     console.dir(scope, { depth: null, maxArrayLength: null });
   }
 
-  function typeeq(a, b) {
-    if (a == "any" || a.type == "any") {
+  function typeEqual(a: IdenType, b: IdenType) {
+    if (a.type == "any") {
       return b;
     }
-    if (b == "any" || b.type == "any") {
+    if (b.type == "any") {
       return a;
     }
     if (a.type != b.type) {
@@ -210,13 +212,13 @@ function typecheck(
     }
     if (a.type == b.type) {
       if (a.type == "arr") {
-        if (typeeq(a.element, b.element)) {
+        if (typeEqual(a.element, b.element)) {
           return a;
         }
-        if (a.element == "any" && b.element) {
+        if (b.element) {
           return b;
         }
-        if (a.element && b.element == "any") {
+        if (a.element) {
           return a;
         }
       }
@@ -229,7 +231,7 @@ function typecheck(
           [x, y] = [a, b];
         }
         for (var k in x.fields) {
-          if (!typeeq(x.fields[k], y.fields[k])) {
+          if (!typeEqual(x.fields[k], y.fields[k])) {
             return false;
           }
         }
@@ -240,7 +242,7 @@ function typecheck(
     return false;
   }
 
-  function typeassert(who, want, got, pos) {
+  function typeassert(who: string, want: IdenType[], got: Token, pos: number) {
     let t = gettype(got);
     assert(`[Type] Undeclared variable '${got[1]}'`, pos, t);
 
@@ -248,7 +250,7 @@ function typecheck(
     let ut = [];
     for (let i = 0; i < want.length; i++) {
       ut.push("(" + printType(want[i]) + ")");
-      if (typeeq(want[i], t)) {
+      if (typeEqual(want[i], t)) {
         ok = true;
         break;
       }
@@ -364,13 +366,11 @@ function typecheck(
           // console.log(ptr.out.type,ty.type)
           typeassert(`Function return`, [ptr.out], a.value, a.pos);
 
-          ptr.out = typeeq(ptr.out, gettype(a.value));
+          ptr.out = typeEqual(ptr.out, gettype(a.value));
         }
       }
-    } else if (a.op.startsWith("op")) {
+    } else if (isASCNodeOperator(a)) {
       let op = a.op.slice(2);
-      let tl = gettype(a.lhs);
-      let tr = gettype(a.rhs);
 
       let otype;
       if (op == "+") {
@@ -386,7 +386,7 @@ function typecheck(
           a.rhs,
           a.pos
         );
-        otype = Object.assign({}, typeeq(gettype(a.lhs), gettype(a.rhs)));
+        otype = Object.assign({}, typeEqual(gettype(a.lhs), gettype(a.rhs)));
       } else if (["-", "*", "/", "%"].includes(op)) {
         typeassert(`${op} operator`, [inittype("num")], a.lhs, a.pos);
         typeassert(`${op} operator`, [inittype("num")], a.rhs, a.pos);
@@ -434,7 +434,7 @@ function typecheck(
                 args[j]
               )}`,
               a.pos,
-              typeeq(args[j], ta)
+              typeEqual(args[j], ta)
             );
           } else {
             typeassert(`Function argument`, [ta], args[j], a.pos);
@@ -522,7 +522,7 @@ function typecheck(
       let typ = gettype(a.containers[0]);
       let olt = typ;
       for (let j = 1; j < a.containers.length; j++) {
-        typ = typeeq(typ, gettype(a.containers[j]));
+        typ = typeEqual(typ, gettype(a.containers[j]));
         if (!typ) {
           typeassert(`Concat`, [olt], a.containers[j], a.pos);
         }
@@ -531,11 +531,15 @@ function typecheck(
       strayvar.push(Object.assign({}, typ));
     } else if (a.op == "push") {
       typeassert(`Push LHS`, [inittype("arr")], a.container, a.pos);
-      let typ = gettype(a.container).element;
+      let typy = gettype(a.container);
+      let typ = typy.element;
+      if ((typy.type = "any")) {
+        typ = inittype("any");
+      }
       let olt = typ;
       for (let j = 0; j < a.values.length; j++) {
         // console.log(a.values[j],gettype(a.values[j]))
-        typ = typeeq(typ, gettype(a.values[j]));
+        typ = typeEqual(typ, gettype(a.values[j]));
         if (!typ) {
           typeassert(`Push RHS`, [olt], a.values[j], a.pos);
         }
@@ -640,7 +644,7 @@ function typecheck(
         assert(`[Type] Reassignment LHS is not declared`, a.pos, tlv);
         assert(`[Type] Reassignment RHS is not declared`, a.pos, trv);
         // console.log(a,tlv,trv,tl,tr)
-        let typ = typeeq(tlv, trv);
+        let typ = typeEqual(tlv, trv);
         // console.log(a.lhs,a.rhs,gettype(a.rhs),tl,tr,tlv,trv)
         assert(
           `[Type] Reassignment type mismatch: LHS:${printType(
