@@ -1,3 +1,18 @@
+# v0.3.1
+
+## Standard Library
+- WONTON - JSON-ish Object Serialization, #560 for details
+- Math improves (PR #555, thanks @statementreply)
+
+## Fixes
+- Typescript typings (20cd77b7dac26b78033de78ae732e7bcff7338e6)
+
+## Examples
+- Chinese remainder theorem. (PR #569, thanks @YuRen-tw)
+
+## Misc
+- Improve responsive for the website (PR #568, thanks @MaoSHYJ)
+
 # v0.3.0
 
 ## BREAKING CHANGE: `compile` API change
