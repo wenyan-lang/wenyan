@@ -8,7 +8,7 @@
 
 ### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki)
 
-English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
+English | [简体中文](./README.zh-Hans.md) | [繁體中文](./README.zh-Hant.md)
 
 文言文編程語言。A programming language for the ancient Chinese. [Try it online.](https://wy-lang.org/ide)
 
