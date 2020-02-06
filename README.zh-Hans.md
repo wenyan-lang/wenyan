@@ -4,7 +4,7 @@
 
 ### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki)
 
-[English](./README.md) | 简体中文 | [繁体中文](./README.zh-Hant.md)
+[English](./README.md) | 简体中文 | [繁體中文](./README.zh-Hant.md)
 
 文言文編程語言。 [在线体验](http://wenyan-lang.lingdong.works/ide.html)
 
