@@ -30,6 +30,7 @@ module.exports = {
     helloworld: "問天地好在",
     "helloworld+": "問天地好在+",
     import: "導入示例",
+    linglong_tower: "玲瓏塔",
     mandelbrot: "曼德博集",
     mergesort: "歸併排序",
     macro: "宏示例",
