@@ -8,7 +8,7 @@
 
 ### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki)
 
-English | [简体中文](./README.zh-Hans.md) | [繁体中文](./README.zh-Hant.md)
+English | [简体中文](./README.zh-Hans.md) | [繁體中文](./README.zh-Hant.md)
 
 文言文編程語言。A programming language for the ancient Chinese. [Try it online.](https://wy-lang.org/ide)
 
@@ -106,7 +106,7 @@ Check out our [Wiki pages](https://github.com/wenyan-lang/wenyan/wiki)
 - [Standard Library Cheatsheet](https://github.com/wenyan-lang/wenyan/wiki/Standard-Library-Cheatsheet)
 - [Library Packages](https://github.com/wenyan-lang/wenyan/wiki/Available-Packages)
 - [Contributing](https://github.com/wenyan-lang/wenyan/wiki/Contributing)
-- [API Specifcations](https://github.com/wenyan-lang/wenyan/wiki/Compiler-API)
+- [API Specifications](https://github.com/wenyan-lang/wenyan/wiki/Compiler-API)
 - [Browser Runtime](https://github.com/wenyan-lang/wenyan/wiki/Browser-Runtime)
 - [Feature Requests](https://github.com/wenyan-lang/wenyan/wiki/Feature-Requests)
 - [Known Issues](https://github.com/wenyan-lang/wenyan/wiki/Known-Issues)
