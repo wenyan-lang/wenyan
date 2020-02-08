@@ -58,7 +58,7 @@ export default class JSCompiler extends BaseTranspiler {
             } else if (a.type == "bol") {
               value = "false";
             } else if (a.type == "fun") {
-              value = "null";
+              value = "_=>{}";
               prevfun = name;
               prevfunpublic = a.public;
             } else if (a.type == "obj") {
