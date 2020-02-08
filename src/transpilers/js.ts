@@ -12,39 +12,38 @@ export default class JSCompiler extends BaseTranspiler {
   }
 
   transpile(options: Partial<TranspilerOptions> = {}) {
-    var imports = options.imports || [];
-    var js = ``; //`"use strict";`;
-    var prevfun = "";
-    var prevfunpublic = false;
-    var prevobj = "";
-    var prevobjpublic = false;
-    var curlvl = 0;
-    var strayvar = [];
-    var took = 0;
-    var funcurlvls = [];
-    var errcurlvls = [];
+    const imports = options.imports || [];
+    let js = ""; //'"use strict";'; (strict mode currently broken)
+    let prevfun = "";
+    let prevfunpublic = false;
+    let prevobj = "";
+    let prevobjpublic = false;
+    let previsfun = false;
+    let curlvl = 0;
+    let strayvar = [];
+    let took = 0;
+    const errcurlvls = [];
 
     function getval(x) {
       if (x === undefined) {
         return "";
       }
       if (x[0] == "ans") {
-        var ans = strayvar[strayvar.length - 1];
+        const ans = strayvar[strayvar.length - 1];
         strayvar = [];
         return ans;
       }
       return x[1];
     }
 
-    for (var i = 0; i < this.asc.length; i++) {
-      var a = this.asc[i];
+    for (const a of this.asc) {
       if (a.op == "var") {
-        for (var j = 0; j < a.count; j++) {
+        for (let j = 0; j < a.count; j++) {
           if (a.values[j] === undefined) {
             a.values[j] = [];
           }
-          var name = a.names[j];
-          var value = a.values[j][1];
+          let name = a.names[j];
+          let value = a.values[j][1];
           if (name === undefined) {
             name = this.nextTmpVar();
             strayvar.push(name);
@@ -59,7 +58,7 @@ export default class JSCompiler extends BaseTranspiler {
             } else if (a.type == "bol") {
               value = "false";
             } else if (a.type == "fun") {
-              value = "()=>0";
+              value = "_=>{}";
               prevfun = name;
               prevfunpublic = a.public;
             } else if (a.type == "obj") {
@@ -67,49 +66,29 @@ export default class JSCompiler extends BaseTranspiler {
               prevobj = name;
               prevobjpublic = a.public;
             } else if (a.type == "any") {
-              value = "undefined";
+              value = "void 0";
             }
           }
-          js += `${a.public ? `var ${name} = this.` : "var "}${name}=${value};`;
+          js += `var ${name}=${a.public ? `this.${name}=` : ""}${value};`;
         }
       } else if (a.op == "print") {
-        js += `console.log(`;
-        for (var j = 0; j < strayvar.length; j++) {
-          js += `${strayvar[j]}`;
-          if (j != strayvar.length - 1) {
-            js += ",";
-          }
-        }
-        js += ");";
+        js += `console.log(${strayvar.join(",")});`;
         strayvar = [];
       } else if (a.op == "fun") {
-        // console.log(curlvl);
-        funcurlvls.push(curlvl);
-        js += `${
-          prevfunpublic ? `${prevfun} = this.` : ""
-        }${prevfun} =function(`;
-        for (var j = 0; j < a.arity; j++) {
-          js += a.args[j].name;
-          if (j != a.arity - 1) {
-            js += "){return function(";
-            curlvl++;
-          }
-        }
-        js += "){";
+        js += `${prevfun}=${prevfunpublic ? `this.${prevfun}=` : ""}${
+          a.args.length == 0
+            ? "()=>"
+            : a.args.map(arg => `${arg.name}=>`).join("")
+        }{`;
         curlvl++;
       } else if (a.op == "funbody") {
-        if (this.asc[i - 1].op != "fun") {
-          funcurlvls.push(curlvl);
-          js += `${
-            prevfunpublic ? `${prevfun} = this.` : ""
-          }${prevfun} =function(){`;
+        if (!previsfun) {
+          js += `${prevfun}=${prevfunpublic ? `this.${prevfun}=` : ""}()=>{`;
           curlvl++;
         }
       } else if (a.op == "funend") {
-        // console.log(funcurlvls, curlvl);
-        var cl = funcurlvls.pop();
-        js += "};".repeat(curlvl - cl);
-        curlvl = cl;
+        js += "};";
+        curlvl--;
       } else if (a.op == "objend") {
         js += "};";
         curlvl--;
@@ -119,9 +98,8 @@ export default class JSCompiler extends BaseTranspiler {
       } else if (a.op == "prop") {
         js += `${a.name}:${a.value[1]},`;
       } else if (a.op == "end") {
-        js += "}";
+        js += "};";
         curlvl--;
-        js += ";";
       } else if (a.op == "if") {
         if (a.elseif) {
           js += "}else ";
@@ -131,7 +109,7 @@ export default class JSCompiler extends BaseTranspiler {
         if (a.not) {
           js += "!(";
         }
-        var j = 0;
+        let j = 0;
         while (j < a.test.length) {
           if (a.test[j][0] == "cmp") {
             js += a.test[j][1];
@@ -165,14 +143,14 @@ export default class JSCompiler extends BaseTranspiler {
       } else if (a.op == "return") {
         js += `return ${getval(a.value)};`;
       } else if (a.op.startsWith("op")) {
-        let _a = a as ASCNodeOperator;
-        var lhs = getval(_a.lhs);
-        var rhs = getval(_a.rhs);
-        var vname = this.nextTmpVar();
-        js += `var ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
+        const _a = a as ASCNodeOperator;
+        const lhs = getval(_a.lhs);
+        const rhs = getval(_a.rhs);
+        const vname = this.nextTmpVar();
+        js += `const ${vname}=${lhs}${a.op.slice(2)}${rhs};`;
         strayvar.push(vname);
       } else if (a.op == "name") {
-        for (var j = 0; j < a.names.length; j++) {
+        for (let j = 0; j < a.names.length; j++) {
           js += `var ${a.names[j]}=${
             strayvar[strayvar.length - a.names.length + j]
           };`;
@@ -180,81 +158,77 @@ export default class JSCompiler extends BaseTranspiler {
         strayvar = strayvar.slice(0, strayvar.length - a.names.length);
       } else if (a.op == "call") {
         if (a.pop) {
-          var jj = "";
-          for (var j = 0; j < took; j++) {
+          let jj = "";
+          for (let j = 0; j < took; j++) {
             jj += `(${strayvar[strayvar.length - took + j]})`;
           }
           strayvar = strayvar.slice(0, strayvar.length - took);
           took = 0;
-          var vname = this.nextTmpVar();
+          const vname = this.nextTmpVar();
           if (!jj.length) {
             jj = "()";
           }
-          js += `var ${vname}=${getval(a.fun)}` + jj + ";";
+          js += `const ${vname}=${getval(a.fun)}` + jj + ";";
           strayvar.push(vname);
         } else {
-          var vname = this.nextTmpVar();
-          js += `var ${vname}=${getval(a.fun)}(${a.args
+          const vname = this.nextTmpVar();
+          js += `const ${vname}=${getval(a.fun)}(${a.args
             .map(x => getval(x))
             .join(")(")});`;
           strayvar.push(vname);
         }
       } else if (a.op == "subscript") {
-        var idx = getval(a.value);
+        const idx = getval(a.value);
         if (idx == "rest") {
-          var vname = this.nextTmpVar();
-          js += `var ${vname}=${getval(a.container)}.slice(1);`;
+          const vname = this.nextTmpVar();
+          js += `const ${vname}=${getval(a.container)}.slice(1);`;
           strayvar.push(vname);
         } else {
-          var vname = this.nextTmpVar();
-          js += `var ${vname}=${getval(a.container)}[${idx}${
+          const vname = this.nextTmpVar();
+          js += `const ${vname}=${getval(a.container)}[${idx}${
             a.value[0] == "lit" ? "" : "-1"
           }];`;
           strayvar.push(vname);
         }
       } else if (a.op == "cat") {
-        var vname = this.nextTmpVar();
-        js +=
-          `var ${vname}=${getval(a.containers[0])}.concat(` +
-          a.containers
-            .slice(1)
-            .map(x => x[1])
-            .join(").concat(") +
-          ");";
+        const vname = this.nextTmpVar();
+        js += `const ${vname}=${getval(a.containers[0])}.concat(${a.containers
+          .slice(1)
+          .map(x => x[1])
+          .join(").concat(")});`;
         strayvar.push(vname);
       } else if (a.op == "push") {
         js += `${getval(a.container)}.push(${a.values
           .map(x => getval(x))
           .join(",")});`;
       } else if (a.op == "for") {
-        js += `for (var ${a.iterator} of ${getval(a.container)}){`;
+        js += `for(let ${a.iterator} of ${getval(a.container)}){`;
         curlvl++;
       } else if (a.op == "whiletrue") {
-        js += "while (true){";
+        js += "while(true){";
         curlvl++;
       } else if (a.op == "whilen") {
-        var v = this.randVar();
-        js += `for (var ${v}=0;${v}<${getval(a.value)};${v}++){`;
+        const v = this.randVar();
+        js += `for(let ${v}=0;${v}<${getval(a.value)};${v}++){`;
         curlvl++;
       } else if (a.op == "break") {
         js += "break;";
       } else if (a.op == "continue") {
         js += "continue;";
       } else if (a.op == "not") {
-        let v = getval(a.value);
-        var vname = this.nextTmpVar();
-        js += `var ${vname}=!${v};`;
-
+        const v = getval(a.value);
+        const vname = this.nextTmpVar();
+        js += `const ${vname}=!${v};`;
         strayvar.push(vname);
       } else if (a.op == "reassign") {
         if (a.del == true) {
-          var lhs = getval(a.lhs);
+          const lhs = getval(a.lhs);
           js += `delete ${lhs}[${a.lhssubs[1]}${
             a.lhssubs[0] == "lit" ? "" : "-1"
           }];`;
         } else {
-          var rhs = getval(a.rhs);
-          var lhs = getval(a.lhs);
+          let rhs = getval(a.rhs);
+          let lhs = getval(a.lhs);
           if (a.lhssubs) {
             lhs += `[${a.lhssubs[1]}${a.lhssubs[0] == "lit" ? "" : "-1"}]`;
           }
@@ -264,50 +238,50 @@ export default class JSCompiler extends BaseTranspiler {
           js += `${lhs}=${rhs};`;
         }
       } else if (a.op == "length") {
-        var vname = this.nextTmpVar();
-        js += `var ${vname}=${getval(a.container)}.length;`;
+        const vname = this.nextTmpVar();
+        js += `const ${vname}=${getval(a.container)}.length;`;
         strayvar.push(vname);
       } else if (a.op == "temp") {
-        var vname = this.nextTmpVar();
-        js += `var ${vname}=${a.iden[1]};`;
+        const vname = this.nextTmpVar();
+        js += `const ${vname}=${a.iden[1]};`;
         strayvar.push(vname);
       } else if (a.op == "discard") {
         strayvar = [];
       } else if (a.op == "take") {
         took = a.count;
       } else if (a.op == "import") {
-        var f = a.file.replace(/"/g, "");
-        for (var j = 0; j < a.iden.length; j++) {
-          js += `var ${a.iden[j]}=${f}.${a.iden[j]};`;
+        const f = a.file.replace(/"/g, "");
+        for (const id of a.iden) {
+          js += `var ${id}=${f}.${id};`;
         }
         imports.push(f);
       } else if (a.op == "try") {
         js += `try{`;
         curlvl++;
       } else if (a.op == "catch") {
-        var r = this.randVar();
+        const r = this.randVar();
         errcurlvls.push([curlvl, r]);
         js += `}catch(${r}){`;
         strayvar = [];
       } else if (a.op == "catcherr") {
-        var ec = errcurlvls[errcurlvls.length - 1];
+        const ec = errcurlvls[errcurlvls.length - 1];
         if (a.error === undefined) {
-          var vname = this.nextTmpVar();
+          const vname = this.nextTmpVar();
           strayvar.push(vname);
           if (curlvl != ec[0]) {
             js += `}else{`;
           }
-          js += `var ${vname}=${ec[1]}.name;`;
+          js += `const ${vname}=${ec[1]}.name;`;
         } else {
           if (curlvl != ec[0]) {
             js += `}else `;
             curlvl--;
           }
-          js += `if (${ec[1]}.name==${a.error[1]}){`;
+          js += `if (${ec[1]}.name===${a.error[1]}){`;
           curlvl++;
         }
       } else if (a.op == "tryend") {
-        var ec = errcurlvls.pop();
+        const ec = errcurlvls.pop();
         if (curlvl != ec[0]) {
           js += `}`;
           curlvl--;
@@ -316,14 +290,14 @@ export default class JSCompiler extends BaseTranspiler {
         curlvl--;
         strayvar = [];
       } else if (a.op == "throw") {
-        var r = this.randVar();
-        js += `var ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};`;
+        const r = this.randVar();
+        js += `{const ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};}`;
       } else if (a.op == "comment") {
         js += `/*${getval(a.value)}*/`;
       } else {
         console.log(a.op);
       }
-      // js+="\n"
+      previsfun = a.op == "fun";
     }
     return { result: js, imports };
   }
