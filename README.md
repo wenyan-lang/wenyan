@@ -10,7 +10,7 @@
 
 English | [简体中文](./README.zh-Hans.md) | [繁體中文](./README.zh-Hant.md)
 
-文言文編程語言。A programming language for the ancient Chinese. [Try it online.](https://wy-lang.org/ide)
+文言文編程語言。A programming language for the ancient Chinese. [Try it online.](https://ide.wy-lang.org/)
 
 ![](screenshots/screenshot01.png)
 
@@ -59,12 +59,12 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 - [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- An [Online IDE](https://wy-lang.org/ide)
+- An [Online IDE](https://ide.wy-lang.org/)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
 
 ## Try it out
 
-### [The Online IDE](https://wy-lang.org/ide)
+### [The Online IDE](https://ide.wy-lang.org/)
 
 ![](screenshots/screenshot02.png)
 
