@@ -1,0 +1,13 @@
+<body>
+<script>
+window.addEventListener('message', (e) => {
+  const { key, set, value } = e.data
+  
+  if (set)
+    localStorage.setItem(key, value)
+
+  if (parent !== window)
+    parent.postMessage({ key, value: localStorage.getItem(key) }, '*')
+}, false);
+</script>
+</body>
