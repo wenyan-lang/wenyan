@@ -262,22 +262,24 @@ export default class JSCompiler extends BaseTranspiler {
         const r = this.randVar();
         errcurlvls.push([curlvl, r]);
         js += `}catch(${r}){`;
+        js += `${r}['名']=({'SyntaxError':'文法','RangeError':'逾界','TypeError':'異類','ReferenceError':'虛指'}[${r}.name])||${r}.name;`;
+        js += `${r}['文']=${r}.message; ${r}['蹤']=${r}.stack;`;
         strayvar = [];
       } else if (a.op == "catcherr") {
         const ec = errcurlvls[errcurlvls.length - 1];
+        const vname = this.nextTmpVar();
+        strayvar.push(vname);
         if (a.error === undefined) {
-          const vname = this.nextTmpVar();
-          strayvar.push(vname);
           if (curlvl != ec[0]) {
             js += `}else{`;
           }
-          js += `const ${vname}=${ec[1]}.name;`;
+          js += `const ${vname}=${ec[1]};`;
         } else {
           if (curlvl != ec[0]) {
             js += `}else `;
             curlvl--;
           }
-          js += `if (${ec[1]}.name===${a.error[1]}){`;
+          js += `if (${ec[1]}.name===${a.error[1]}||${ec[1]}['名']===${a.error[1]}){const ${vname}=${ec[1]};`;
           curlvl++;
         }
       } else if (a.op == "tryend") {
