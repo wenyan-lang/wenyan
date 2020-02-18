@@ -18,7 +18,7 @@ function runExample(lang, name) {
     romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
     reader: readOtherExample,
-    // strict: true,
+    strict: true,
     errorCallback: () => 0
     // logCallback: ()=>0,
   });
@@ -53,7 +53,7 @@ function runAll(lang, skips = []) {
   }
 }
 
-runExample("js", "try");
+runExample("js", "serialization");
 // runExample("js", "../lib/js/畫譜");
 // runExample("js", "../lib/曆法");
 // runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);

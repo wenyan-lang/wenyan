@@ -454,7 +454,7 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
       if (a.value[0] == "ctnr" && a.value[1] == "rest") {
         typeassert(
           `Subscript operator LHS`,
-          [inittype("arr")],
+          [inittype("arr"), inittype("str")],
           a.container,
           a.pos
         );
