@@ -267,20 +267,20 @@ export default class JSCompiler extends BaseTranspiler {
         strayvar = [];
       } else if (a.op == "catcherr") {
         const ec = errcurlvls[errcurlvls.length - 1];
-        const vname = this.nextTmpVar();
-        strayvar.push(vname);
         if (a.error === undefined) {
           if (curlvl != ec[0]) {
             js += `}else{`;
           }
-          js += `const ${vname}=${ec[1]};`;
         } else {
           if (curlvl != ec[0]) {
             js += `}else `;
             curlvl--;
           }
-          js += `if (${ec[1]}.name===${a.error[1]}||${ec[1]}['名']===${a.error[1]}){const ${vname}=${ec[1]};`;
+          js += `if (${ec[1]}.name===${a.error[1]}||${ec[1]}['名']===${a.error[1]}){`;
           curlvl++;
+        }
+        if (a.name != undefined) {
+          js += `const ${a.name}=${ec[1]};`;
         }
       } else if (a.op == "tryend") {
         const ec = errcurlvls.pop();
@@ -293,7 +293,9 @@ export default class JSCompiler extends BaseTranspiler {
         strayvar = [];
       } else if (a.op == "throw") {
         const r = this.randVar();
-        js += `{const ${r} = new Error(); ${r}.name=${a.error[1]}; throw ${r};}`;
+        js += `{const ${r} = new Error(); ${r}.name=${
+          a.error[1]
+        }; ${r}.message=${a.message ? getval(a.message) : '""'}; throw ${r};}`;
       } else if (a.op == "comment") {
         js += `/*${getval(a.value)}*/`;
       } else {

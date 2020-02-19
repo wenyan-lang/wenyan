@@ -678,8 +678,14 @@ function typecheck(asc: ASCNode[], assert = defaultAssert()) {
     } else if (a.op == "catcherr") {
       scopepop(a, "catch", "catcherr");
       scopepush(a);
-      if (a.error === undefined) {
-        strayvar.push(inittype("str"));
+      if (a.name != undefined) {
+        var x = inittype("any");
+        x.fields = {
+          名: inittype("str"),
+          文: inittype("str"),
+          蹤: inittype("str")
+        };
+        scope[scope.length - 1][a.name] = x;
       }
     } else if (a.op == "tryend") {
       scopepop(a, "catch", "catcherr");
