@@ -1,3 +1,23 @@
+# v0.3.2
+
+## Features
+- Use modern js syntax for compiled code (PR #574, thanks @tsao-chi)
+- Improved error handling (#566, 8bf7e0a)
+
+## Standard Library
+- Top-level array for Wonton (d8dfb63)
+- Fixes in 列經 (PR #578, thanks @wenfeng0218)
+
+## Examples
+- 玲瓏塔 (PR #578, thanks @wenfeng0218)
+- 漢諾塔·堆棧法 and 斐氏列·數組法 (PR #580, thanks @wenfeng0218) 
+
+## Misc
+- The Online IDE moved to https://ide.wy-lang.org and [a separate repo](https://github.com/wenyan-lang/ide)
+
+## Thanks
+Thanks for our first financial contributor @wenfeng0218 on [Open Collective](https://opencollective.com/wenyan-lang)! 
+
 # v0.3.1
 
 ## Standard Library
