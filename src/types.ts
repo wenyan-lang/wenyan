@@ -182,6 +182,8 @@ export interface ASCNodePush {
 export interface ASCNodeWithError {
   op: "catcherr" | "throw";
   error?: Token;
+  message?: Token;
+  name?: string;
 }
 
 export interface ASCNodeSubscript {

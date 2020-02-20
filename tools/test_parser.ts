@@ -18,7 +18,7 @@ function runExample(lang, name) {
     romanizeIdentifiers: "none", //true,
     lib: utils.loadlib(),
     reader: readOtherExample,
-    // strict: true,
+    strict: true,
     errorCallback: () => 0
     // logCallback: ()=>0,
   });
@@ -53,11 +53,11 @@ function runAll(lang, skips = []) {
   }
 }
 
-runExample("js", "serialization");
+runExample("js", "try");
 // runExample("js", "../lib/js/畫譜");
 // runExample("js", "../lib/曆法");
 // runAll("js", ["quine", "quine2", "tree", "tree2", "try"]);
 // runAll("js", ["quine"]);
 
-// runExample("js", "../../../Downloads/渾沌經");
+// runExample("js", "../../../Downloads/local_test");
 // runExample("py", "draw_heart");

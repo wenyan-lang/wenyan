@@ -605,18 +605,53 @@ function tokens2asc(tokens: Token[], assert = defaultAssert()) {
       i++;
     } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catcherr0") {
       typeassert(i + 2, ["try"]);
-      asc.push({ op: "catcherr", error: tokens[i + 1], pos });
-      i += 3;
+      if (tokens[i + 3] && gettok(i + 3, 0) == "name") {
+        asc.push({
+          op: "catcherr",
+          error: tokens[i + 1],
+          name: gettok(i + 4, 1),
+          pos
+        });
+        i += 5;
+      } else {
+        asc.push({
+          op: "catcherr",
+          error: tokens[i + 1],
+          name: undefined,
+          pos
+        });
+        i += 3;
+      }
     } else if (gettok(i, 0) == "try" && gettok(i, 1) == "catchall") {
-      asc.push({ op: "catcherr", error: undefined, pos });
-      i++;
+      if (tokens[i + 1] && gettok(i + 1, 0) == "name") {
+        asc.push({
+          op: "catcherr",
+          error: undefined,
+          name: gettok(i + 2, 1),
+          pos
+        });
+        i += 3;
+      } else {
+        asc.push({ op: "catcherr", error: undefined, name: undefined, pos });
+        i++;
+      }
     } else if (gettok(i, 0) == "try" && gettok(i, 1) == "end") {
       asc.push({ op: "tryend", pos });
       i++;
     } else if (gettok(i, 0) == "throw" && gettok(i, 1) == "a") {
       typeassert(i + 2, ["throw"]);
-      asc.push({ op: "throw", error: tokens[i + 1], pos });
-      i += 3;
+      if (tokens[i + 3] && gettok(i + 3, 0) == "assgn") {
+        asc.push({
+          op: "throw",
+          error: tokens[i + 1],
+          message: tokens[i + 4],
+          pos
+        });
+        i += 5;
+      } else {
+        asc.push({ op: "throw", error: tokens[i + 1], pos });
+        i += 3;
+      }
     } else if (gettok(i, 0) == "comment") {
       asc.push({ op: "comment", value: tokens[i + 1], pos });
       i += 2;

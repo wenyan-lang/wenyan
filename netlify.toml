@@ -1,0 +1,4 @@
+[[headers]]
+  for = "/__migrate__"
+    [headers.values]
+      Access-Control-Allow-Origin = "https://ide.wy-lang.org"

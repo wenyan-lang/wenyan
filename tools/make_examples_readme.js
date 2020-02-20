@@ -9,7 +9,9 @@ function update(srcDir, outputFile) {
   const leftWidth = "--------------------------------------".length;
   const rightWidth = "-------------------------".length;
 
-  let content = `<!-- GENERATED FILE, DO NOT MODIFY-->
+  let content = `<!-- GENERATED FILE, DO NOT MODIFY -->
+<!-- "npm run build:docs" to regenerate -->
+
 # Examples
 
 | File                                   | Remark                    |
