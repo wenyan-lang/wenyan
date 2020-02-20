@@ -35,6 +35,7 @@ pre{
   top: 100px;
   font-weight: 100;
   width: 80%;
+  max-width: 800px;
   margin: 100px auto;
   padding: 20px;
   border-left: 8px solid black;
