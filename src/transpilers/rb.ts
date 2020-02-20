@@ -343,52 +343,52 @@ export default class RubyCompiler extends BaseTranspiler {
   }
 
   lib = `# encoding: UTF-8
-  require 'forwardable'
-    class Ctnr
-      extend Forwardable
-      attr_accessor :dict, :length, :it
-      def initialize()
-        @dict = {}
-        @length = 0
-        @it = -1
-      end
-      def push(*args)
-        args.each do |arg|
-          @dict[@length.to_s] = arg
-          @length += 1
-        end
-      end
-      def [](i)
-        @dict[i.to_s]
-      end
-      def []=(i,x)
-        @dict[i.to_s] = x
-      end
-      def slice(i)
-        result = Ctnr.new;
-        i.times {|index| result.push(self[index])}
-        return result
-      end
-      def concat(other)
-        other.length.times {|i| push(other[i]) }
-        self
-      end
-      def values
-        @dict.values
-      end
-      def to_s
-        "[#{@dict.values.join(", ")}]"
-      end
-      def_delegators :values, :each
+require 'forwardable'
+class Ctnr
+  extend Forwardable
+  attr_accessor :dict, :length, :it
+  def initialize()
+    @dict = {}
+    @length = 0
+    @it = -1
+  end
+  def push(*args)
+    args.each do |arg|
+      @dict[@length.to_s] = arg
+      @length += 1
     end
-    module Math
-      def self.random(*args)
-        rand(*args)
-      end
-      def self.floor(number)
-        number.floor
-      end
-    end
-  #####
-  `;
+  end
+  def [](i)
+    @dict[i.to_s]
+  end
+  def []=(i,x)
+    @dict[i.to_s] = x
+  end
+  def slice(i)
+    result = Ctnr.new;
+    i.times {|index| result.push(self[index])}
+    return result
+  end
+  def concat(other)
+    other.length.times {|i| push(other[i]) }
+    self
+  end
+  def values
+    @dict.values
+  end
+  def to_s
+    "[#{@dict.values.join(", ")}]"
+  end
+  def_delegators :values, :each
+end
+module Math
+  def self.random(*args)
+    rand(*args)
+  end
+  def self.floor(number)
+    number.floor
+  end
+end
+#####
+`;
 }
