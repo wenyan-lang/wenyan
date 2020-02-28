@@ -76,7 +76,6 @@
 	夫「g.toString(16).padStart(2,'0')」名之曰「G」。
 	夫「b.toString(16).padStart(2,'0')」名之曰「B」。
 	夫「"#"+R+G+B」。名之曰「十六進制色」。
-	夫「rgb0」夫「rgb1」夫「r」夫「g」夫「b」夫「十六進制色」。書之。
 	昔之「ctx.strokeStyle」者。今「十六進制色」是矣。
 	昔之「ctx.fillStyle」者。今「十六進制色」是矣。
 
