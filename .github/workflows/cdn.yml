@@ -1,0 +1,14 @@
+name: Publish To CDN
+
+jobs:
+  publish:
+    - uses: actions/checkout@master
+    - run: npm run build:site
+    - uses: seanmiddleditch/gha-publish-to-git@master
+      with:
+        repository: wenyan-lang/cdn
+        branch: wenyan-core
+        github_token: '${{ secrets.GITHUB_TOKEN  }}'
+        github_pat: '${{ secrets.GH_PAT }}'
+        source_folder: static/dist
+      if: success() && github.event == 'push'
