@@ -1,14 +1,22 @@
 name: Publish To CDN
 
+on: push
+
 jobs:
   publish:
-    - uses: actions/checkout@master
-    - run: npm run build:site
-    - uses: seanmiddleditch/gha-publish-to-git@master
-      with:
-        repository: wenyan-lang/cdn
-        branch: wenyan-core
-        github_token: '${{ secrets.GITHUB_TOKEN  }}'
-        github_pat: '${{ secrets.GH_PAT }}'
-        source_folder: static/dist
-      if: success() && github.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run build:site
+      - uses: seanmiddleditch/gha-publish-to-git@master
+        with:
+          repository: wenyan-lang/cdn
+          branch: wenyan-core
+          github_token: '${{ secrets.GITHUB_TOKEN  }}'
+          github_pat: '${{ secrets.GH_PAT }}'
+          source_folder: static/dist
