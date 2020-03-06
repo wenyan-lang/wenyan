@@ -20,7 +20,7 @@
   "scripts": {
     "build": "npm run clear && npm run build:type && webpack --mode production",
     "build:dev": "npm run clear && npm run build:type && webpack --mode development",
-    "build:site": "webpack --mode development --config webpack.site.config.js",
+    "build:site": "webpack --mode production --config webpack.site.config.js",
     "build:docs": "node ./tools/make_examples_readme.js",
     "build:wiki": "node ./tools/wiki/update.js",
     "build:type": "tsc --emitDeclarationOnly --declaration --declarationDir ./typings && move-cli ./typings/package.d.ts ./typings/package.json.d.ts",
