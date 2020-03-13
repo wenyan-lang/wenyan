@@ -61,6 +61,8 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 - [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
 - An [Online IDE](https://ide.wy-lang.org/)
 - [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
+- A packages manager [wyg(文淵閣)](https://github.com/wenyan-lang/wyg) and [awesome packages](http://wyg.wy-lang.org/) from the community.
+
 
 ## Try it out
 
