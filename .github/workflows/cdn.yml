@@ -1,6 +1,9 @@
 name: Publish To CDN
 
-on: push
+on:
+  push:
+    branches: 
+    - master
 
 jobs:
   publish:
@@ -13,10 +16,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run build:site
-      - uses: seanmiddleditch/gha-publish-to-git@master
+      - uses: antfu/gha-publish-to-git@master
         with:
-          repository: wenyan-lang/cdn
-          branch: wenyan-core
+          branch: cdn
           github_token: '${{ secrets.GITHUB_TOKEN  }}'
           github_pat: '${{ secrets.GH_PAT }}'
           source_folder: static/dist
