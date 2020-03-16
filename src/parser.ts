@@ -87,8 +87,9 @@ function wy2tokens(txt: string, assert = defaultAssert()) {
       var is_sin = txt[i] == "」";
       litlvl--;
       if (litlvl == 0) {
-        // escape double quote
-        tok = tok.replace(/"/g, '\\"');
+        // escape double quote and new lines
+        tok = tok.replace(/"/g, '\\"').replace(/\n/g, "\\n");
+
         tokens.push(["lit", `"${tok}"`, i + 1]);
         idt = false;
         tok = "";
