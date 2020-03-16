@@ -477,8 +477,8 @@ function wy2tokens(txt, assert) {
             var is_sin = txt[i] == "」";
             litlvl--;
             if (litlvl == 0) {
-                // escape double quote
-                tok = tok.replace(/"/g, '\\"');
+                // escape double quote and new lines
+                tok = tok.replace(/"/g, '\\"').replace(/\n/g, "\\n");
                 tokens.push(["lit", "\"" + tok + "\"", i + 1]);
                 idt = false;
                 tok = "";
@@ -2451,7 +2451,7 @@ __webpack_require__.r(__webpack_exports__);
 
 ;
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「犀」」。名之曰「境」。");
+/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「犀」」。名之曰「境」。\n\n注曰「「鑒。同Javascript之eval也。」」\n今有一術。名之曰「鑒」。欲行是術。必先得一言。曰「言」。乃行是術曰。\n\t施「eval」於「言」。乃得矣。\n是謂「鑒」之術也。");
 
 /***/ }),
 /* 17 */
@@ -2491,7 +2491,7 @@ __webpack_require__.r(__webpack_exports__);
 
 ;
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「蟒」」。名之曰「境」。");
+/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「蟒」」。名之曰「境」。\n\n今有一術。名之曰「鑒」。欲行是術。必先得一言。曰「言」。乃行是術曰。\n\t施「eval」於「言」。乃得矣。\n是謂「鑒」之術也。");
 
 /***/ }),
 /* 22 */
@@ -2507,7 +2507,7 @@ __webpack_require__.r(__webpack_exports__);
 
 ;
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「鑽」」。名之曰「境」。");
+/* harmony default export */ __webpack_exports__["default"] = ("今有一言。曰「「鑽」」。名之曰「境」。\n\n今有一術。名之曰「鑒」。欲行是術。必先得一言。曰「言」。乃行是術曰。\n\t施「eval」於「言」。乃得矣。\n是謂「鑒」之術也。");
 
 /***/ }),
 /* 24 */
