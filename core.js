@@ -863,6 +863,7 @@ function tokens2asc(tokens, assert) {
 }
 exports.tokens2asc = tokens2asc;
 function compile(txt, options) {
+    if (options === void 0) { options = {}; }
     var _a = options.lang, lang = _a === void 0 ? "js" : _a, _b = options.romanizeIdentifiers, romanizeIdentifiers = _b === void 0 ? "none" : _b, _c = options.resetVarCnt, resetVarCnt = _c === void 0 ? true : _c, _d = options.logCallback, logCallback = _d === void 0 ? defaultLogCallback : _d, _e = options.errorCallback, errorCallback = _e === void 0 ? defaultErrorCallback : _e, _f = options.lib, lib = _f === void 0 ? stdlib_1.STDLIB : _f, _g = options.strict, strict = _g === void 0 ? false : _g, 
     // import options
     _h = options.entryFilepath, 
