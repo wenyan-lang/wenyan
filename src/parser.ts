@@ -667,7 +667,7 @@ function tokens2asc(tokens: Token[], assert = defaultAssert()) {
   return asc;
 }
 
-function compile(txt: string, options?: Partial<CompileOptions>): string {
+function compile(txt: string, options: Partial<CompileOptions> = {}): string {
   const {
     lang = "js",
     romanizeIdentifiers = "none",
