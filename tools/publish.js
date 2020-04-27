@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 
 const root = path.resolve(__dirname, "..");
 const distRoot = path.resolve(__dirname, "../dist");
-const npmOrganization = "@wenyanlang";
+const npmOrganization = "@wenyan";
 
 const packages = ["cli", "core", "render", "runtime"];
 

@@ -54,7 +54,7 @@ The fresh new Online IDE is now landed. With file explorer, rendering, a better 
 
 ## We are now moved to Typescript! 
 
-We have rewritten our codebase to Typescript. The typing declaration file is also shipped in [@wanyanlang/code](https://www.npmjs.com/package/@wenyanlang/core).
+We have rewritten our codebase to Typescript. The typing declaration file is also shipped in [@wanyanlang/code](https://www.npmjs.com/package/@wenyan/core).
 
 Check out for #543 for more details.
 
@@ -233,7 +233,7 @@ See [**Full Documation**](https://github.com/LingDong-/wenyan-lang/blob/master/d
 A new standard library `畫譜` that manipulates canvas on web pages. Check out the demo on Online IDE!
 
 ### Browser Runtime
-New package [`@wenyanlang/runtime`](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Runtime.md) allowing you to run Wenyan direct in `<script>` tag of html! (PR #433, thanks @antfu)
+New package [`@wenyan/runtime`](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Runtime.md) allowing you to run Wenyan direct in `<script>` tag of html! (PR #433, thanks @antfu)
 
 ### Docs
 - [**Standard library document**](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Standard-Lib.md) added. (PR #432, thanks @antfu @statementreply)

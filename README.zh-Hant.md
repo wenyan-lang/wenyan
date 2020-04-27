@@ -69,7 +69,7 @@ console.log("問天地好在。");
 使用以下命令安裝本編譯器：
 
 ```bash
-npm install -g @wenyanlang/cli
+npm install -g @wenyan/cli
 ```
 
 嘗試運行內置的例子，例如：

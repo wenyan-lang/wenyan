@@ -28,7 +28,7 @@ const Core = {
   plugins: [
     ...defaultPlugins(),
     new DtsBundlePlugin({
-      name: '@wenyanlang/core',
+      name: '@wenyan/core',
       baseDir: 'typings/src',
       main: 'typings/src/parser.d.ts',
       out: '../../dist/core/index.d.ts',

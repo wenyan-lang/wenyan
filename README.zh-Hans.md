@@ -69,7 +69,7 @@ for (var i = 0; i < n; i++) {
 使用以下命令安装本编译器：
 
 ```bash
-npm install -g @wenyanlang/cli
+npm install -g @wenyan/cli
 ```
 
 尝试运行内置的例子，例如：

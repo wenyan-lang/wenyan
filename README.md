@@ -2,7 +2,7 @@
 
 # 文言 wenyan-lang
 
-[![npm](https://img.shields.io/npm/v/@wenyanlang/core)](https://www.npmjs.com/package/@wenyanlang/core)
+[![npm](https://img.shields.io/npm/v/@wenyan/core)](https://www.npmjs.com/package/@wenyan/core)
 [![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
@@ -81,7 +81,7 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 Install the compiler by
 
 ```bash
-npm install -g @wenyanlang/cli
+npm install -g @wenyan/cli
 ```
 
 Try run the included examples, e.g.:
