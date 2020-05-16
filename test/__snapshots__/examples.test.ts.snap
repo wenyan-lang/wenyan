@@ -15,6 +15,11 @@ exports[`examples javascript beer 1`] = `
 "
 `;
 
+exports[`examples javascript breadth_first_search 1`] = `
+"二
+"
+`;
+
 exports[`examples javascript collatz 1`] = `
 "一十二。六。三。一十。五。一十六。八。四。二。一。一
 一十九。五十八。二十九。八十八。四十四。二十二。一十一。三十四。一十七。五十二。二十六。一十三。四十。二十。一十。五。一十六。八。四。二。一。一
