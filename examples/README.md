@@ -6,6 +6,7 @@
 | File                                   | Remark                    |
 | -------------------------------------- | ------------------------- |
 | [beer.wy](beer.wy)                     | 九十九瓶啤酒              |
+| [breadth_first_search.wy](breadth_first_search.wy)  | 廣度優先搜索 |
 | [clock.wy](clock.wy)                   | 畫鐘                      |
 | [collatz.wy](collatz.wy)               | 考拉兹猜想                |
 | [collatz2.wy](collatz2.wy)             | 考拉兹猜想二              |
