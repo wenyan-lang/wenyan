@@ -1523,7 +1523,7 @@ function tokens2asc(tokens, assert) {
                 x.lhs = tokens[i + 3];
                 x.rhs = tokens[i + 1];
             }
-            if (gettok(i, 1) == "/" && gettok(i + 4, 0) == "mod") {
+            if (gettok(i, 1) == "/" && tokens[i + 4] && gettok(i + 4, 0) == "mod") {
                 x.op = "op%";
                 i += 5;
             }
