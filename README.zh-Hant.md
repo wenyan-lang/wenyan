@@ -6,9 +6,9 @@
 
 [English](./README.md) | [简体中文](./README.zh-Hans.md) | 繁體中文
 
-文言文編程語言。 [在線體驗](http://wenyan-lang.lingdong.works/ide.html)
+文言文程式語言。 [線上體驗](http://wenyan-lang.lingdong.works/ide.html)
 
-> 🚧 請註意，中文文檔並非實時更新，僅供參考。如有歧義，請以英文版文檔為主。
+> 🚧 請註意，中文文建並非即時更新，僅供參考。如有歧義，請以英文版文件為主。
 
 ![](screenshots/screenshot01.png)
 
@@ -44,21 +44,21 @@ console.log("問天地好在。");
 問天地好在。
 ```
 
-標點符號和換行都是可選的（就像古漢語中文字是連續的），所以上面的代碼等同於：
+標點符號和換行都是可選的（就像古漢語中文字是連續的），所以上面的程式碼等同於：
 
 
 ```
 吾有一數曰三名之曰「甲」為是「甲」遍吾有一言曰「「問天地好在」」書之云云
 ```
 
-更多複雜的例子，可以在 `./examples` 中找到。比如，埃拉托斯特尼篩法、快速排序、曼德博集合、漢諾塔。
+更多複雜的例子，可以在 `./examples` 中找到。比如，埃拉托斯特尼篩法、快速排序、曼德博集合、河諾塔。
 
 
 ## 特點
-- 符合[古漢語](https://en.wikipedia.org/wiki/Classical_Chinese)語法的自然語言處理程序
+- 符合[古漢語](https://en.wikipedia.org/wiki/Classical_Chinese)語法的自然語言處理程式
 - 可以編譯成[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org)，或者[Ruby](http://ruby-lang.org)
 - [圖靈完備](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
-- [在線 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻體驗
+- [線上 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻體驗
 - 通過[幾個例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入門
 
 
@@ -72,28 +72,28 @@ console.log("問天地好在。");
 npm install -g @wenyan/cli
 ```
 
-嘗試運行內置的例子，例如：
+嘗試運行內建的例子，例如：
 
 ```bash
 wenyan examples/helloworld.wy -o helloworld.js
 ```
 
 
-### [在線 IDE](http://wenyan-lang.lingdong.works/ide.html)
+### [線上 IDE](http://wenyan-lang.lingdong.works/ide.html)
 
 ![](screenshots/screenshot02.png)
 
 
-### 編輯器插件：
+### 編輯器外掛：
 
-- 由[antfu](https://github.com/antfu)提供的[適用於VSCode的插件](https://github.com/antfu/wenyan-lang-vscode)
-- 由[voldikss](https://github.com/voldikss)提供的[適用於Vim的插件](https://github.com/voldikss/vim-wenyan)
-- 由[absop](https://github.com/absop)提供的[適用於Sublime Text的插件](https://github.com/absop/SublimeWenyan)
+- 由[antfu](https://github.com/antfu)提供的[適用於VSCode的外掛](https://github.com/antfu/wenyan-lang-vscode)
+- 由[voldikss](https://github.com/voldikss)提供的[適用於Vim的外掛](https://github.com/voldikss/vim-wenyan)
+- 由[absop](https://github.com/absop)提供的[適用於Sublime Text的外掛](https://github.com/absop/SublimeWenyan)
 
 
 ## 語法表
 
-上下文無關文法的語法描述還在構建中。同時，請查閱下面的語法表，或者在 `src/parser.js` 中學習其他更多語法。當然你也可以從在線 IDE 現有的例子中學習更多語法知識！
+上下文無關文法的語法描述還在構建中。同時，請查閱下面的語法表，或者在 `src/parser.js` 中學習其他更多語法。當然你也可以從線上 IDE 現有的例子中學習更多語法知識！
 
 ### 變量
 
@@ -194,7 +194,7 @@ wenyan examples/helloworld.wy -o helloworld.js
 wenyan examples/turing.wy --render 圖靈機 --output .
 ```
 
-`src/render.js` 腳本文件能把 `wy` 代碼格式化輸出成為古漢語書籍樣式（歷史印刷書籍）的矢量圖（SVG）。同時它還可以將生成的SVG文件解析回原始文言代碼。需要獲取更詳細的信息，請使用`wenyan -h`命令來獲取幫助。
+`src/render.js` 腳本文件能把 `wy` 程式碼格式化輸出成為古漢語書籍樣式（歷史印刷書籍）的可縮放向量圖形（SVG）。同時它還可以將產生的SVG文件解析回原始文言程式碼。需要獲取更詳細的訊息，請使用`wenyan -h`命令來獲取幫助。
 
 下圖是用 wenyan 編寫的 通用圖靈機程序 渲染而成。
 
@@ -212,17 +212,17 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 |標準庫([Math(數學)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位運算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(隨機)](https://github.com/LingDong-/wenyan-lang/issues/87)) | ***** | √ | 正在進行中 |
 |[測試套件](https://github.com/LingDong-/wenyan-lang/issues/38)| **** | √ | 正在進行中 |
 |[Switch語句](https://github.com/LingDong-/wenyan-lang/issues/53)| *** | | |
-|[函數式程序設計](https://github.com/LingDong-/wenyan-lang/issues/99) | *** | | |
+|[函數式程式設計](https://github.com/LingDong-/wenyan-lang/issues/99) | *** | | |
 |更嚴格的編譯器 | **** | | |
 |其他語言的編譯器 | ** | √ | |
-|[編輯器的插件](https://github.com/LingDong-/wenyan-lang/issues/77) | ** | √ | 適用於VSCode, Vim, Sublime的插件已添加 |
+|[編輯器的附加元件](https://github.com/LingDong-/wenyan-lang/issues/77) | ** | √ | 適用於VSCode, Vim, Sublime的附加元件已添加 |
 |將[js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/ [anything](https://github.com/LingDong-/wenyan-lang/issues/73) 轉換回wenyan(文言) | * | √ | |
-|[轉義](https://github.com/LingDong-/wenyan-lang/issues/84)/[生成](https://github.com/LingDong-/wenyan-lang/issues/128) 特殊符號| *** | | |
+|[轉義](https://github.com/LingDong-/wenyan-lang/issues/84)/[產生](https://github.com/LingDong-/wenyan-lang/issues/128) 特殊符號| *** | | |
 |[對「「」」的替換語法](https://github.com/LingDong-/wenyan-lang/issues/81)| ** | | |
 |[對 。的替換語法](https://github.com/LingDong-/wenyan-lang/issues/93)| ** | | |
-|在線IDE 的[字體](https://github.com/LingDong-/wenyan-lang/issues/5) 和[垂直文本](https://github.com/LingDong-/wenyan-lang/issues/9) | ** | | |
+|線上IDE 的[字體](https://github.com/LingDong-/wenyan-lang/issues/5) 和[垂直文本](https://github.com/LingDong-/wenyan-lang/issues/9) | ** | | |
 |[將註釋呈現為小型內聯文本](https://github.com/LingDong-/wenyan-lang/issues/148) | ** | | |
-|更多示例 | ** | √ | |
+|更多示範 | ** | √ | |
 
 如果你可以幫助我們實現一個在`需要幫助`下有`√`的功能，請放心提交一個PR。我們將非常感謝你！如果你想幫助我們實現其他功能，也請讓我們知道！謝謝。
 
@@ -230,4 +230,4 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 |名稱|優先級|需要幫助|狀態|
 |---|---|---|---|
 |[漢字到數字的轉換問題](https://github.com/LingDong-/wenyan-lang/issues/114)| ***** | | |
-|[漢字到數字轉換中多字符數字沒有被加入支持](https://github.com/LingDong-/wenyan-lang/issues/130) | *** | | |
+|[漢字到數字轉換中多字符數字沒有被加入支援](https://github.com/LingDong-/wenyan-lang/issues/130) | *** | | |
