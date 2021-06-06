@@ -8,7 +8,7 @@
 
 文言文程式語言。 [線上體驗](http://wenyan-lang.lingdong.works/ide.html)
 
-> 🚧 請註意，中文文建並非即時更新，僅供參考。如有歧義，請以英文版文件為主。
+> 🚧 請註意，中文版文件並非即時更新，僅供參考。如有歧義，請以英文版文件為主。
 
 ![](screenshots/screenshot01.png)
 
