@@ -24,7 +24,7 @@ import { match, defaultAssert, isRoman } from "./utils";
 import { evalCompiled, isLangSupportedForEval } from "./execute";
 
 const defaultTrustedHosts = [
-  "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
+  "https://raw.githubusercontent.com/wenyan-lang/wenyan/master"
 ];
 
 const IGNORE_SYMBOLS = "。、\n\r\t ";

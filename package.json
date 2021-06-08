@@ -6,7 +6,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/LingDong-/wenyan-lang.git"
+    "url": "https://github.com/wenyan-lang/wenyan.git"
   },
   "license": "MIT",
   "keywords": [
@@ -16,7 +16,7 @@
     "ancient-chinese",
     "classical-chinese"
   ],
-  "homepage": "https://github.com/LingDong-/wenyan-lang",
+  "homepage": "https://github.com/wenyan-lang/wenyan",
   "scripts": {
     "build": "npm run clear && npm run build:type && webpack --mode production",
     "build:dev": "npm run clear && npm run build:type && webpack --mode development",

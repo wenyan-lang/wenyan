@@ -3,7 +3,7 @@
 # 文言 wenyan-lang
 
 [![npm](https://img.shields.io/npm/v/@wenyan/core)](https://www.npmjs.com/package/@wenyan/core)
-[![build](https://img.shields.io/github/workflow/status/LingDong-/wenyan-lang/Build%20%26%20Test)](https://github.com/LingDong-/wenyan-lang/actions)
+[![build](https://img.shields.io/github/workflow/status/wenyan-lang/wenyan/Build%20%26%20Test)](https://github.com/wenyan-lang/wenyan/actions)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
 ### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki) | [The Book](https://github.com/wenyan-lang/book)
@@ -58,9 +58,9 @@ More sophisticated examples, such as the Sieve of Eratosthenes, Quicksort, Mande
 ## Features
 - [Natural Language Programming](https://en.wikipedia.org/wiki/Natural-language_programming) sharing the grammar of [Classical Chinese](https://en.wikipedia.org/wiki/Classical_Chinese)
 - Compiles to [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Python](https://python.org), or [Ruby](http://ruby-lang.org)
-- [Turing complete](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
+- [Turing complete](https://github.com/wenyan-lang/wenyan/blob/master/examples/turing.wy)
 - An [Online IDE](https://ide.wy-lang.org/)
-- [Examples](https://github.com/LingDong-/wenyan-lang/tree/master/examples) to get started
+- [Examples](https://github.com/wenyan-lang/wenyan/tree/master/examples) to get started
 - A packages manager [wyg(文淵閣)](https://github.com/wenyan-lang/wyg) and [awesome packages](http://wyg.wy-lang.org/) from the community.
 
 

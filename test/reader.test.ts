@@ -67,7 +67,7 @@ describe("reader", () => {
       try {
         reader("helloworld", {
           importPaths:
-            "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
+            "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/examples/"
         });
       } catch (e) {
         expect(e).toBeInstanceOf(URIError);
@@ -77,7 +77,7 @@ describe("reader", () => {
     it("load http contents", () => {
       const { src } = reader("helloworld", {
         importPaths:
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/examples/",
         allowHttp: true
       });
 
@@ -87,9 +87,9 @@ describe("reader", () => {
     it("load http contents in trusted hosts", () => {
       const { src } = reader("helloworld", {
         importPaths:
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/",
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/examples/",
         trustedHosts: [
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples"
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/examples"
         ]
       });
 
@@ -99,11 +99,11 @@ describe("reader", () => {
     it("search for http contents", () => {
       const { src } = reader("helloworld", {
         importPaths: [
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/lib/",
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master/examples/"
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/lib/",
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master/examples/"
         ],
         trustedHosts: [
-          "https://raw.githubusercontent.com/LingDong-/wenyan-lang/master"
+          "https://raw.githubusercontent.com/wenyan-lang/wenyan/master"
         ]
       });
 
