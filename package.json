@@ -32,7 +32,7 @@
     "publish:ci": "node ./tools/publish.js",
     "update:wiki": "node ./tools/wiki/update.js --push",
     "release": "bump --commit --tag && git push --follow-tags",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "test:update": "jest --updateSnapshot",
     "lint:fix": "npm run lint -- --fix",
     "lint": "eslint {src,tools,test}/**/*.{js,ts}",
@@ -93,6 +93,6 @@
     "webpack-shell-plugin": "^0.5.0"
   },
   "dependencies": {
-    "xmlhttprequest": "^1.8.0"
+    "sync-request": "^6.1.0"
   }
 }

@@ -63,7 +63,7 @@ describe("reader", () => {
   });
 
   describe("http", () => {
-    it("block http imports by default", async () => {
+    it("block http imports by default", async done => {
       try {
         reader("helloworld", {
           importPaths:
@@ -72,6 +72,7 @@ describe("reader", () => {
       } catch (e) {
         expect(e).toBeInstanceOf(URIError);
       }
+      done();
     });
 
     it("load http contents", () => {
