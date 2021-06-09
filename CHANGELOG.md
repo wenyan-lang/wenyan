@@ -161,7 +161,7 @@ For more detail, please refer to #486
 
 ### Standard Library
 
-- Fundamental Calendar library (PR #466, thanks @statementreply), check out [Standard Library cheatsheet](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Standard-Lib.md) for more details.
+- Fundamental Calendar library (PR #466, thanks @statementreply), check out [Standard Library cheatsheet](https://github.com/wenyan-lang/wenyan/blob/master/documentation/Standard-Lib.md) for more details.
 
 ### 3rd Party Compilers
 
@@ -193,7 +193,7 @@ Please do check it out. Any feedbacks are welcome!
 ![](https://user-images.githubusercontent.com/7929704/71650125-049f4800-2ce2-11ea-9f44-31c9b7e626d7.png)
 
 ## New Execute API
-Check out [API Document](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Compiler-API.md) and #473
+Check out [API Document](https://github.com/wenyan-lang/wenyan/blob/master/documentation/Compiler-API.md) and #473
 
 
 ### Fixes
@@ -227,16 +227,16 @@ Since we're beating JavaScript to macros, here is a rough C equivalence:
 書("問天地好在")焉。
 ```
 
-See [**Full Documation**](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Macros.md), #440 for more details.
+See [**Full Documation**](https://github.com/wenyan-lang/wenyan/blob/master/documentation/Macros.md), #440 for more details.
 
 ### Standard Library
 A new standard library `畫譜` that manipulates canvas on web pages. Check out the demo on Online IDE!
 
 ### Browser Runtime
-New package [`@wenyan/runtime`](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Runtime.md) allowing you to run Wenyan direct in `<script>` tag of html! (PR #433, thanks @antfu)
+New package [`@wenyan/runtime`](https://github.com/wenyan-lang/wenyan/blob/master/documentation/Runtime.md) allowing you to run Wenyan direct in `<script>` tag of html! (PR #433, thanks @antfu)
 
 ### Docs
-- [**Standard library document**](https://github.com/LingDong-/wenyan-lang/blob/master/documentation/Standard-Lib.md) added. (PR #432, thanks @antfu @statementreply)
+- [**Standard library document**](https://github.com/wenyan-lang/wenyan/blob/master/documentation/Standard-Lib.md) added. (PR #432, thanks @antfu @statementreply)
 
 ### Examples
 - New example 劉徽割圓術 (PR #431, thanks @cuixiping)

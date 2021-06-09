@@ -21,20 +21,14 @@ function isHttpURL(uri: string) {
 }
 
 function fetchTextSync(url: string, timeout: number) {
-  let XHR;
-  if (typeof window !== "undefined" && "XMLHttpRequest" in window)
-    XHR = window.XMLHttpRequest;
-  else XHR = eval("require")("xmlhttprequest").XMLHttpRequest;
+  const request = require("sync-request");
 
-  var xmlHttp = new XHR();
-  // xmlHttp.timeout = timeout;
-  xmlHttp.open("GET", url, false); // false for synchronous request
-  xmlHttp.send(null);
+  let res = request("GET", url, { timeout: timeout });
 
-  if (xmlHttp.status >= 200 && xmlHttp.status < 300)
-    return xmlHttp.responseText;
+  if (res.statusCode >= 200 && res.statusCode < 300)
+    return res.getBody().toString("utf8");
 
-  throw new URIError(xmlHttp.responseText);
+  throw new URIError(res.statusCode);
 }
 
 function fetchSync(uri: string, cache: CacheObject, requestTimeout: number) {

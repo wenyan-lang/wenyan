@@ -57,9 +57,9 @@ console.log("問天地好在。");
 ## 特點
 - 符合[古漢語](https://en.wikipedia.org/wiki/Classical_Chinese)語法的自然語言處理程式
 - 可以編譯成[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)，[Python](https://python.org)，或者[Ruby](http://ruby-lang.org)
-- [圖靈完備](https://github.com/LingDong-/wenyan-lang/blob/master/examples/turing.wy)
+- [圖靈完備](https://github.com/wenyan-lang/wenyan/blob/master/examples/turing.wy)
 - [線上 IDE](http://wenyan-lang.lingdong.works/ide.html)，即刻體驗
-- 通過[幾個例子](https://github.com/LingDong-/wenyan-lang/tree/master/examples)快速入門
+- 通過[幾個例子](https://github.com/wenyan-lang/wenyan/tree/master/examples)快速入門
 
 
 ## 安裝
@@ -206,22 +206,22 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 
 |名稱|優先級|需要幫助|狀態|
 |---|---|---|---|
-|[語言規範](https://github.com/LingDong-/wenyan-lang/issues/1)| ***** | | 正在進行中 |
-|[類](https://github.com/LingDong-/wenyan-lang/issues/31) / [對象文法](https://github.com/LingDong-/wenyan-lang/issues/20) | *** | | 對象文法已經添加 |
-|[導入語句](https://github.com/LingDong-/wenyan-lang/issues/100) | *** | | 導入語句已經添加 |
-|標準庫([Math(數學)](https://github.com/LingDong-/wenyan-lang/issues/55)/[Bitwise ops(位運算)](https://github.com/LingDong-/wenyan-lang/issues/2)/[Random(隨機)](https://github.com/LingDong-/wenyan-lang/issues/87)) | ***** | √ | 正在進行中 |
-|[測試套件](https://github.com/LingDong-/wenyan-lang/issues/38)| **** | √ | 正在進行中 |
-|[Switch語句](https://github.com/LingDong-/wenyan-lang/issues/53)| *** | | |
-|[函數式程式設計](https://github.com/LingDong-/wenyan-lang/issues/99) | *** | | |
+|[語言規範](https://github.com/wenyan-lang/wenyan/issues/1)| ***** | | 正在進行中 |
+|[類](https://github.com/wenyan-lang/wenyan/issues/31) / [對象文法](https://github.com/wenyan-lang/wenyan/issues/20) | *** | | 對象文法已經添加 |
+|[導入語句](https://github.com/wenyan-lang/wenyan/issues/100) | *** | | 導入語句已經添加 |
+|標準庫([Math(數學)](https://github.com/wenyan-lang/wenyan/issues/55)/[Bitwise ops(位運算)](https://github.com/wenyan-lang/wenyan/issues/2)/[Random(隨機)](https://github.com/wenyan-lang/wenyan/issues/87)) | ***** | √ | 正在進行中 |
+|[測試套件](https://github.com/wenyan-lang/wenyan/issues/38)| **** | √ | 正在進行中 |
+|[Switch語句](https://github.com/wenyan-lang/wenyan/issues/53)| *** | | |
+|[函數式程式設計](https://github.com/wenyan-lang/wenyan/issues/99) | *** | | |
 |更嚴格的編譯器 | **** | | |
 |其他語言的編譯器 | ** | √ | |
-|[編輯器的附加元件](https://github.com/LingDong-/wenyan-lang/issues/77) | ** | √ | 適用於VSCode, Vim, Sublime的附加元件已添加 |
-|將[js](https://github.com/LingDong-/wenyan-lang/issues/47)/[py](https://github.com/LingDong-/wenyan-lang/issues/67)/ [anything](https://github.com/LingDong-/wenyan-lang/issues/73) 轉換回wenyan(文言) | * | √ | |
-|[轉義](https://github.com/LingDong-/wenyan-lang/issues/84)/[產生](https://github.com/LingDong-/wenyan-lang/issues/128) 特殊符號| *** | | |
-|[對「「」」的替換語法](https://github.com/LingDong-/wenyan-lang/issues/81)| ** | | |
-|[對 。的替換語法](https://github.com/LingDong-/wenyan-lang/issues/93)| ** | | |
-|線上IDE 的[字體](https://github.com/LingDong-/wenyan-lang/issues/5) 和[垂直文本](https://github.com/LingDong-/wenyan-lang/issues/9) | ** | | |
-|[將註釋呈現為小型內聯文本](https://github.com/LingDong-/wenyan-lang/issues/148) | ** | | |
+|[編輯器的附加元件](https://github.com/wenyan-lang/wenyan/issues/77) | ** | √ | 適用於VSCode, Vim, Sublime的附加元件已添加 |
+|將[js](https://github.com/wenyan-lang/wenyan/issues/47)/[py](https://github.com/wenyan-lang/wenyan/issues/67)/ [anything](https://github.com/wenyan-lang/wenyan/issues/73) 轉換回wenyan(文言) | * | √ | |
+|[轉義](https://github.com/wenyan-lang/wenyan/issues/84)/[產生](https://github.com/wenyan-lang/wenyan/issues/128) 特殊符號| *** | | |
+|[對「「」」的替換語法](https://github.com/wenyan-lang/wenyan/issues/81)| ** | | |
+|[對 。的替換語法](https://github.com/wenyan-lang/wenyan/issues/93)| ** | | |
+|線上IDE 的[字體](https://github.com/wenyan-lang/wenyan/issues/5) 和[垂直文本](https://github.com/wenyan-lang/wenyan/issues/9) | ** | | |
+|[將註釋呈現為小型內聯文本](https://github.com/wenyan-lang/wenyan/issues/148) | ** | | |
 |更多示範 | ** | √ | |
 
 如果你可以幫助我們實現一個在`需要幫助`下有`√`的功能，請放心提交一個PR。我們將非常感謝你！如果你想幫助我們實現其他功能，也請讓我們知道！謝謝。
@@ -229,5 +229,5 @@ wenyan examples/turing.wy --render 圖靈機 --output .
 ## 已知問題
 |名稱|優先級|需要幫助|狀態|
 |---|---|---|---|
-|[漢字到數字的轉換問題](https://github.com/LingDong-/wenyan-lang/issues/114)| ***** | | |
-|[漢字到數字轉換中多字符數字沒有被加入支援](https://github.com/LingDong-/wenyan-lang/issues/130) | *** | | |
+|[漢字到數字的轉換問題](https://github.com/wenyan-lang/wenyan/issues/114)| ***** | | |
+|[漢字到數字轉換中多字符數字沒有被加入支援](https://github.com/wenyan-lang/wenyan/issues/130) | *** | | |
