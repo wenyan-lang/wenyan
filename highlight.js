@@ -305,6 +305,7 @@ module.exports = {
 
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.bool2hanzi = exports.num2hanzi = exports.hanzi2num = exports.hanzi2numstr = exports.NumberTokenType = void 0;
 var NumberTokenType;
 (function (NumberTokenType) {
     NumberTokenType[NumberTokenType["SIGN"] = 0] = "SIGN";
@@ -1124,6 +1125,7 @@ exports.bool2hanzi = bool2hanzi;
 /***/ (function(module, exports) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.KEYWORDS = exports.KEYWORDS_DEFINE = exports.NUMBER_KEYWORDS = void 0;
 exports.NUMBER_KEYWORDS = Array.from("負·又零〇一二三四五六七八九十百千萬億兆京垓秭穰溝澗正載極分釐毫絲忽微纖沙塵埃渺漠");
 exports.KEYWORDS_DEFINE = {
     吾有: ["decl", "uninit"],
