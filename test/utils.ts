@@ -137,6 +137,7 @@ function nearlyEqual(
     const maxErr = Math.abs(expectedSingle) * relTol + absTol;
     return (
       Math.abs(err) <= maxErr &&
+      // @ts-expect-error
       bounds.every(x => isOnCorrectSide(actual, expected, x))
     );
   } else {
