@@ -3,7 +3,7 @@
 # 文言 wenyan-lang
 
 [![npm](https://img.shields.io/npm/v/@wenyan/core)](https://www.npmjs.com/package/@wenyan/core)
-[![build](https://img.shields.io/github/workflow/status/wenyan-lang/wenyan/Build%20%26%20Test)](https://github.com/wenyan-lang/wenyan/actions)
+[![build](https://img.shields.io/github/actions/workflow/status/wenyan-lang/wenyan/test.yml?branch=master)](https://github.com/wenyan-lang/wenyan/actions)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c36d4838-1c8f-4cfe-986e-43e0de6f71a3/deploy-status)](https://app.netlify.com/sites/wenyan-lang/deploys)
 
 ### [wy-lang.org](https://wy-lang.org) | [Wiki](https://github.com/wenyan-lang/wenyan/wiki) | [The Book](https://github.com/wenyan-lang/book)
