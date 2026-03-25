@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: "wenyan: A Programming Language for the Ancient Chinese"
+message: "If you use this software, please cite it as below."
+type: software
+
+authors:
+  - family-names: "Huang"
+    given-names: "Lingdong"
+    alias: "LingDong-"
+
+repository-code: "https://github.com/wenyan-lang/wenyan"
+url: "https://github.com/wenyan-lang/wenyan"
+
+abstract: >
+  Wenyan is an esoteric programming language that uses Classical Chinese grammar
+  and syntax to write programs. It compiles to modern languages such as JavaScript,
+  Python, and Ruby, and is Turing complete.
+
+keywords:
+  - programming language
+  - classical Chinese
+  - esolang
+  - compiler
+  - wenyan
+
+license: "MIT"
+
+version: "master"
+date-released: "2019"
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: "Huang"
+      given-names: "Lingdong"
+  title: "wenyan: A Programming Language for the Ancient Chinese"
+  year: 2019
+  url: "https://github.com/wenyan-lang/wenyan"
