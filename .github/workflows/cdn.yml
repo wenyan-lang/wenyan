@@ -12,15 +12,15 @@ jobs:
       matrix:
         node-version: [ 16 ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@7c12f8017d5436eb855f1ed4399f037a36fbd9e8
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run build:site
-      - uses: antfu/gha-publish-to-git@master
+      - uses: antfu/gha-publish-to-git@528b85e1d7b83e8a9ef32a1f93f909bc7b93bfc7
         with:
           branch: cdn
           github_token: '${{ secrets.GITHUB_TOKEN  }}'
